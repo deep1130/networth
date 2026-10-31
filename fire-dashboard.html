@@ -764,7 +764,7 @@
           <!-- Career Sub-Navigation (Switch between the sections from your screenshots) -->
           <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
             <button type="button" class="chip active" id="subtab-btn-compview" onclick="switchCareerSubTab('compview', this)">📋 Multi-Year CompView</button>
-            <button type="button" class="chip" id="subtab-btn-cashgrant" onclick="switchCareerSubTab('cashgrant', this)">🎁 2026 Grant: Cash Award & RSUs</button>
+            <button type="button" class="chip" id="subtab-btn-cashgrant" onclick="switchCareerSubTab('cashgrant', this)">🎁 Cash Award & RSUs Grant</button>
             <button type="button" class="chip" id="subtab-btn-equity" onclick="switchCareerSubTab('equity', this)">📈 Equity Vesting Schedule</button>
             <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ Taxes & Freedom Bridge</button>
             <button type="button" class="chip" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 Show All Sections</button>
@@ -795,15 +795,12 @@
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                   <tr style="background: #1e293b;">
-                    <th style="padding: 12px; text-align: left; width: 32%;">Component / Calculator</th>
-                    <th style="padding: 12px; text-align: left; width: 26%;">Inputs & Modifiers</th>
-                    <th style="padding: 12px; text-align: right; width: 14%; background: rgba(59, 130, 246, 0.15); border-left: 1px solid #334155; border-right: 1px solid #334155;">
-                      Current<br><strong style="font-size: 14px; color: #60a5fa;">2026</strong>
-                    </th>
-                    <th style="padding: 12px; text-align: right; width: 14%;">
+                    <th style="padding: 12px; text-align: left; width: 36%;">Component / Calculator</th>
+                    <th style="padding: 12px; text-align: left; width: 28%;">Inputs & Modifiers</th>
+                    <th style="padding: 12px; text-align: right; width: 18%; background: rgba(59, 130, 246, 0.15); border-left: 1px solid #334155; border-right: 1px solid #334155;">
                       Projected<br><strong style="font-size: 14px; color: #38bdf8;">2027</strong>
                     </th>
-                    <th style="padding: 12px; text-align: right; width: 14%;">
+                    <th style="padding: 12px; text-align: right; width: 18%;">
                       Projected<br><strong style="font-size: 14px; color: #38bdf8;">2028</strong>
                     </th>
                   </tr>
@@ -811,7 +808,7 @@
                 <tbody>
                   <!-- Header: Total Cash Calculator -->
                   <tr style="background: rgba(30, 41, 59, 0.8);">
-                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #fbbf24; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <td colspan="4" style="padding: 8px 12px; font-weight: 800; color: #fbbf24; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
                       💵 Total Cash Calculator
                     </td>
                   </tr>
@@ -825,8 +822,7 @@
                         <input type="number" id="cv-base-inc" value="0" min="0" max="25" step="0.5" style="width: 65px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
                       </div>
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-base-2026">$186,773</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-base-2027">$186,773</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-base-2027">$186,773</td>
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-base-2028">$186,773</td>
                   </tr>
 
@@ -848,10 +844,7 @@
                         </div>
                       </div>
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-bonus-2026">
-                      $17,449<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">93.4% actual</div>
-                    </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-bonus-2027">$18,500</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-bonus-2027">$18,500</td>
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-bonus-2028">$18,677</td>
                   </tr>
 
@@ -867,8 +860,7 @@
                     <td style="padding: 10px 12px; font-size: 11px; color: #fbbf24;">
                       Paid via payroll in USD (IMG_4140)
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-cashreward-2026">$0</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #34d399;" id="cv-cashreward-2027">+$21,875</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #34d399; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-cashreward-2027">+$21,875</td>
                     <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #34d399;" id="cv-cashreward-2028">+$12,500</td>
                   </tr>
 
@@ -878,14 +870,12 @@
                     <td style="padding: 10px 12px; color: #64748b; font-size: 11px;">Standard CompView line</td>
                     <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;">$0</td>
                     <td style="padding: 10px 12px; text-align: right; color: #94a3b8;">$0</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;">$0</td>
                   </tr>
 
                   <!-- Row: CompView Reported Cash (omitting cash award) -->
                   <tr style="border-top: 1px solid #334155; color: #94a3b8;">
                     <td colspan="2" style="padding: 8px 12px; font-size: 12px;">Total Cash (Reported in PayPal Portal Table)</td>
-                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-cash-2026">$204,222</td>
-                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-cash-2027">$205,273</td>
+                    <td style="padding: 8px 12px; text-align: right; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-cash-2027">$205,273</td>
                     <td style="padding: 8px 12px; text-align: right;" id="cv-rep-cash-2028">$205,450</td>
                   </tr>
 
@@ -894,14 +884,13 @@
                     <td colspan="2" style="padding: 12px; font-weight: 800; color: #34d399; font-size: 14px;">
                       💵 True Total Cash (Base + AIP + Cash Reward)
                     </td>
-                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-true-cash-2026">$204,222</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399;" id="cv-true-cash-2027">$227,148</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-true-cash-2027">$227,148</td>
                     <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399;" id="cv-true-cash-2028">$217,950</td>
                   </tr>
 
                   <!-- Header: Total Equity Calculator -->
                   <tr style="background: rgba(30, 41, 59, 0.8);">
-                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #38bdf8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <td colspan="4" style="padding: 8px 12px; font-weight: 800; color: #38bdf8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
                       📈 Total Equity Calculator
                     </td>
                   </tr>
@@ -915,8 +904,7 @@
                         <input type="number" id="cv-stock-price" value="57" min="1" max="500" step="1" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
                       </div>
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-price-lbl-2026">@ $57.00</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600;" id="cv-price-lbl-2027">@ $57.00</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-price-lbl-2027">@ $57.00</td>
                     <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600;" id="cv-price-lbl-2028">@ $57.00</td>
                   </tr>
 
@@ -929,10 +917,7 @@
                     <td style="padding: 10px 12px; font-size: 11px; color: #94a3b8;">
                       From existing grants & 2026 award
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-equity-2026">
-                      $38,418<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">674 shares</div>
-                    </td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-equity-2027">
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-equity-2027">
                       $45,885<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">805 shares</div>
                     </td>
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-equity-2028">
@@ -955,24 +940,21 @@
                         </div>
                       </div>
                     </td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;">—</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;" id="cv-future-val-2027">$0</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-future-val-2027">$0</td>
                     <td style="padding: 10px 12px; text-align: right; color: #94a3b8;" id="cv-future-val-2028">$0</td>
                   </tr>
 
                   <!-- Row: Total Equity -->
                   <tr style="background: rgba(56, 189, 248, 0.1); border-top: 1px solid #334155; border-bottom: 2px solid #334155;">
                     <td colspan="2" style="padding: 10px 12px; font-weight: 700; color: #38bdf8;">Total Equity (USD)</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-tot-equity-2026">$38,418</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8;" id="cv-tot-equity-2027">$45,885</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-tot-equity-2027">$45,885</td>
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8;" id="cv-tot-equity-2028">$19,893</td>
                   </tr>
 
                   <!-- Row: PayPal Reported Total Comp -->
                   <tr style="color: #94a3b8; font-size: 12px;">
                     <td colspan="2" style="padding: 8px 12px;">Total Comp (Reported in PayPal Portal Table)</td>
-                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-comp-2026">$242,640</td>
-                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-comp-2027">$251,158</td>
+                    <td style="padding: 8px 12px; text-align: right; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-comp-2027">$251,158</td>
                     <td style="padding: 8px 12px; text-align: right;" id="cv-rep-comp-2028">$225,343</td>
                   </tr>
 
@@ -981,8 +963,7 @@
                     <td colspan="2" style="padding: 14px 12px;">
                       🏆 True Total Compensation (Cash + RSUs + Cash Reward)
                     </td>
-                    <td style="padding: 14px 12px; text-align: right; font-weight: 900; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15);" id="cv-true-comp-2026">$242,640</td>
-                    <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2027">$273,033</td>
+                    <td style="padding: 14px 12px; text-align: right; font-weight: 900; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15);" id="cv-true-comp-2027">$273,033</td>
                     <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2028">$237,843</td>
                   </tr>
                 </tbody>
@@ -1102,10 +1083,10 @@
 
               <!-- Annual Grouping Summary -->
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
-                  <span style="font-size: 11px; color: #94a3b8; display: block;">2026 Cash Vesting:</span>
-                  <strong style="font-size: 16px; color: #94a3b8;">$0.00</strong>
-                  <span style="font-size: 10px; color: #64748b; display: block; margin-top: 2px;">Vesting begins March 2027</span>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.4);">
+                  <span style="font-size: 11px; color: #fbbf24; display: block; font-weight: 700;">Total Cash Award:</span>
+                  <strong style="font-size: 16px; color: #fbbf24;">$37,500.00</strong>
+                  <span style="font-size: 10px; color: #cbd5e1; display: block; margin-top: 2px;">9 installments (2027–2029)</span>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
                   <span style="font-size: 11px; color: #94a3b8; display: block;">2027 Cash Vesting:</span>
@@ -1140,14 +1121,8 @@
                 </div>
               </div>
 
-              <!-- 4 Annual Share Summary Cards -->
+              <!-- 4 Annual Share Summary Cards (Focusing on 2027+ Future Vesting) -->
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px;">
-                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
-                  <div style="color: #94a3b8; font-size: 11px;">2026 Shares Vesting</div>
-                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">674 shares</div>
-                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2026">$38,418 @ $57</div>
-                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 318 | Q2: 119 | Q3: 119 | Q4: 118</div>
-                </div>
                 <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
                   <div style="color: #94a3b8; font-size: 11px;">2027 Shares Vesting</div>
                   <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">805 shares</div>
@@ -1165,6 +1140,12 @@
                   <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">73 shares</div>
                   <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2029">$4,161 @ $57</div>
                   <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 73 shares (Final)</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 12px;">
+                  <div style="color: #94a3b8; font-size: 11px;">Total Remaining Unvested (2027+)</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">1,227 shares</div>
+                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-total">$69,939 @ $57</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">805 (2027) + 349 (2028) + 73 (2029)</div>
                 </div>
               </div>
 
@@ -1194,12 +1175,11 @@
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">📅 Select Plan Year for Taxes & Freedom Bridge:</span>
-                <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded PayPal CompView figures for 2026</span>
+                <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded PayPal CompView figures for 2027 (+Cash Reward)</span>
               </div>
               <div class="chips-group" id="career-year-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" class="chip active" id="chip-year-2026" onclick="setCareerYear(2026)">2026 (Current)</button>
-                <button type="button" class="chip" id="chip-year-2027" onclick="setCareerYear(2027)">2027 (+Cash Reward)</button>
-                <button type="button" class="chip" id="chip-year-2028" onclick="setCareerYear(2028)">2028 (+Cash Reward)</button>
+                <button type="button" class="chip active" id="chip-year-2027" onclick="setCareerYear(2027)">2027 (+Cash Reward: $21.9k)</button>
+                <button type="button" class="chip" id="chip-year-2028" onclick="setCareerYear(2028)">2028 (+Cash Reward: $12.5k)</button>
                 <button type="button" class="chip" id="chip-year-custom" onclick="setCareerYear('custom')">Custom</button>
               </div>
             </div>
@@ -1302,32 +1282,32 @@
                 <div class="control-group">
                   <div class="control-header">
                     <span>AIP Annual Bonus:</span>
-                    <span class="control-val" id="val-career-bonus">$17,449</span>
+                    <span class="control-val" id="val-career-bonus">$18,500</span>
                   </div>
-                  <input type="number" id="career-bonus" value="17449" step="500" min="0" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">2026: $17,449 (93.4% modifier on $18,677 target)</div>
+                  <input type="number" id="career-bonus" value="18500" step="500" min="0" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">2027: $18,500 target projection</div>
                 </div>
 
                 <div class="control-group">
                   <div class="control-header">
                     <span>Long Term Cash Award (Cash Reward):</span>
-                    <span class="control-val" id="val-career-cash-reward">$0</span>
+                    <span class="control-val" id="val-career-cash-reward">+$21,875</span>
                   </div>
-                  <input type="number" id="career-cash-reward" value="0" step="500" min="0" oninput="onCareerInput()">
+                  <input type="number" id="career-cash-reward" value="21875" step="500" min="0" oninput="onCareerInput()">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <div style="font-size: 11px; color: #fbbf24;" id="lbl-cash-award-status">$0 vesting in 2026</div>
-                    <div style="font-size: 11px; color: #94a3b8;" id="lbl-cash-award-next">Vesting begins March 1, 2027</div>
+                    <div style="font-size: 11px; color: #fbbf24;" id="lbl-cash-award-status">$21,875 vesting in 2027</div>
+                    <div style="font-size: 11px; color: #94a3b8;" id="lbl-cash-award-next">$12.5k on Mar 1 + $3,125 Jun/Sep/Dec</div>
                   </div>
-                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;" id="note-career-cash-reward">$37.5k Grant: 2026: $0 | 2027: $21,875 | 2028: $12,500 | 2029: $3,125</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;" id="note-career-cash-reward">$37.5k Grant: 2027: $21,875 | 2028: $12,500 | 2029: $3,125</div>
                 </div>
 
                 <div class="control-group">
                   <div class="control-header">
                     <span>Equity Award (RSUs Vesting):</span>
-                    <span class="control-val" id="val-career-rsu">$38,418</span>
+                    <span class="control-val" id="val-career-rsu">$45,885</span>
                   </div>
-                  <input type="number" id="career-rsu" value="38418" step="500" min="0" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">2026: 674 shares ($38.4k) | 2027: 805 sh ($45.9k) | 2028: 349 sh ($19.9k) @ $57</div>
+                  <input type="number" id="career-rsu" value="45885" step="500" min="0" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">2027: 805 sh ($45.9k) | 2028: 349 sh ($19.9k) @ $57</div>
                 </div>
 
                 <div style="margin-top: 10px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
@@ -1696,17 +1676,6 @@
     const CAREER_STORAGE_KEY = 'fire_dashboard_career_v2';
 
     const PAYPAL_YEAR_DATA = {
-      2026: {
-        baseSalary: 186773,
-        bonus: 17449,
-        cashReward: 0,
-        rsuVesting: 38418,
-        rsuShares: 674,
-        bonusNote: '2026: $17,449 (93.4% modifier on $18,677 target)',
-        cashStatus: '$0 vesting in 2026',
-        cashNext: 'Vesting begins March 1, 2027',
-        rsuNote: '2026: 674 shares ($38.4k @ $57)'
-      },
       2027: {
         baseSalary: 186773,
         bonus: 18500,
@@ -1731,11 +1700,8 @@
       }
     };
 
-    // Full 12-milestone quarterly RSU vesting countdown from PayPal CompView (IMG_4141)
+    // Quarterly RSU vesting countdown (2027 through 2029 completion - 1,227 shares)
     const EQUITY_SCHEDULE_DATA = [
-      { date: 'Jun 2026', shares: 119, unvestedShares: 1464, note: 'Quarterly Vest (Existing Grant)' },
-      { date: 'Sep 2026', shares: 119, unvestedShares: 1345, note: 'Quarterly Vest (Existing Grant)' },
-      { date: 'Dec 2026', shares: 118, unvestedShares: 1227, note: 'Quarterly Vest (Existing Grant)' },
       { date: 'Mar 2027', shares: 412, unvestedShares: 815, note: 'Major Annual Vest (incl. AIP performance shares)' },
       { date: 'Jun 2027', shares: 131, unvestedShares: 684, note: 'Quarterly Vest (2026 Award + Prior)' },
       { date: 'Sep 2027', shares: 131, unvestedShares: 553, note: 'Quarterly Vest (2026 Award + Prior)' },
@@ -1748,13 +1714,13 @@
     ];
 
     let careerState = {
-      selectedYear: 2026,
+      selectedYear: 2027,
       bridgeTarget: 'cash',
       includeRsu: false,
       baseSalary: 186773,
-      bonus: 17449,
-      cashReward: 0,
-      rsuVesting: 38418,
+      bonus: 18500,
+      cashReward: 21875,
+      rsuVesting: 45885,
       employerMatch: 6000,
       k401: 24500, // 2026 IRS Elective Limit
       healthPreTax: 1000,
@@ -1830,18 +1796,18 @@
 
       if (isLocked) {
         const maskIds = [
-          'cv-base-2026', 'cv-base-2027', 'cv-base-2028',
-          'cv-bonus-2026', 'cv-bonus-2027', 'cv-bonus-2028',
-          'cv-cashreward-2026', 'cv-cashreward-2027', 'cv-cashreward-2028',
-          'cv-rep-cash-2026', 'cv-rep-cash-2027', 'cv-rep-cash-2028',
-          'cv-true-cash-2026', 'cv-true-cash-2027', 'cv-true-cash-2028',
-          'cv-price-lbl-2026', 'cv-price-lbl-2027', 'cv-price-lbl-2028',
-          'cv-equity-2026', 'cv-equity-2027', 'cv-equity-2028',
+          'cv-base-2027', 'cv-base-2028',
+          'cv-bonus-2027', 'cv-bonus-2028',
+          'cv-cashreward-2027', 'cv-cashreward-2028',
+          'cv-rep-cash-2027', 'cv-rep-cash-2028',
+          'cv-true-cash-2027', 'cv-true-cash-2028',
+          'cv-price-lbl-2027', 'cv-price-lbl-2028',
+          'cv-equity-2027', 'cv-equity-2028',
           'cv-future-val-2027', 'cv-future-val-2028',
-          'cv-tot-equity-2026', 'cv-tot-equity-2027', 'cv-tot-equity-2028',
-          'cv-rep-comp-2026', 'cv-rep-comp-2027', 'cv-rep-comp-2028',
-          'cv-true-comp-2026', 'cv-true-comp-2027', 'cv-true-comp-2028',
-          'eq-val-2026', 'eq-val-2027', 'eq-val-2028', 'eq-val-2029'
+          'cv-tot-equity-2027', 'cv-tot-equity-2028',
+          'cv-rep-comp-2027', 'cv-rep-comp-2028',
+          'cv-true-comp-2027', 'cv-true-comp-2028',
+          'eq-val-2027', 'eq-val-2028', 'eq-val-2029', 'eq-val-total'
         ];
         maskIds.forEach(id => {
           const el = document.getElementById(id);
@@ -1853,47 +1819,39 @@
         return;
       }
 
-      // 1. Base Pay Calculation
-      const base2026 = 186773;
-      const base2027 = Math.round(base2026 * (1 + baseInc / 100));
+      // 1. Base Pay Calculation (2027 & 2028)
+      const base2027 = Math.round(186773 * (1 + baseInc / 100));
       const base2028 = Math.round(base2027 * (1 + baseInc / 100));
 
       // 2. AIP Bonus Calculation (10% Target with Indiv/Company modifiers)
-      const bonus2026 = 17449;
       const bonusFactor = (indivMod / 100) * (compPerf / 100);
       const bonus2027 = Math.round(18500 * bonusFactor * (1 + baseInc / 100));
       const bonus2028 = Math.round(18677 * bonusFactor * Math.pow(1 + baseInc / 100, 2));
 
-      // 3. Long Term Cash Award ("Cash Reward") from 2026 grant schedule
-      const cashReward2026 = 0;
+      // 3. Long Term Cash Award ("Cash Reward") from grant schedule
       const cashReward2027 = 21875;
       const cashReward2028 = 12500;
 
       // 4. Reported Cash vs True Total Cash
-      const repCash2026 = base2026 + bonus2026;
       const repCash2027 = base2027 + bonus2027;
       const repCash2028 = base2028 + bonus2028;
 
-      const trueCash2026 = repCash2026 + cashReward2026;
       const trueCash2027 = repCash2027 + cashReward2027;
       const trueCash2028 = repCash2028 + cashReward2028;
 
       // 5. Equity Vesting
-      const eq2026 = Math.round(674 * stockPrice);
       const eq2027 = Math.round(805 * stockPrice);
       const eq2028 = Math.round(349 * stockPrice);
       const eq2029 = Math.round(73 * stockPrice);
+      const eqTotal = Math.round(1227 * stockPrice);
 
-      const totEq2026 = eq2026;
       const totEq2027 = eq2027 + future2027;
       const totEq2028 = eq2028 + future2028;
 
       // 6. Total Compensation
-      const repComp2026 = repCash2026 + totEq2026;
       const repComp2027 = repCash2027 + totEq2027;
       const repComp2028 = repCash2028 + totEq2028;
 
-      const trueComp2026 = trueCash2026 + totEq2026;
       const trueComp2027 = trueCash2027 + totEq2027;
       const trueComp2028 = trueCash2028 + totEq2028;
 
@@ -1903,61 +1861,50 @@
         if (el) el.innerHTML = html;
       };
 
-      setHTML('cv-base-2026', '$' + base2026.toLocaleString());
       setHTML('cv-base-2027', '$' + base2027.toLocaleString());
       setHTML('cv-base-2028', '$' + base2028.toLocaleString());
 
-      setHTML('cv-bonus-2026', '$' + bonus2026.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">93.4% actual</div>');
       setHTML('cv-bonus-2027', '$' + bonus2027.toLocaleString());
       setHTML('cv-bonus-2028', '$' + bonus2028.toLocaleString());
 
-      setHTML('cv-cashreward-2026', '$0');
       setHTML('cv-cashreward-2027', '+$' + cashReward2027.toLocaleString());
       setHTML('cv-cashreward-2028', '+$' + cashReward2028.toLocaleString());
 
-      setHTML('cv-rep-cash-2026', '$' + repCash2026.toLocaleString());
       setHTML('cv-rep-cash-2027', '$' + repCash2027.toLocaleString());
       setHTML('cv-rep-cash-2028', '$' + repCash2028.toLocaleString());
 
-      setHTML('cv-true-cash-2026', '$' + trueCash2026.toLocaleString());
       setHTML('cv-true-cash-2027', '$' + trueCash2027.toLocaleString());
       setHTML('cv-true-cash-2028', '$' + trueCash2028.toLocaleString());
 
-      setHTML('cv-price-lbl-2026', `@ $${stockPrice.toFixed(2)}`);
       setHTML('cv-price-lbl-2027', `@ $${stockPrice.toFixed(2)}`);
       setHTML('cv-price-lbl-2028', `@ $${stockPrice.toFixed(2)}`);
 
-      setHTML('cv-equity-2026', '$' + eq2026.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">674 shares</div>');
       setHTML('cv-equity-2027', '$' + eq2027.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">805 shares</div>');
       setHTML('cv-equity-2028', '$' + eq2028.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">349 shares</div>');
 
       setHTML('cv-future-val-2027', '$' + Math.round(future2027).toLocaleString());
       setHTML('cv-future-val-2028', '$' + Math.round(future2028).toLocaleString());
 
-      setHTML('cv-tot-equity-2026', '$' + totEq2026.toLocaleString());
       setHTML('cv-tot-equity-2027', '$' + totEq2027.toLocaleString());
       setHTML('cv-tot-equity-2028', '$' + totEq2028.toLocaleString());
 
-      setHTML('cv-rep-comp-2026', '$' + repComp2026.toLocaleString());
       setHTML('cv-rep-comp-2027', '$' + repComp2027.toLocaleString());
       setHTML('cv-rep-comp-2028', '$' + repComp2028.toLocaleString());
 
-      setHTML('cv-true-comp-2026', '$' + trueComp2026.toLocaleString());
       setHTML('cv-true-comp-2027', '$' + trueComp2027.toLocaleString());
       setHTML('cv-true-comp-2028', '$' + trueComp2028.toLocaleString());
 
       // Update Section 3 Equity View
       const lblPrice = document.getElementById('lbl-eq-stock-price');
       if (lblPrice) lblPrice.textContent = `$${stockPrice.toFixed(2)}`;
-      setHTML('eq-val-2026', `$${eq2026.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
       setHTML('eq-val-2027', `$${eq2027.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
       setHTML('eq-val-2028', `$${eq2028.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
       setHTML('eq-val-2029', `$${eq2029.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
+      setHTML('eq-val-total', `$${eqTotal.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
 
       renderEquitySchedule(stockPrice, false);
 
       // Keep PAYPAL_YEAR_DATA updated dynamically with calculated base, bonus, and stock price
-      PAYPAL_YEAR_DATA[2026].rsuVesting = eq2026;
       PAYPAL_YEAR_DATA[2027].baseSalary = base2027;
       PAYPAL_YEAR_DATA[2027].bonus = bonus2027;
       PAYPAL_YEAR_DATA[2027].rsuVesting = eq2027;
@@ -2002,7 +1949,7 @@
     function setCareerYear(year) {
       if (!state.isUnlocked) return;
       careerState.selectedYear = year;
-      ['2026', '2027', '2028', 'custom'].forEach(y => {
+      ['2027', '2028', 'custom'].forEach(y => {
         const btn = document.getElementById('chip-year-' + y);
         if (btn) btn.classList.toggle('active', String(y) === String(year));
       });
@@ -2078,6 +2025,12 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           careerState = Object.assign(careerState, parsed);
+        }
+        if (careerState.selectedYear === 2026 || !careerState.selectedYear) {
+          careerState.selectedYear = 2027;
+          careerState.bonus = 18500;
+          careerState.cashReward = 21875;
+          careerState.rsuVesting = 45885;
         }
       } catch (e) {
         console.warn('Failed to load career settings:', e);
