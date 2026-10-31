@@ -763,29 +763,26 @@
 
           <!-- Career Sub-Navigation (Switch between compensation sections) -->
           <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
-            <button type="button" class="chip active" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">📋 Multi-Year Compensation</button>
+            <button type="button" class="chip active" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">💼 Total Compensation</button>
             <button type="button" class="chip" id="subtab-btn-combined" onclick="switchCareerSubTab('combined', this)">📈 RSUs & Awards Vesting Schedule</button>
             <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ Taxes & Freedom Bridge</button>
             <button type="button" class="chip" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 Show All Sections</button>
           </div>
 
-          <!-- SECTION 1: Total Compensation Calculator -->
+          <!-- SECTION 1: Total Compensation -->
           <div class="career-subview" id="career-view-multiyear" style="margin-bottom: 24px;">
             <div style="background: linear-gradient(135deg, rgba(0, 48, 135, 0.3), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(0, 112, 224, 0.5); border-radius: 12px; padding: 18px; margin-bottom: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <span style="font-size: 24px;">💼</span>
                   <div>
-                    <h3 style="font-size: 16px; font-weight: 800; color: #38bdf8; margin: 0;">Total Compensation Calculator</h3>
-                    <div style="font-size: 11px; color: #94a3b8;">Interactive total compensation model including the Long Term Cash Award</div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: #38bdf8; margin: 0;">Total Compensation</h3>
+                    <div style="font-size: 11px; color: #94a3b8;">Unified multi-year compensation projection: Base Pay, AIP Bonus, Cash & Stock Awards, and RSUs</div>
                   </div>
                 </div>
                 <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
                   ⚡ Includes Cash Reward
                 </span>
-              </div>
-              <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 6px; border: 1px solid #334155;">
-                ℹ️ <em>Compensation Notice:</em> The standard portal shows Base Pay + AIP Bonus under "Total Cash", but omits the <strong>Long Term Cash Award</strong>! Below, we show both the portal reported cash and your <strong>True Total Cash & Total Comp</strong>.
               </div>
             </div>
 
@@ -794,7 +791,7 @@
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                   <tr style="background: #1e293b;">
-                    <th style="padding: 12px; text-align: left; width: 28%;">Component / Calculator</th>
+                    <th style="padding: 12px; text-align: left; width: 28%;">Compensation Component</th>
                     <th style="padding: 12px; text-align: left; width: 24%;">Inputs & Modifiers</th>
                     <th style="padding: 12px; text-align: right; width: 16%; background: rgba(59, 130, 246, 0.15); border-left: 1px solid #334155; border-right: 1px solid #334155;">
                       Projected<br><strong style="font-size: 14px; color: #38bdf8;">2027</strong>
@@ -808,13 +805,6 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- Header: Total Cash Calculator -->
-                  <tr style="background: rgba(30, 41, 59, 0.8);">
-                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #fbbf24; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      💵 Total Cash Calculator
-                    </td>
-                  </tr>
-
                   <!-- Row: Base Pay -->
                   <tr>
                     <td style="padding: 10px 12px;"><strong>Base Pay</strong></td>
@@ -853,7 +843,7 @@
                   </tr>
 
                   <!-- Row: Active Long Term Cash Award ("Cash Reward") -->
-                  <tr style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3);">
+                  <tr style="background: rgba(245, 158, 11, 0.08); border-top: 1px solid rgba(245, 158, 11, 0.2); border-bottom: 1px solid rgba(245, 158, 11, 0.2);">
                     <td style="padding: 10px 12px;">
                       <div style="display: flex; align-items: center; gap: 6px;">
                         <strong style="color: #fbbf24;">Long Term Cash Award</strong>
@@ -883,42 +873,8 @@
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #34d399; border-left: 1px solid #334155;" id="cv-future-cash-2029">$---,---</td>
                   </tr>
 
-                  <!-- Row: Other Cash Compensation -->
-                  <tr>
-                    <td style="padding: 10px 12px; color: #94a3b8;">Other Cash Compensation</td>
-                    <td style="padding: 10px 12px; color: #64748b; font-size: 11px;">Standard compensation component</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;">$0</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;">$0</td>
-                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; border-left: 1px solid #334155;">$0</td>
-                  </tr>
-
-                  <!-- Row: Reported Cash (omitting cash award) -->
-                  <tr style="border-top: 1px solid #334155; color: #94a3b8;">
-                    <td colspan="2" style="padding: 8px 12px; font-size: 12px;">Total Cash (Reported in Portal)</td>
-                    <td style="padding: 8px 12px; text-align: right; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-cash-2027">$---,---</td>
-                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-cash-2028">$---,---</td>
-                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155;" id="cv-rep-cash-2029">$---,---</td>
-                  </tr>
-
-                  <!-- Row: True Total Cash -->
-                  <tr style="background: rgba(16, 185, 129, 0.15); border-top: 2px solid #10b981; border-bottom: 2px solid #334155;">
-                    <td colspan="2" style="padding: 12px; font-weight: 800; color: #34d399; font-size: 14px;">
-                      💵 True Total Cash (Base + AIP + All Cash Awards)
-                    </td>
-                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-true-cash-2027">$---,---</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399;" id="cv-true-cash-2028">$---,---</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399; border-left: 1px solid #334155;" id="cv-true-cash-2029">$---,---</td>
-                  </tr>
-
-                  <!-- Header: Total Equity Calculator -->
-                  <tr style="background: rgba(30, 41, 59, 0.8);">
-                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #38bdf8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      📈 Total Equity Calculator
-                    </td>
-                  </tr>
-
-                  <!-- Row: Stock Price (Only reference to PayPal) -->
-                  <tr>
+                  <!-- Row: PayPal (PYPL) Stock Price (Only reference to PayPal) -->
+                  <tr style="border-top: 1px solid #334155;">
                     <td style="padding: 10px 12px;">
                       <strong>PayPal (PYPL) Stock Price ($)</strong>
                       <div style="font-size: 10px; color: #34d399;" id="lbl-stock-fetch-status">● Live Price: $57.01</div>
@@ -978,26 +934,30 @@
                     <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155;" id="cv-future-val-2029">$---,---</td>
                   </tr>
 
+                  <!-- Row: Total Cash -->
+                  <tr style="background: rgba(16, 185, 129, 0.12); border-top: 1.5px solid #10b981;">
+                    <td colspan="2" style="padding: 11px 12px; font-weight: 800; color: #34d399; font-size: 13px;">
+                      💵 Total Cash (Base + Bonus + Cash Awards)
+                    </td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #34d399; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-true-cash-2027">$---,---</td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #34d399;" id="cv-true-cash-2028">$---,---</td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #34d399; border-left: 1px solid #334155;" id="cv-true-cash-2029">$---,---</td>
+                  </tr>
+
                   <!-- Row: Total Equity -->
-                  <tr style="background: rgba(56, 189, 248, 0.1); border-top: 1px solid #334155; border-bottom: 2px solid #334155;">
-                    <td colspan="2" style="padding: 10px 12px; font-weight: 700; color: #38bdf8;">Total Equity (USD)</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-tot-equity-2027">$---,---</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8;" id="cv-tot-equity-2028">$---,---</td>
-                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155;" id="cv-tot-equity-2029">$---,---</td>
+                  <tr style="background: rgba(56, 189, 248, 0.12); border-top: 1px solid #334155;">
+                    <td colspan="2" style="padding: 11px 12px; font-weight: 800; color: #38bdf8; font-size: 13px;">
+                      📈 Total Equity (RSUs + Stock Awards)
+                    </td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #38bdf8; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-tot-equity-2027">$---,---</td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #38bdf8;" id="cv-tot-equity-2028">$---,---</td>
+                    <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #38bdf8; border-left: 1px solid #334155;" id="cv-tot-equity-2029">$---,---</td>
                   </tr>
 
-                  <!-- Row: Reported Total Comp -->
-                  <tr style="color: #94a3b8; font-size: 12px;">
-                    <td colspan="2" style="padding: 8px 12px;">Total Comp (Reported in Portal)</td>
-                    <td style="padding: 8px 12px; text-align: right; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-comp-2027">$---,---</td>
-                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-comp-2028">$---,---</td>
-                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155;" id="cv-rep-comp-2029">$---,---</td>
-                  </tr>
-
-                  <!-- Row: True Total Compensation (Golden Highlight Row) -->
+                  <!-- Row: Total Compensation (Golden Highlight Row) -->
                   <tr style="background: #eab308; color: #0f172a; font-weight: 900; font-size: 15px; border-top: 2px solid #ca8a04;">
                     <td colspan="2" style="padding: 14px 12px;">
-                      🏆 True Total Compensation (Cash + RSUs + Cash Reward)
+                      🏆 Total Compensation (Cash + Equity)
                     </td>
                     <td style="padding: 14px 12px; text-align: right; font-weight: 900; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15);" id="cv-true-comp-2027">$---,---</td>
                     <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2028">$---,---</td>
@@ -1982,13 +1942,11 @@
           'cv-bonus-2027', 'cv-bonus-2028', 'cv-bonus-2029',
           'cv-cashreward-2027', 'cv-cashreward-2028', 'cv-cashreward-2029',
           'cv-future-cash-2027', 'cv-future-cash-2028', 'cv-future-cash-2029',
-          'cv-rep-cash-2027', 'cv-rep-cash-2028', 'cv-rep-cash-2029',
           'cv-true-cash-2027', 'cv-true-cash-2028', 'cv-true-cash-2029',
           'cv-price-lbl-2027', 'cv-price-lbl-2028', 'cv-price-lbl-2029',
           'cv-equity-2027', 'cv-equity-2028', 'cv-equity-2029',
           'cv-future-val-2027', 'cv-future-val-2028', 'cv-future-val-2029',
           'cv-tot-equity-2027', 'cv-tot-equity-2028', 'cv-tot-equity-2029',
-          'cv-rep-comp-2027', 'cv-rep-comp-2028', 'cv-rep-comp-2029',
           'cv-true-comp-2027', 'cv-true-comp-2028', 'cv-true-comp-2029'
         ];
         maskIds.forEach(id => {
@@ -2029,14 +1987,10 @@
       const futureCash2028 = Math.round((future2027 / 2) * (7 / 12));
       const futureCash2029 = Math.round((future2027 / 2) * (4 / 12) + (future2028 / 2) * (7 / 12));
 
-      // 5. Reported Cash vs True Total Cash
-      const repCash2027 = base2027 + bonus2027;
-      const repCash2028 = base2028 + bonus2028;
-      const repCash2029 = base2029 + bonus2029;
-
-      const trueCash2027 = repCash2027 + cashReward2027 + futureCash2027;
-      const trueCash2028 = repCash2028 + cashReward2028 + futureCash2028;
-      const trueCash2029 = repCash2029 + cashReward2029 + futureCash2029;
+      // 5. Total Cash: Base + AIP Bonus + All Cash Awards
+      const trueCash2027 = base2027 + bonus2027 + cashReward2027 + futureCash2027;
+      const trueCash2028 = base2028 + bonus2028 + cashReward2028 + futureCash2028;
+      const trueCash2029 = base2029 + bonus2029 + cashReward2029 + futureCash2029;
 
       // 6. Equity Vesting: Active RSUs + Future Stock Awards (50% Stock portion)
       const eq2027 = Math.round(805 * stockPrice);
@@ -2051,16 +2005,12 @@
       const totEq2028 = eq2028 + futureStock2028;
       const totEq2029 = eq2029 + futureStock2029;
 
-      // 7. Total Compensation: Reported vs True Total
-      const repComp2027 = repCash2027 + totEq2027;
-      const repComp2028 = repCash2028 + totEq2028;
-      const repComp2029 = repCash2029 + totEq2029;
-
+      // 7. Total Compensation: Total Cash + Total Equity
       const trueComp2027 = trueCash2027 + totEq2027;
       const trueComp2028 = trueCash2028 + totEq2028;
       const trueComp2029 = trueCash2029 + totEq2029;
 
-      // Update Multi-Year Compensation DOM elements
+      // Update Total Compensation DOM elements
       const setHTML = (id, html) => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = html;
@@ -2082,10 +2032,6 @@
       setHTML('cv-future-cash-2028', '+$' + futureCash2028.toLocaleString());
       setHTML('cv-future-cash-2029', '+$' + futureCash2029.toLocaleString());
 
-      setHTML('cv-rep-cash-2027', '$' + repCash2027.toLocaleString());
-      setHTML('cv-rep-cash-2028', '$' + repCash2028.toLocaleString());
-      setHTML('cv-rep-cash-2029', '$' + repCash2029.toLocaleString());
-
       setHTML('cv-true-cash-2027', '$' + trueCash2027.toLocaleString());
       setHTML('cv-true-cash-2028', '$' + trueCash2028.toLocaleString());
       setHTML('cv-true-cash-2029', '$' + trueCash2029.toLocaleString());
@@ -2105,10 +2051,6 @@
       setHTML('cv-tot-equity-2027', '$' + totEq2027.toLocaleString());
       setHTML('cv-tot-equity-2028', '$' + totEq2028.toLocaleString());
       setHTML('cv-tot-equity-2029', '$' + totEq2029.toLocaleString());
-
-      setHTML('cv-rep-comp-2027', '$' + repComp2027.toLocaleString());
-      setHTML('cv-rep-comp-2028', '$' + repComp2028.toLocaleString());
-      setHTML('cv-rep-comp-2029', '$' + repComp2029.toLocaleString());
 
       setHTML('cv-true-comp-2027', '$' + trueComp2027.toLocaleString());
       setHTML('cv-true-comp-2028', '$' + trueComp2028.toLocaleString());
