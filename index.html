@@ -117,6 +117,7 @@
     @media (min-width: 769px) {
       .tab-section { display: none; }
       .tab-section.active-tab { display: block !important; }
+      .mobile-only-tab { display: none !important; }
 
       /* In tab-forecast, show controls and chart side-by-side in main-grid */
       body.tab-forecast .main-grid {
@@ -145,19 +146,16 @@
         display: none !important;
       }
 
-      /* In career, tiers, strategy tabs: show full width right column, hide controls */
+      /* In career and strategy tabs: show full width right column, hide controls */
       body.tab-career .main-grid,
-      body.tab-tiers .main-grid,
       body.tab-strategy .main-grid {
         display: block !important;
       }
       body.tab-career #section-controls,
-      body.tab-tiers #section-controls,
       body.tab-strategy #section-controls {
         display: none !important;
       }
       body.tab-career .desktop-right-col,
-      body.tab-tiers .desktop-right-col,
       body.tab-strategy .desktop-right-col {
         display: block !important;
         width: 100% !important;
@@ -453,8 +451,9 @@
         <button class="btn btn-secondary" id="btn-key-action" onclick="handleKeyButton()">
           🔑 Enter Key
         </button>
-        <button class="btn btn-secondary desktop-only" onclick="watchLocalExcelFile()">
-          📁 Watch Local Excel (.xlsx)
+        <input type="file" id="fallback-excel-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleFallbackExcelSelect(event)">
+        <button class="btn btn-secondary" onclick="watchLocalExcelFile()">
+          📁 Load / Watch Excel (.xlsx)
         </button>
         <button class="btn" id="btn-sync" onclick="syncLiveFromGoogleSheet(true)">
           🔄 Force Refresh
@@ -525,10 +524,9 @@
 
     <!-- Universal Tab Navigation (Desktop & Mobile) -->
     <nav class="mobile-nav" id="mobile-nav">
-      <button class="mobile-tab-btn active" data-tab="section-chart" onclick="switchTab('section-chart', this)">📊 Forecast</button>
-      <button class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">💼 Career & Taxes</button>
-      <button class="mobile-tab-btn" data-tab="section-controls" onclick="switchTab('section-controls', this)">⚙️ Controls</button>
-      <button class="mobile-tab-btn" data-tab="section-tiers" onclick="switchTab('section-tiers', this)">🏆 Milestones</button>
+      <button class="mobile-tab-btn active" data-tab="section-chart" onclick="switchTab('section-chart', this)">📊 Forecast & Milestones</button>
+      <button class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">💼 Career & Compensation</button>
+      <button class="mobile-tab-btn mobile-only-tab" data-tab="section-controls" onclick="switchTab('section-controls', this)">⚙️ Controls</button>
       <button class="mobile-tab-btn" data-tab="section-strategy" onclick="switchTab('section-strategy', this)">🏛️ Strategy</button>
     </nav>
 
@@ -585,10 +583,11 @@
               <option value="0">GetCoveredNJ Bronze HDHP (100% Subsidized @ &le;200% FPL) — $0/mo ($0/yr, HSA Eligible)</option>
             </optgroup>
             
-            <optgroup label="💵 Deeply Subsidized ($600 – $2,160/yr)">
+            <optgroup label="💵 Deeply Subsidized ($600 – $2,580/yr)">
               <option value="600">GetCoveredNJ Silver w/ Deep Subsidies (CSR 87 @ 150%-200% FPL) — $50/mo ($600/yr)</option>
               <option value="1980">GetCoveredNJ Silver w/ Moderate Subsidies (CSR 73 @ 200%-250% FPL) — $165/mo ($1,980/yr)</option>
               <option value="2160">GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
+              <option value="2580">GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &le;250% FPL) — $215/mo ($2,580/yr)</option>
             </optgroup>
 
             <optgroup label="🥇 Mid-Tier & Subsidized Gold ($3,840 – $6,240/yr)">
@@ -696,14 +695,14 @@
             <span style="font-size: 13px; color: var(--text-muted);" id="crossover-label">🎯 Target Retirement: 2037 (Age 44)</span>
           </div>
 
-          <!-- Horizon Focus Selector (Skip 2026 vs Full Horizon) -->
+          <!-- Horizon Focus Selector (15-Year Horizon) -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
             <div class="chips-group" id="chart-horizon-chips" style="margin-top: 0;">
-              <button type="button" class="chip active" id="chip-horizon-2037" onclick="setChartHorizon('2037', this)">🎯 Focus on 2037 & Future</button>
-              <button type="button" class="chip" id="chip-horizon-all" onclick="setChartHorizon('all', this)">📈 Full Horizon (2027 – 2051)</button>
+              <button type="button" class="chip active" id="chip-horizon-2037" onclick="setChartHorizon('2037', this)">🎯 2037 Retirement & Beyond (2037 – 2041)</button>
+              <button type="button" class="chip" id="chip-horizon-all" onclick="setChartHorizon('all', this)">📈 15-Year Horizon (2027 – 2041)</button>
             </div>
             <div style="font-size: 11px; color: #38bdf8; font-weight: 600;" id="chart-horizon-desc">
-              Skipping early accumulation → Modeling 2037 (Age 44) through 2051+
+              15-Year Horizon: Modeling 2037 (Age 44) through 2041 retirement freedom
             </div>
           </div>
 
@@ -734,6 +733,36 @@
           <div class="chart-container">
             <canvas id="projectionChart"></canvas>
           </div>
+
+          <!-- Milestones & Income Tiers Table (Unified directly with Net Worth Chart) -->
+          <div style="margin-top: 24px; border-top: 1px solid #334155; padding-top: 18px;" id="embedded-tiers-container">
+            <div class="panel-title" style="border-bottom: none; margin-bottom: 10px; padding-bottom: 0;">
+              <span>🏆 Retirement Income Tiers & Milestones ($65k to $200k)</span>
+              <span style="font-size: 12px; color: var(--text-muted);" id="table-subtitle">🔒 Locked</span>
+            </div>
+            <div class="mobile-swipe-hint" style="display: none; font-size: 11px; color: #38bdf8; margin-bottom: 8px; text-align: center;">
+              👈 Swipe table horizontally to view full columns 👉
+            </div>
+            <div class="table-container" style="margin-top: 8px;">
+              <table id="tiers-table">
+                <thead>
+                  <tr>
+                    <th>Target Annual Spend</th>
+                    <th>Monthly Budget</th>
+                    <th>Portfolio Req. (4%)</th>
+                    <th>Portfolio Req. (3.5%)</th>
+                    <th>Status @ Current NW</th>
+                    <th>Gap / Surplus</th>
+                    <th>Est. Timeline</th>
+                  </tr>
+                </thead>
+                <tbody id="tiers-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="mobile-quick-jump" style="display: none; margin-top: 14px;">
             <button class="btn btn-secondary" style="width: 100%; justify-content: center; font-size: 13px; padding: 10px;" onclick="switchMobileTab('section-controls')">
               ⚙️ Tune Assumptions, Spending & Sliders →
@@ -761,12 +790,11 @@
             <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
           </div>
 
-          <!-- Career Sub-Navigation (Switch between compensation sections) -->
+          <!-- Career Sub-Navigation (Simplified Filter Pills — All Sections Shown by Default) -->
           <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
-            <button type="button" class="chip active" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">💼 Total Compensation</button>
-            <button type="button" class="chip" id="subtab-btn-combined" onclick="switchCareerSubTab('combined', this)">📈 RSUs & Awards Vesting Schedule</button>
-            <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ Taxes & Freedom Bridge</button>
-            <button type="button" class="chip" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 Show All Sections</button>
+            <button type="button" class="chip active" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 All Career Sections</button>
+            <button type="button" class="chip" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">💼 Total Comp & Vesting Schedule</button>
+            <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ W-2 Taxes & Safety Net</button>
           </div>
 
           <!-- SECTION 1: Total Compensation -->
@@ -968,29 +996,17 @@
             </div>
           </div>
 
-          <!-- SECTION 2: Unified Awards & Equity Vesting Schedule -->
-          <div class="career-subview" id="career-view-combined" style="margin-bottom: 24px; display: none;">
-            <!-- Locked Cover Banner (visible when locked) -->
-            <div id="combined-locked-banner" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #334155; border-radius: 12px; padding: 32px 20px; text-align: center; margin-bottom: 18px;">
-              <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
-              <h3 style="font-size: 17px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">Awards & Equity Vesting Schedule Locked</h3>
-              <p style="font-size: 13px; color: #94a3b8; max-width: 500px; margin: 0 auto 16px; line-height: 1.5;">
-                Active share countdowns, quarterly cash/stock payout dates, remaining grant values, and future award models are kept private until unlocked. Enter your secret access key above to view.
-              </p>
-              <button class="btn btn-secondary" style="font-size: 12px; padding: 7px 16px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
-            </div>
-
-            <!-- Unlocked Content (hidden until key is entered) -->
-            <div id="combined-unlocked-content" style="display: none;">
+          <!-- SECTION 2: Unified Awards & Equity Vesting Schedule (Populated Dynamically from 2027-2029 Data) -->
+          <div class="career-subview" id="career-view-combined" style="margin-bottom: 24px;">
             <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 12px; padding: 20px; margin-bottom: 18px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 24px;">🎁</span>
-                    <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0;">Unified Awards & Equity Vesting Schedule</h3>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0;">Unified Active & Future Vesting Schedule (2027 – 2029)</h3>
                   </div>
                   <p style="font-size: 13px; color: #94a3b8; margin: 6px 0 0; line-height: 1.5;">
-                    Annual awards are granted with a <strong>50% Long Term Cash Award</strong> and <strong>50% Equity (RSUs)</strong> split. Both cash and stock vest forward on the <strong>exact same quarterly dates</strong> through March 2029.
+                    Directly synced with your <strong>2027–2029 Total Compensation</strong> data above. Annual awards split <strong>50% Cash Award</strong> and <strong>50% Equity (RSUs)</strong>, vesting on the <strong>exact same quarterly dates</strong>.
                   </p>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; text-align: right;">
@@ -1000,21 +1016,21 @@
               </div>
 
               <!-- Top KPI Summary Cards (4 Cards) -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 18px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px;">
                 <div style="background: rgba(245, 158, 11, 0.1); border: 1.5px solid #fbbf24; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700; display: block; margin-bottom: 2px;">💵 Unvested Cash Award</span>
+                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700; display: block; margin-bottom: 2px;">💵 Total Unvested Cash Awards</span>
                   <div style="font-size: 24px; font-weight: 900; color: #fbbf24;" id="lbl-cash-comb-val">$---,---</div>
-                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;">9 payroll installments (2027–2029)</div>
+                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;" id="lbl-cash-comb-sub">2027–2029 scheduled payroll cash</div>
                 </div>
                 <div style="background: rgba(56, 189, 248, 0.1); border: 1.5px solid #38bdf8; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700; display: block; margin-bottom: 2px;">📈 Unvested Equity (RSUs)</span>
+                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700; display: block; margin-bottom: 2px;">📈 Total Unvested Equity (RSUs)</span>
                   <div style="font-size: 24px; font-weight: 900; color: #38bdf8;" id="lbl-eq-comb-shares">---- shares</div>
                   <div style="font-size: 10px; color: #34d399; margin-top: 4px;" id="lbl-eq-comb-val">$---,---</div>
                 </div>
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10b981; border-radius: 10px; padding: 14px;">
                   <span style="font-size: 11px; color: #34d399; font-weight: 700; display: block; margin-bottom: 2px;">🏆 Total Combined Unvested</span>
                   <div style="font-size: 24px; font-weight: 900; color: #34d399;" id="lbl-comb-total-val">$---,---</div>
-                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;">Cash ($37.5k) + RSUs ($69.9k)</div>
+                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;" id="lbl-comb-total-sub">Active + Future 2027–2029 Grants</div>
                 </div>
                 <div style="background: rgba(234, 179, 8, 0.1); border: 1.5px solid #eab308; border-radius: 10px; padding: 14px;">
                   <span style="font-size: 11px; color: #eab308; font-weight: 700; display: block; margin-bottom: 2px;">⚡ Upcoming Major Vest Day</span>
@@ -1023,11 +1039,36 @@
                 </div>
               </div>
 
+              <!-- 2027 / 2028 / 2029 Annual Vesting Totals (Synced with Total Comp Table) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 18px;">
+                <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #334155; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2027 Annual Vesting</span>
+                    <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2027-tot">$---,---</strong>
+                  </div>
+                  <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2027-sub">Cash: $---,--- | Stock: $---,---</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #334155; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2028 Annual Vesting</span>
+                    <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2028-tot">$---,---</strong>
+                  </div>
+                  <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2028-sub">Cash: $---,--- | Stock: $---,---</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #334155; border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2029 Annual Vesting</span>
+                    <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2029-tot">$---,---</strong>
+                  </div>
+                  <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2029-sub">Cash: $---,--- | Stock: $---,---</div>
+                </div>
+              </div>
+
               <!-- Interactive Future Award Calculator Simulator -->
               <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #334155; border-radius: 10px; padding: 16px; margin-bottom: 18px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
                   <div>
-                    <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0;">🔮 Interactive Future Award Calculator (50% Cash & 50% Stock)</h4>
+                    <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0;">🔮 Interactive Single-Grant Formula Breakdown (50% Cash & 50% Stock)</h4>
                     <div style="font-size: 11px; color: #94a3b8;">Formula: 1/3 cliff the year after, then 1/12 every 3 months for 8 quarters (100% total)</div>
                   </div>
                   <div style="display: flex; align-items: center; gap: 8px;">
@@ -1045,17 +1086,17 @@
                   <div style="background: rgba(30, 41, 59, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
                     <span style="color: #94a3b8; display: block; font-size: 10px;">Year N+1 (58.33% / 7 of 12):</span>
                     <strong style="color: #34d399;" id="sim-yr1-amt">$---,--- Total</strong>
-                    <div style="font-size: 10px; color: #94a3b8;">1/3 cliff ($16.7k) + 3 qtrs ($12.5k)</div>
+                    <div style="font-size: 10px; color: #94a3b8;">1/3 cliff + 3 quarterly vests</div>
                   </div>
                   <div style="background: rgba(30, 41, 59, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
                     <span style="color: #94a3b8; display: block; font-size: 10px;">Year N+2 (33.33% / 4 of 12):</span>
                     <strong style="color: #34d399;" id="sim-yr2-amt">$---,--- Total</strong>
-                    <div style="font-size: 10px; color: #94a3b8;">4 quarters × 1/12 ($4,167/qtr)</div>
+                    <div style="font-size: 10px; color: #94a3b8;">4 quarterly × 1/12 installments</div>
                   </div>
                   <div style="background: rgba(30, 41, 59, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
                     <span style="color: #94a3b8; display: block; font-size: 10px;">Year N+3 (8.33% / 1 of 12):</span>
                     <strong style="color: #34d399;" id="sim-yr3-amt">$---,--- Total</strong>
-                    <div style="font-size: 10px; color: #94a3b8;">Final installment (100% complete)</div>
+                    <div style="font-size: 10px; color: #94a3b8;">Final 1/12 installment (100% done)</div>
                   </div>
                 </div>
               </div>
@@ -1065,7 +1106,7 @@
                 📅 Unified Active Vesting Schedule (Cash & Stock Vesting on the Same Day)
               </h4>
               <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
-                Every calendar quarter delivers both your cash award installment (via payroll) and RSU share delivery simultaneously:
+                Populated directly from your 2027–2029 active and future grants. Every calendar quarter delivers both your cash award installment and RSU shares simultaneously:
               </p>
 
               <div class="table-container" style="border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
@@ -1085,22 +1126,21 @@
                   </tbody>
                   <tfoot>
                     <tr style="background: #1e293b; font-weight: 800; border-top: 2px solid #fbbf24;">
-                      <td style="padding: 12px;">Total Active Awards</td>
+                      <td style="padding: 12px;" id="tbl-total-label">Total 2027–2029 Vesting</td>
                       <td style="padding: 12px; text-align: right; color: #fbbf24; font-size: 14px;" id="tbl-total-cash-val">$---,---</td>
                       <td style="padding: 12px; text-align: right; color: #38bdf8; font-size: 14px;" id="tbl-total-shares-val">---- shares</td>
                       <td style="padding: 12px; text-align: right; color: #34d399; font-size: 15px; background: rgba(16, 185, 129, 0.15);" id="tbl-total-comb-val">$---,---</td>
-                      <td style="padding: 12px; text-align: right; color: #94a3b8; font-size: 13px;">$0.00</td>
+                      <td style="padding: 12px; text-align: right; color: #94a3b8; font-size: 13px;" id="tbl-total-rem-val">$0.00</td>
                       <td style="padding: 12px; color: #94a3b8; font-size: 12px;" id="tbl-total-notes">🔒 Locked</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             </div>
-            </div>
           </div>
 
-          <!-- SECTION 4: W-2 Taxes, Pre-Tax Deductions & Freedom Bridge -->
-          <div class="career-subview" id="career-view-taxes" style="margin-bottom: 24px; display: none;">
+          <!-- SECTION 3: W-2 Taxes, Pre-Tax Deductions & Freedom Bridge -->
+          <div class="career-subview" id="career-view-taxes" style="margin-bottom: 24px;">
             <!-- Plan Year Selector Pills -->
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -1399,35 +1439,6 @@
           </div>
         </div>
 
-        <!-- Milestones & Income Tiers Table -->
-        <div class="panel tab-section" id="section-tiers" style="margin-bottom: 24px;">
-          <div class="panel-title">
-            <span>Retirement Income Tiers ($65k to $200k)</span>
-            <span style="font-size: 12px; color: var(--text-muted);" id="table-subtitle">🔒 Locked</span>
-          </div>
-          <div class="mobile-swipe-hint" style="display: none; font-size: 11px; color: #38bdf8; margin-bottom: 8px; text-align: center;">
-            👈 Swipe table horizontally to view full columns 👉
-          </div>
-          <div class="table-container">
-            <table id="tiers-table">
-              <thead>
-                <tr>
-                  <th>Target Annual Spend</th>
-                  <th>Monthly Budget</th>
-                  <th>Portfolio Req. (4%)</th>
-                  <th>Portfolio Req. (3.5%)</th>
-                  <th>Status @ Current NW</th>
-                  <th>Gap / Surplus</th>
-                  <th>Est. Timeline</th>
-                </tr>
-              </thead>
-              <tbody id="tiers-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         <!-- Federal & New Jersey FIRE, Healthcare & Tax Intelligence Section -->
         <div class="panel tab-section" id="section-strategy">
           <div class="panel-title">
@@ -1551,6 +1562,15 @@
       return age;
     }
 
+    function safeNum(val, fallback = 0) {
+      if (typeof val === 'number') return isNaN(val) ? fallback : val;
+      if (val === null || val === undefined || val === '') return fallback;
+      const cleaned = String(val).replace(/[^0-9.-]/g, '');
+      if (cleaned === '' || cleaned === '-' || cleaned === '.') return fallback;
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? fallback : parsed;
+    }
+
     // Session Key: Kept strictly in active memory; WIPED on page refresh for zero-knowledge privacy
     let sessionKey = null;
 
@@ -1578,18 +1598,18 @@
 
     function savePersistedSettings() {
       try {
-        const isCurrent = document.getElementById('chip-current').classList.contains('active');
+        const isCurrent = document.getElementById('chip-current')?.classList.contains('active');
         const settings = {
           spendType: isCurrent ? 'current' : 'custom',
-          spendAmount: state.baseSpend,
-          healthCost: document.getElementById('select-health').value,
-          swr: document.getElementById('input-swr').value,
-          nominalReturn: document.getElementById('input-nominal-return').value,
-          inflationRate: document.getElementById('input-inflation').value,
-          annualSavings: document.getElementById('input-savings').value,
-          retireAge: document.getElementById('input-retire-age').value,
+          spendAmount: safeNum(state.baseSpend, 95000),
+          healthCost: safeNum(document.getElementById('select-health')?.value, 3840),
+          swr: safeNum(document.getElementById('input-swr')?.value, 3.5),
+          nominalReturn: safeNum(document.getElementById('input-nominal-return')?.value, 8.5),
+          inflationRate: safeNum(document.getElementById('input-inflation')?.value, 2.5),
+          annualSavings: safeNum(document.getElementById('input-savings')?.value, 100000),
+          retireAge: parseInt(document.getElementById('input-retire-age')?.value) || 44,
           chartHorizon: state.chartHorizon || '2037',
-          houseOutlay: document.getElementById('input-house').value
+          houseOutlay: safeNum(document.getElementById('input-house')?.value, 0)
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 
@@ -1617,8 +1637,8 @@
       const desc = document.getElementById('chart-horizon-desc');
       if (desc) {
         desc.textContent = horizon === '2037' 
-          ? 'Skipping early accumulation → Modeling 2037 (Age 44) through 2051+'
-          : 'Full 25-Year trajectory (2026 accumulation through 2051+ retirement)';
+          ? '15-Year Horizon: Modeling 2037 (Age 44) through 2041 retirement freedom'
+          : '15-Year Horizon: Full trajectory (2027 accumulation through 2041 retirement)';
       }
 
       savePersistedSettings();
@@ -1631,24 +1651,38 @@
         if (!raw) return false;
         const s = JSON.parse(raw);
 
-        if (s.healthCost !== undefined && document.getElementById('select-health')) {
-          document.getElementById('select-health').value = s.healthCost;
+        if (document.getElementById('select-health')) {
+          const select = document.getElementById('select-health');
+          if (s.healthCost !== undefined && s.healthCost !== null) {
+            const valStr = String(s.healthCost);
+            const hasOption = Array.from(select.options).some(o => o.value === valStr);
+            if (hasOption) {
+              select.value = valStr;
+              state.healthCost = safeNum(valStr, 3840);
+            } else {
+              select.value = '3840';
+              state.healthCost = 3840;
+            }
+          } else {
+            select.value = '3840';
+            state.healthCost = 3840;
+          }
         }
         if (s.swr !== undefined && document.getElementById('input-swr')) {
-          document.getElementById('input-swr').value = s.swr;
+          document.getElementById('input-swr').value = safeNum(s.swr, 3.5);
         }
         if (s.nominalReturn !== undefined && document.getElementById('input-nominal-return')) {
-          document.getElementById('input-nominal-return').value = s.nominalReturn;
+          document.getElementById('input-nominal-return').value = safeNum(s.nominalReturn, 8.5);
         }
         if (s.inflationRate !== undefined && document.getElementById('input-inflation')) {
-          document.getElementById('input-inflation').value = s.inflationRate;
+          document.getElementById('input-inflation').value = safeNum(s.inflationRate, 2.5);
         }
         if (s.annualSavings !== undefined && document.getElementById('input-savings')) {
-          document.getElementById('input-savings').value = s.annualSavings;
+          document.getElementById('input-savings').value = safeNum(s.annualSavings, 100000);
         }
         if (s.retireAge !== undefined && document.getElementById('input-retire-age')) {
           const loadedAge = parseInt(s.retireAge);
-          const activeAge = (loadedAge === 36) ? 44 : loadedAge;
+          const activeAge = (loadedAge === 36 || isNaN(loadedAge)) ? 44 : loadedAge;
           document.getElementById('input-retire-age').value = activeAge;
           state.retireAge = activeAge;
         }
@@ -1659,7 +1693,7 @@
           if (hChip) hChip.classList.add('active');
         }
         if (s.houseOutlay !== undefined && document.getElementById('input-house')) {
-          document.getElementById('input-house').value = s.houseOutlay;
+          document.getElementById('input-house').value = safeNum(s.houseOutlay, 0);
         }
 
         if (s.spendType === 'current') {
@@ -1768,24 +1802,30 @@
         btn.classList.add('active');
       } else {
         let targetBtnId = 'subtab-btn-' + subTabId;
-        if (subTabId === 'cashgrant' || subTabId === 'equity') targetBtnId = 'subtab-btn-combined';
-        const b = document.getElementById(targetBtnId);
+        if (subTabId === 'cashgrant' || subTabId === 'equity' || subTabId === 'combined') targetBtnId = 'subtab-btn-multiyear';
+        const b = document.getElementById(targetBtnId) || document.getElementById('subtab-btn-all');
         if (b) b.classList.add('active');
       }
 
       const views = ['multiyear', 'combined', 'taxes'];
-      let activeView = subTabId;
-      if (subTabId === 'cashgrant' || subTabId === 'equity') activeView = 'combined';
-
       views.forEach(v => {
         const el = document.getElementById('career-view-' + v);
         if (!el) return;
-        if (subTabId === 'all' || activeView === v) {
+        if (subTabId === 'all') {
           el.style.display = 'block';
+        } else if (subTabId === 'multiyear' || subTabId === 'combined' || subTabId === 'cashgrant' || subTabId === 'equity') {
+          el.style.display = (v === 'multiyear' || v === 'combined') ? 'block' : 'none';
+        } else if (subTabId === 'taxes') {
+          el.style.display = (v === 'taxes') ? 'block' : 'none';
         } else {
-          el.style.display = 'none';
+          el.style.display = 'block';
         }
       });
+
+      if (subTabId === 'combined') {
+        const combEl = document.getElementById('career-view-combined');
+        if (combEl) combEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function onSimAwardInput() {
@@ -1828,7 +1868,94 @@
       recalculateCareer();
     }
 
-    function renderUnifiedSchedule(stockPrice, isLocked) {
+    function getDynamicVestingSchedule(stockPrice, future2027 = 0, future2028 = 0) {
+      const safePrice = stockPrice > 0 ? stockPrice : 57.01;
+      const f27 = Math.max(0, safeNum(future2027, 0));
+      const f28 = Math.max(0, safeNum(future2028, 0));
+
+      // Base quarters from 2027 through 2029
+      const baseQuarters = [
+        { date: 'March 1, 2027', year: 2027, q: 1, activeCash: 12500, activeShares: 412, baseNote: 'Major 1/3 Cliff + AIP Performance Shares' },
+        { date: 'June 1, 2027', year: 2027, q: 2, activeCash: 3125, activeShares: 131, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'September 1, 2027', year: 2027, q: 3, activeCash: 3125, activeShares: 131, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'December 1, 2027', year: 2027, q: 4, activeCash: 3125, activeShares: 131, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'March 1, 2028', year: 2028, q: 1, activeCash: 3125, activeShares: 130, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'June 1, 2028', year: 2028, q: 2, activeCash: 3125, activeShares: 73, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'September 1, 2028', year: 2028, q: 3, activeCash: 3125, activeShares: 73, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'December 1, 2028', year: 2028, q: 4, activeCash: 3125, activeShares: 73, baseNote: 'Quarterly Installment (1/12)' },
+        { date: 'March 1, 2029', year: 2029, q: 1, activeCash: 3125, activeShares: 73, baseNote: 'Final Active Grant Vest (100% Completed)' },
+        { date: 'June 1, 2029', year: 2029, q: 2, activeCash: 0, activeShares: 0, baseNote: 'Future Award Quarterly Vest' },
+        { date: 'September 1, 2029', year: 2029, q: 3, activeCash: 0, activeShares: 0, baseNote: 'Future Award Quarterly Vest' },
+        { date: 'December 1, 2029', year: 2029, q: 4, activeCash: 0, activeShares: 0, baseNote: 'Future Award Quarterly Vest' }
+      ];
+
+      const rows = [];
+      baseQuarters.forEach(qItem => {
+        let fut27Cash = 0;
+        let fut27StockVal = 0;
+        let fut28Cash = 0;
+        let fut28StockVal = 0;
+        const notes = [];
+        if (qItem.activeCash > 0 || qItem.activeShares > 0) {
+          notes.push(qItem.baseNote);
+        }
+
+        // 2027 Future Grant (50% Cash, 50% Stock): 1/3 cliff on Mar 1, 2028; 1/12 quarterly Jun 2028 - Dec 2029
+        if (f27 > 0) {
+          if (qItem.year === 2028 && qItem.q === 1) {
+            fut27Cash = (f27 / 2) * (4 / 12);
+            fut27StockVal = (f27 / 2) * (4 / 12);
+            notes.push('+2027 Grant 1/3 Cliff');
+          } else if ((qItem.year === 2028 && qItem.q >= 2) || qItem.year === 2029) {
+            fut27Cash = (f27 / 2) * (1 / 12);
+            fut27StockVal = (f27 / 2) * (1 / 12);
+            notes.push('+2027 Grant (1/12)');
+          }
+        }
+
+        // 2028 Future Grant (50% Cash, 50% Stock): 1/3 cliff on Mar 1, 2029; 1/12 quarterly Jun 2029 - Dec 2029
+        if (f28 > 0) {
+          if (qItem.year === 2029 && qItem.q === 1) {
+            fut28Cash = (f28 / 2) * (4 / 12);
+            fut28StockVal = (f28 / 2) * (4 / 12);
+            notes.push('+2028 Grant 1/3 Cliff');
+          } else if (qItem.year === 2029 && qItem.q >= 2) {
+            fut28Cash = (f28 / 2) * (1 / 12);
+            fut28StockVal = (f28 / 2) * (1 / 12);
+            notes.push('+2028 Grant (1/12)');
+          }
+        }
+
+        const totalCash = Math.round(qItem.activeCash + fut27Cash + fut28Cash);
+        const futShares = Math.round((fut27StockVal + fut28StockVal) / safePrice);
+        const totalShares = qItem.activeShares + futShares;
+        const totalStockVal = Math.round(qItem.activeShares * safePrice + fut27StockVal + fut28StockVal);
+
+        if (totalCash > 0 || totalShares > 0) {
+          rows.push({
+            date: qItem.date,
+            year: qItem.year,
+            cash: totalCash,
+            shares: totalShares,
+            stockVal: totalStockVal,
+            dayTotal: totalCash + totalStockVal,
+            note: notes.join(' • ')
+          });
+        }
+      });
+
+      // Compute running remaining unvested balance across the 2027-2029 schedule
+      const totalScheduleVal = rows.reduce((sum, r) => sum + r.dayTotal, 0);
+      let cumulativeVested = 0;
+      rows.forEach(r => {
+        cumulativeVested += r.dayTotal;
+        r.remainingVal = Math.max(0, totalScheduleVal - cumulativeVested);
+      });
+
+      return rows;
+    }
+
+    function renderUnifiedSchedule(stockPrice, isLocked, future2027 = 0, future2028 = 0) {
       const tbody = document.getElementById('unified-vesting-tbody');
       const setHTML = (id, html) => {
         const el = document.getElementById(id);
@@ -1844,6 +1971,12 @@
         setHTML('lbl-eq-comb-val', '$---,---');
         setHTML('lbl-comb-total-val', '$---,---');
         setHTML('lbl-next-day-val', '$---,---');
+        setHTML('vest-yr-2027-tot', '$---,---');
+        setHTML('vest-yr-2027-sub', 'Cash: $---,--- | Stock: $---,---');
+        setHTML('vest-yr-2028-tot', '$---,---');
+        setHTML('vest-yr-2028-sub', 'Cash: $---,--- | Stock: $---,---');
+        setHTML('vest-yr-2029-tot', '$---,---');
+        setHTML('vest-yr-2029-sub', 'Cash: $---,--- | Stock: $---,---');
         setHTML('tbl-total-cash-val', '$---,---');
         setHTML('tbl-total-shares-val', '---- shares');
         setHTML('tbl-total-comb-val', '$---,---');
@@ -1851,26 +1984,41 @@
         return;
       }
 
-      const totalShares = 1227;
-      const totalStockVal = Math.round(totalShares * stockPrice);
-      const totalCashVal = 37500;
+      const scheduleRows = getDynamicVestingSchedule(stockPrice, future2027, future2028);
+      const totalCashVal = scheduleRows.reduce((s, r) => s + r.cash, 0);
+      const totalShares = scheduleRows.reduce((s, r) => s + r.shares, 0);
+      const totalStockVal = scheduleRows.reduce((s, r) => s + r.stockVal, 0);
       const totalCombined = totalCashVal + totalStockVal;
-      const nextDayVal = Math.round(12500 + 412 * stockPrice);
+      const nextDayVal = scheduleRows.length > 0 ? scheduleRows[0].dayTotal : Math.round(12500 + 412 * stockPrice);
 
-      setHTML('lbl-cash-comb-val', '$' + totalCashVal.toLocaleString() + '.00');
+      // Compute 2027, 2028, 2029 annual breakdowns from scheduleRows
+      [2027, 2028, 2029].forEach(yr => {
+        const yrRows = scheduleRows.filter(r => r.year === yr);
+        const yrCash = yrRows.reduce((s, r) => s + r.cash, 0);
+        const yrStock = yrRows.reduce((s, r) => s + r.stockVal, 0);
+        const yrShares = yrRows.reduce((s, r) => s + r.shares, 0);
+        const yrTot = yrCash + yrStock;
+        setHTML(`vest-yr-${yr}-tot`, '$' + yrTot.toLocaleString());
+        setHTML(`vest-yr-${yr}-sub`, `Cash: $${yrCash.toLocaleString()} | Stock: $${yrStock.toLocaleString()} (${yrShares.toLocaleString()} sh)`);
+      });
+
+      const hasFuture = (safeNum(future2027, 0) > 0 || safeNum(future2028, 0) > 0);
+      setHTML('lbl-cash-comb-val', '$' + totalCashVal.toLocaleString());
+      setHTML('lbl-cash-comb-sub', `${scheduleRows.length} payroll installments (2027–2029)`);
       setHTML('lbl-eq-comb-shares', totalShares.toLocaleString() + ' shares');
       setHTML('lbl-eq-comb-val', '$' + totalStockVal.toLocaleString() + ' @ $' + stockPrice.toFixed(2));
       setHTML('lbl-comb-total-val', '$' + totalCombined.toLocaleString());
+      setHTML('lbl-comb-total-sub', `Cash ($${(totalCashVal / 1000).toFixed(1)}k) + Stock ($${(totalStockVal / 1000).toFixed(1)}k)`);
       setHTML('lbl-next-day-val', '$' + nextDayVal.toLocaleString());
+      setHTML('tbl-total-label', hasFuture ? 'Total 2027–2029 (Active + Future)' : 'Total 2027–2029 Active Awards');
+      setHTML('tbl-total-cash-val', '$' + totalCashVal.toLocaleString());
       setHTML('tbl-total-shares-val', totalShares.toLocaleString() + ' shares ($' + totalStockVal.toLocaleString() + ')');
       setHTML('tbl-total-comb-val', '$' + totalCombined.toLocaleString());
+      setHTML('tbl-total-notes', `${scheduleRows.length} Scheduled Quarterly Vests (2027–2029)`);
 
       if (tbody) {
-        tbody.innerHTML = UNIFIED_VESTING_DATA.map(item => {
-          const stockVal = Math.round(item.shares * stockPrice);
-          const dayTotal = Math.round(item.cash + stockVal);
-          const remainingVal = Math.round(item.unvestedCashRemaining + item.unvestedSharesRemaining * stockPrice);
-          const isMajor = item.shares >= 400;
+        tbody.innerHTML = scheduleRows.map(item => {
+          const isMajor = item.shares >= 400 || item.dayTotal >= 25000;
 
           return `
             <tr style="${isMajor ? 'background:rgba(56, 189, 248, 0.12); font-weight:700;' : ''}">
@@ -1878,16 +2026,16 @@
                 ${item.date}
               </td>
               <td style="padding: 9px 12px; text-align:right; font-weight:700; color:#fbbf24;">
-                $${item.cash.toLocaleString()}.00
+                $${item.cash.toLocaleString()}
               </td>
               <td style="padding: 9px 12px; text-align:right; font-weight:700; color:#38bdf8;">
-                ${item.shares.toLocaleString()} <span style="font-size:11px; color:#94a3b8; font-weight:normal;">($${stockVal.toLocaleString()})</span>
+                ${item.shares.toLocaleString()} <span style="font-size:11px; color:#94a3b8; font-weight:normal;">($${item.stockVal.toLocaleString()})</span>
               </td>
               <td style="padding: 9px 12px; text-align:right; font-weight:800; color:#34d399; background:rgba(16, 185, 129, 0.08);">
-                $${dayTotal.toLocaleString()}
+                $${item.dayTotal.toLocaleString()}
               </td>
               <td style="padding: 9px 12px; text-align:right; color:#cbd5e1;">
-                $${remainingVal.toLocaleString()}
+                $${item.remainingVal.toLocaleString()}
               </td>
               <td style="padding: 9px 12px; color:#94a3b8; font-size:11px;">
                 <span class="badge" style="background:#334155; margin-right:4px;">${item.year}</span>
@@ -1899,7 +2047,7 @@
       }
     }
 
-    function onMultiYearInput() {
+    function onMultiYearInput(fromCareerRecalc = false) {
       const isLocked = !state.isUnlocked;
 
       ['cv-base-inc', 'cv-indiv-mod', 'cv-comp-perf', 'cv-stock-price', 'cv-future-2027', 'cv-future-2028', 'sim-award-amount', 'safety-severance-weeks', 'safety-vesting-buffer', 'safety-nj-ui-weekly', 'safety-nj-ui-weeks'].forEach(id => {
@@ -1919,12 +2067,12 @@
         }
       });
 
-      const baseInc = parseFloat(document.getElementById('cv-base-inc')?.value) ?? careerState.baseInc ?? 3;
-      const indivMod = parseFloat(document.getElementById('cv-indiv-mod')?.value) ?? careerState.indivMod ?? 100;
-      const compPerf = parseFloat(document.getElementById('cv-comp-perf')?.value) ?? careerState.compPerf ?? 100;
-      const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) ?? careerState.stockPrice ?? 57.01;
-      const future2027 = parseFloat(document.getElementById('cv-future-2027')?.value) ?? careerState.future2027 ?? 0;
-      const future2028 = parseFloat(document.getElementById('cv-future-2028')?.value) ?? careerState.future2028 ?? 0;
+      const baseInc = safeNum(document.getElementById('cv-base-inc')?.value, careerState.baseInc ?? 3);
+      const indivMod = safeNum(document.getElementById('cv-indiv-mod')?.value, careerState.indivMod ?? 100);
+      const compPerf = safeNum(document.getElementById('cv-comp-perf')?.value, careerState.compPerf ?? 100);
+      const stockPrice = safeNum(document.getElementById('cv-stock-price')?.value, careerState.stockPrice ?? 57.01);
+      const future2027 = safeNum(document.getElementById('cv-future-2027')?.value, careerState.future2027 ?? 0);
+      const future2028 = safeNum(document.getElementById('cv-future-2028')?.value, careerState.future2028 ?? 0);
 
       if (!isLocked) {
         careerState.baseInc = baseInc;
@@ -1960,7 +2108,7 @@
         const lblPrice = document.getElementById('lbl-eq-stock-price');
         if (lblPrice) lblPrice.textContent = '$--.--';
         onSimAwardInput();
-        renderUnifiedSchedule(stockPrice, true);
+        renderUnifiedSchedule(stockPrice, true, future2027, future2028);
         return;
       }
 
@@ -1981,8 +2129,6 @@
       const cashReward2029 = 3125;
 
       // 4. Future Cash Award Vesting (50% Cash portion: 1/3 cliff Year N+1, then 1/12 quarterly)
-      // For award granted in 2027: Year after (2028) vests 7/12 (58.33%). 2029 vests 4/12 (33.33%).
-      // For award granted in 2028: Year after (2029) vests 7/12 (58.33%).
       const futureCash2027 = 0;
       const futureCash2028 = Math.round((future2027 / 2) * (7 / 12));
       const futureCash2029 = Math.round((future2027 / 2) * (4 / 12) + (future2028 / 2) * (7 / 12));
@@ -2060,21 +2206,52 @@
       const lblPrice = document.getElementById('lbl-eq-stock-price');
       if (lblPrice) lblPrice.textContent = `$${stockPrice.toFixed(2)}`;
 
-      renderUnifiedSchedule(stockPrice, false);
+      renderUnifiedSchedule(stockPrice, false, future2027, future2028);
       onSimAwardInput();
 
-      // Keep CAREER_YEAR_DATA updated dynamically with calculated base, bonus, and stock price
+      // Keep CAREER_YEAR_DATA updated dynamically with calculated base, bonus, cash awards, and equity
       CAREER_YEAR_DATA[2027].baseSalary = base2027;
       CAREER_YEAR_DATA[2027].bonus = bonus2027;
-      CAREER_YEAR_DATA[2027].rsuVesting = eq2027;
+      CAREER_YEAR_DATA[2027].cashReward = cashReward2027 + futureCash2027;
+      CAREER_YEAR_DATA[2027].rsuVesting = totEq2027;
+      CAREER_YEAR_DATA[2027].rsuShares = 805;
 
       CAREER_YEAR_DATA[2028].baseSalary = base2028;
       CAREER_YEAR_DATA[2028].bonus = bonus2028;
-      CAREER_YEAR_DATA[2028].rsuVesting = eq2028;
+      CAREER_YEAR_DATA[2028].cashReward = cashReward2028 + futureCash2028;
+      CAREER_YEAR_DATA[2028].rsuVesting = totEq2028;
+      CAREER_YEAR_DATA[2028].rsuShares = 349 + Math.round(futureStock2028 / (stockPrice > 0 ? stockPrice : 57.01));
 
       CAREER_YEAR_DATA[2029].baseSalary = base2029;
       CAREER_YEAR_DATA[2029].bonus = bonus2029;
-      CAREER_YEAR_DATA[2029].rsuVesting = eq2029;
+      CAREER_YEAR_DATA[2029].cashReward = cashReward2029 + futureCash2029;
+      CAREER_YEAR_DATA[2029].rsuVesting = totEq2029;
+      CAREER_YEAR_DATA[2029].rsuShares = 73 + Math.round(futureStock2029 / (stockPrice > 0 ? stockPrice : 57.01));
+
+      // Update Plan Year chip labels so they reflect any future cash awards
+      const c27 = document.getElementById('chip-year-2027');
+      if (c27) c27.textContent = `2027 (+Cash Award: $${(CAREER_YEAR_DATA[2027].cashReward / 1000).toFixed(1)}k)`;
+      const c28 = document.getElementById('chip-year-2028');
+      if (c28) c28.textContent = `2028 (+Cash Award: $${(CAREER_YEAR_DATA[2028].cashReward / 1000).toFixed(1)}k)`;
+      const c29 = document.getElementById('chip-year-2029');
+      if (c29) c29.textContent = `2029 (+Cash Award: $${(CAREER_YEAR_DATA[2029].cashReward / 1000).toFixed(1)}k)`;
+
+      if (!fromCareerRecalc && CAREER_YEAR_DATA[careerState.selectedYear]) {
+        const yd = CAREER_YEAR_DATA[careerState.selectedYear];
+        careerState.baseSalary = yd.baseSalary;
+        careerState.bonus = yd.bonus;
+        careerState.cashReward = yd.cashReward;
+        careerState.rsuVesting = yd.rsuVesting;
+        const elBase = document.getElementById('career-base-salary');
+        const elBonus = document.getElementById('career-bonus');
+        const elCash = document.getElementById('career-cash-reward');
+        const elRsu = document.getElementById('career-rsu');
+        if (elBase) elBase.value = yd.baseSalary;
+        if (elBonus) elBonus.value = yd.bonus;
+        if (elCash) elCash.value = yd.cashReward;
+        if (elRsu) elRsu.value = yd.rsuVesting;
+        recalculateCareer(true);
+      }
     }
 
     async function loadCurrentPayPalPrice() {
@@ -2325,18 +2502,15 @@
       recalculateCareer();
     }
 
-    function recalculateCareer() {
+    function recalculateCareer(skipMultiYear = false) {
       const isLocked = !state.isUnlocked;
       const lockedBanner = document.getElementById('career-locked-banner');
       if (lockedBanner) lockedBanner.style.display = isLocked ? 'block' : 'none';
 
-      const combLockedBanner = document.getElementById('combined-locked-banner');
-      const combContent = document.getElementById('combined-unlocked-content');
-      if (combLockedBanner) combLockedBanner.style.display = isLocked ? 'block' : 'none';
-      if (combContent) combContent.style.display = isLocked ? 'none' : 'block';
-
       // Always update Multi-Year Compensation and Unified schedules
-      onMultiYearInput();
+      if (!skipMultiYear) {
+        onMultiYearInput(true);
+      }
 
       // Toggle inputs enabled/disabled
       const inputIds = [
@@ -2634,6 +2808,7 @@
     }
 
     function switchTab(tabId, btn) {
+      if (tabId === 'section-tiers') tabId = 'section-chart';
       dismissChartTooltip();
       currentTab = tabId;
 
@@ -2641,11 +2816,10 @@
         b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
       });
 
-      document.body.classList.remove('tab-forecast', 'tab-career', 'tab-controls', 'tab-tiers', 'tab-strategy');
+      document.body.classList.remove('tab-forecast', 'tab-career', 'tab-controls', 'tab-strategy');
       if (tabId === 'section-chart') document.body.classList.add('tab-forecast');
       else if (tabId === 'section-career') document.body.classList.add('tab-career');
       else if (tabId === 'section-controls') document.body.classList.add('tab-controls');
-      else if (tabId === 'section-tiers') document.body.classList.add('tab-tiers');
       else if (tabId === 'section-strategy') document.body.classList.add('tab-strategy');
 
       document.querySelectorAll('.tab-section').forEach(sec => {
@@ -2856,27 +3030,34 @@
     }
 
     function recalculate(shouldPersist = true) {
-      state.healthCost = parseFloat(document.getElementById('select-health').value);
-      state.swr = parseFloat(document.getElementById('input-swr').value) / 100;
-      state.nominalReturn = parseFloat(document.getElementById('input-nominal-return').value) / 100;
-      state.inflationRate = parseFloat(document.getElementById('input-inflation').value) / 100;
-      state.annualSavings = parseFloat(document.getElementById('input-savings').value);
-      state.retireAge = parseInt(document.getElementById('input-retire-age').value);
-      state.houseOutlay = parseFloat(document.getElementById('input-house').value);
+      state.healthCost = safeNum(document.getElementById('select-health')?.value, 3840);
+      state.swr = safeNum(document.getElementById('input-swr')?.value, 3.5) / 100;
+      if (state.swr <= 0) state.swr = 0.035;
+      state.nominalReturn = safeNum(document.getElementById('input-nominal-return')?.value, 8.5) / 100;
+      state.inflationRate = safeNum(document.getElementById('input-inflation')?.value, 2.5) / 100;
+      state.annualSavings = safeNum(document.getElementById('input-savings')?.value, 100000);
+      state.retireAge = parseInt(document.getElementById('input-retire-age')?.value) || 44;
+      state.houseOutlay = safeNum(document.getElementById('input-house')?.value, 0);
+      if (isNaN(state.baseSpend) || state.baseSpend <= 0) {
+        state.baseSpend = (state.liveBaseSpend > 0) ? state.liveBaseSpend : safeNum(document.getElementById('input-spend-slider')?.value, 95000);
+      }
 
       // Real Return calculation
       const realReturn = state.nominalReturn - state.inflationRate;
+      const retireYear = 1993 + state.retireAge;
 
       // Update Labels
-      document.getElementById('val-base-spend').textContent = state.baseSpend > 0 ? '$' + Math.round(state.baseSpend).toLocaleString() + '/yr' : '$---/yr';
-      document.getElementById('val-health-cost').textContent = '+$' + state.healthCost.toLocaleString() + '/yr';
+      document.getElementById('val-base-spend').textContent = state.isUnlocked || !document.getElementById('chip-current')?.classList.contains('active')
+        ? '$' + Math.round(state.baseSpend).toLocaleString() + '/yr'
+        : '$---/yr';
+      document.getElementById('val-health-cost').textContent = '+$' + Math.round(state.healthCost).toLocaleString() + '/yr';
       document.getElementById('val-swr').textContent = (state.swr * 100).toFixed(2) + '%';
       document.getElementById('val-nominal-return').textContent = (state.nominalReturn * 100).toFixed(1) + '%';
       document.getElementById('val-inflation').textContent = (state.inflationRate * 100).toFixed(2) + '%';
       document.getElementById('val-real-return').textContent = (realReturn * 100).toFixed(2) + '%';
-      document.getElementById('val-savings').textContent = '$' + state.annualSavings.toLocaleString() + '/yr';
-      document.getElementById('val-retire-age').textContent = `Age ${state.retireAge} (Target: ${2026 + (state.retireAge - state.currentAge)} — in ${Math.max(0, state.retireAge - state.currentAge)} yrs)`;
-      document.getElementById('val-house').textContent = '$' + state.houseOutlay.toLocaleString();
+      document.getElementById('val-savings').textContent = '$' + Math.round(state.annualSavings).toLocaleString() + '/yr';
+      document.getElementById('val-retire-age').textContent = `Age ${state.retireAge} (Target: ${retireYear} — in ${Math.max(0, retireYear - 2026)} yrs)`;
+      document.getElementById('val-house').textContent = '$' + Math.round(state.houseOutlay).toLocaleString();
 
       const currentCalcedAge = getCalculatedAge();
       state.currentAge = currentCalcedAge;
@@ -2906,7 +3087,7 @@
         if (el2037Surplus) el2037Surplus.textContent = '🔒 Locked';
 
         if (chartInstance) {
-          chartInstance.data.labels = ['2037 (Age 44 — RETIRED)', '2039', '2041', '2043', '2045', '2047', '2049', '2051'];
+          chartInstance.data.labels = ['2037 (Age 44 — RETIRED)', '2038 (Age 45)', '2039 (Age 46)', '2040 (Age 47)', '2041 (Age 48)'];
           chartInstance.data.datasets[0].data = [];
           chartInstance.data.datasets[1].data = [];
           chartInstance.data.datasets[2].data = [];
@@ -2946,22 +3127,22 @@
         planBadge = 'Bronze Plan' + (costPart ? ` (${costPart})` : '');
       }
 
-      document.getElementById('kpi-nw').textContent = '$' + state.netWorth.toLocaleString();
+      document.getElementById('kpi-nw').textContent = '$' + Math.round(state.netWorth).toLocaleString();
       document.getElementById('kpi-fire-status').textContent = fundedStatus.toFixed(1) + '%';
       document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR w/ ${planBadge}`;
       document.getElementById('kpi-runway').textContent = runway.toFixed(1) + ' Years';
       document.getElementById('kpi-monthly-spend').textContent = '$' + Math.round(monthlySpend).toLocaleString() + ' / month total budget';
       document.getElementById('kpi-passive').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
       document.getElementById('kpi-surplus').textContent = (monthlySurplus >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus)).toLocaleString() + ' / mo Cash Flow ' + (monthlySurplus >= 0 ? 'Surplus' : 'Deficit');
-      document.getElementById('crossover-label').textContent = `🎯 Target Retirement: 2037 (Age 44)`;
+      document.getElementById('crossover-label').textContent = `🎯 Target Retirement: ${retireYear} (Age ${state.retireAge})`;
 
-      // Model full 25-year trajectory from 2026 through 2051
+      // Model 15-year trajectory from 2026 base through 2041 (displaying 2027-2041)
       const allYears = [];
       let runningNW = state.netWorth;
 
-      for (let i = 0; i <= 25; i++) {
+      for (let i = 0; i <= 15; i++) {
         const year = 2026 + i;
-        const age = state.currentAge + i;
+        const age = year - 1993;
         if (i === 0) {
           allYears.push({
             year,
@@ -2971,8 +3152,8 @@
             target: fireTarget
           });
         } else {
-          // Accumulation phase before retirement age; Drawdown phase after retirement age
-          const isWorking = age < state.retireAge;
+          // Accumulation phase before retirement year; Drawdown phase from retirement year onward
+          const isWorking = year < retireYear;
           const cashFlow = isWorking ? state.annualSavings : -totalAnnualSpend;
           const houseDeduction = (i === 2) ? state.houseOutlay : 0;
           const growth = (runningNW + (cashFlow / 2)) * state.nominalReturn;
@@ -3013,15 +3194,17 @@
       const el2037Status = document.getElementById('val-2037-status');
       if (el2037Status) el2037Status.textContent = `${funded2037.toFixed(0)}% Funded`;
       const el2037Surplus = document.getElementById('val-2037-surplus');
-      if (el2037Surplus) el2037Surplus.textContent = `+$${Math.round(monthlySurplus2037).toLocaleString()}/mo surplus`;
+      if (el2037Surplus) {
+        el2037Surplus.textContent = (monthlySurplus2037 >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus2037)).toLocaleString() + '/mo ' + (monthlySurplus2037 >= 0 ? 'surplus' : 'gap');
+      }
 
-      // Filter chart datasets based on selected horizon
+      // Filter chart datasets based on selected 15-year horizon (skipping 2026)
       const displayedYears = (state.chartHorizon === 'all')
-        ? allYears
+        ? allYears.filter(y => y.year >= 2027)
         : allYears.filter(y => y.year >= 2037);
 
       const labels = displayedYears.map(y => {
-        if (y.year === 2037) return `2037 (Age ${y.age} — RETIRED)`;
+        if (y.year === retireYear) return `${y.year} (Age ${y.age} — RETIRED)`;
         return `${y.year} (Age ${y.age})`;
       });
       const nominalData = displayedYears.map(y => y.nominal);
@@ -3179,10 +3362,10 @@
         const json = await resp.json();
 
         if (json && json.data) {
-          const nwVal = parseFloat(json.data[1][1]);
-          const spendVal = parseFloat(json.data[3][1]);
+          const nwVal = safeNum(json.data[1] ? json.data[1][1] : 0, 0);
+          const spendVal = safeNum(json.data[3] ? json.data[3][1] : 0, 0);
 
-          if (isNaN(nwVal) || nwVal <= 0) {
+          if (nwVal <= 0) {
             throw new Error('Invalid portfolio data returned from spreadsheet.');
           }
 
@@ -3191,11 +3374,11 @@
           state.isUnlocked = true;
           state.netWorth = nwVal;
 
-          if (!isNaN(spendVal) && spendVal > 0) {
+          if (spendVal > 0) {
             state.liveBaseSpend = spendVal;
             const currentLbl = document.getElementById('lbl-current-spend');
             if (currentLbl) currentLbl.textContent = '$' + (spendVal / 1000).toFixed(1) + 'k';
-            if (document.getElementById('chip-current').classList.contains('active')) {
+            if (document.getElementById('chip-current') && document.getElementById('chip-current').classList.contains('active')) {
               state.baseSpend = spendVal;
               const spendSlider = document.getElementById('input-spend-slider');
               if (spendSlider) spendSlider.value = spendVal;
@@ -3247,15 +3430,15 @@
         const json = await resp.json();
 
         if (json && json.data) {
-          const nwVal = parseFloat(json.data[1][1]);
-          const spendVal = parseFloat(json.data[3][1]);
+          const nwVal = safeNum(json.data[1] ? json.data[1][1] : 0, 0);
+          const spendVal = safeNum(json.data[3] ? json.data[3][1] : 0, 0);
 
-          if (!isNaN(nwVal) && nwVal > 0) state.netWorth = nwVal;
-          if (!isNaN(spendVal) && spendVal > 0) {
+          if (nwVal > 0) state.netWorth = nwVal;
+          if (spendVal > 0) {
             state.liveBaseSpend = spendVal;
             const currentLbl = document.getElementById('lbl-current-spend');
             if (currentLbl) currentLbl.textContent = '$' + (spendVal / 1000).toFixed(1) + 'k';
-            if (document.getElementById('chip-current').classList.contains('active')) {
+            if (document.getElementById('chip-current') && document.getElementById('chip-current').classList.contains('active')) {
               state.baseSpend = spendVal;
               const spendSlider = document.getElementById('input-spend-slider');
               if (spendSlider) spendSlider.value = spendVal;
@@ -3274,16 +3457,20 @@
       }
     }
 
-    // Excel File Watcher
+    // Excel File Watcher & Universal File Loader
     async function watchLocalExcelFile() {
       if (!('showOpenFilePicker' in window)) {
-        alert('File System watching is supported in Chrome, Edge, and modern desktop browsers.');
+        const fallbackInput = document.getElementById('fallback-excel-input');
+        if (fallbackInput) {
+          fallbackInput.value = '';
+          fallbackInput.click();
+        }
         return;
       }
 
       try {
         const [handle] = await window.showOpenFilePicker({
-          types: [{ description: 'Excel Workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
+          types: [{ description: 'Excel Workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx', '.xls'] } }]
         });
         localFileHandle = handle;
         const file = await localFileHandle.getFile();
@@ -3294,6 +3481,17 @@
         setInterval(checkLocalFileUpdate, 2000);
       } catch (err) {
         if (err.name !== 'AbortError') console.error(err);
+      }
+    }
+
+    async function handleFallbackExcelSelect(event) {
+      const file = event.target?.files?.[0];
+      if (!file) return;
+      try {
+        await parseExcelFile(file);
+      } catch (err) {
+        console.error('Excel parse error:', err);
+        alert('Could not read Excel file: ' + err.message);
       }
     }
 
@@ -3314,25 +3512,49 @@
     async function parseExcelFile(file) {
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: 'array' });
-      
+
+      const readCellNum = (sheet, addr) => {
+        if (!sheet || !sheet[addr]) return 0;
+        const cell = sheet[addr];
+        return safeNum(cell.v !== undefined ? cell.v : cell.w, 0);
+      };
+
+      let parsedNW = 0;
+      let parsedSpend = 0;
+
       if (workbook.Sheets['Dashboard']) {
         const sheet = workbook.Sheets['Dashboard'];
-        if (sheet['B3'] && sheet['B3'].v) state.netWorth = parseFloat(sheet['B3'].v);
-        if (sheet['B5'] && sheet['B5'].v) {
-          state.liveBaseSpend = parseFloat(sheet['B5'].v);
-          const currentLbl = document.getElementById('lbl-current-spend');
-          if (currentLbl) currentLbl.textContent = '$' + (state.liveBaseSpend / 1000).toFixed(1) + 'k';
-          if (document.getElementById('chip-current').classList.contains('active')) {
-            state.baseSpend = state.liveBaseSpend;
-            const spendSlider = document.getElementById('input-spend-slider');
-            if (spendSlider) spendSlider.value = state.baseSpend;
-          }
-        }
-      } else if (workbook.Sheets['Goals']) {
-        const sheet = workbook.Sheets['Goals'];
-        const nwCell = sheet['L3'] || sheet['K3'];
-        if (nwCell && nwCell.v) state.netWorth = parseFloat(nwCell.v);
+        parsedNW = readCellNum(sheet, 'B3') || readCellNum(sheet, 'B2');
+        parsedSpend = readCellNum(sheet, 'B5') || readCellNum(sheet, 'B4');
       }
+      if (parsedNW <= 0 && workbook.Sheets['Goals']) {
+        const sheet = workbook.Sheets['Goals'];
+        parsedNW = readCellNum(sheet, 'L3') || readCellNum(sheet, 'K3') || readCellNum(sheet, 'B3');
+      }
+      if (parsedNW <= 0 && workbook.Sheets['Overall']) {
+        const sheet = workbook.Sheets['Overall'];
+        parsedNW = readCellNum(sheet, 'B3') || readCellNum(sheet, 'B2');
+      }
+      if (parsedNW <= 0 && workbook.SheetNames.length > 0) {
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        parsedNW = readCellNum(firstSheet, 'B3') || readCellNum(firstSheet, 'B2');
+        if (!parsedSpend) parsedSpend = readCellNum(firstSheet, 'B5');
+      }
+
+      if (parsedNW > 0) {
+        state.netWorth = parsedNW;
+      }
+      if (parsedSpend > 0) {
+        state.liveBaseSpend = parsedSpend;
+        const currentLbl = document.getElementById('lbl-current-spend');
+        if (currentLbl) currentLbl.textContent = '$' + (state.liveBaseSpend / 1000).toFixed(1) + 'k';
+        if (document.getElementById('chip-current') && document.getElementById('chip-current').classList.contains('active')) {
+          state.baseSpend = state.liveBaseSpend;
+          const spendSlider = document.getElementById('input-spend-slider');
+          if (spendSlider) spendSlider.value = state.baseSpend;
+        }
+      }
+
       state.isUnlocked = true;
       const banner = document.getElementById('unlock-banner');
       if (banner) banner.style.display = 'none';
