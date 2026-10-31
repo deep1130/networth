@@ -979,12 +979,12 @@
                   <!-- Row: PayPal (PYPL) Stock Price (Only reference to PayPal) -->
                   <tr style="border-top: 1px solid #334155;">
                     <td style="padding: 10px 12px;">
-                      <strong>PayPal (PYPL) Stock Price ($)</strong>
+                      <strong>Stock Valuation Price ($/share)</strong>
                       <div style="font-size: 10px; color: #34d399;" id="lbl-stock-fetch-status">● Live Price: $57.01</div>
                     </td>
                     <td style="padding: 10px 12px;">
                       <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 11px; color: #94a3b8;">Price: $</span>
+                        <span style="font-size: 11px; color: #94a3b8;">Assumed vest price: $</span>
                         <input type="number" id="cv-stock-price" value="57.01" min="1" max="500" step="0.01" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onMultiYearInput()">
                         <button type="button" class="btn btn-secondary" style="padding: 2px 7px; font-size: 11px; line-height: 1;" onclick="loadCurrentPayPalPrice()" title="Refresh current PayPal market price">🔄</button>
                       </div>
@@ -1026,17 +1026,23 @@
                     </td>
                     <td style="padding: 10px 12px;">
                       <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                           <span style="font-size: 11px; color: #94a3b8;">2027 Grant ($):</span>
                           <input type="number" id="cv-future-2027" value="0" min="0" step="5000" style="width: 75px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
+                          <span style="font-size: 11px; color: #94a3b8;">Stock price at grant: $</span>
+                          <input type="number" id="cv-future-price-2027" value="57.01" min="0.01" step="0.01" aria-label="2027 award grant stock price" style="width: 70px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                           <span style="font-size: 11px; color: #94a3b8;">2028 Grant ($):</span>
                           <input type="number" id="cv-future-2028" value="0" min="0" step="5000" style="width: 75px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
+                          <span style="font-size: 11px; color: #94a3b8;">Stock price at grant: $</span>
+                          <input type="number" id="cv-future-price-2028" value="57.01" min="0.01" step="0.01" aria-label="2028 award grant stock price" style="width: 70px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                           <span style="font-size: 11px; color: #94a3b8;">2029 Grant ($):</span>
                           <input type="number" id="cv-future-2029" value="0" min="0" step="5000" style="width: 75px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
+                          <span style="font-size: 11px; color: #94a3b8;">Stock price at grant: $</span>
+                          <input type="number" id="cv-future-price-2029" value="57.01" min="0.01" step="0.01" aria-label="2029 award grant stock price" style="width: 70px; padding: 3px 5px; font-size: 11px;" oninput="onMultiYearInput()">
                         </div>
                       </div>
                     </td>
@@ -1940,6 +1946,9 @@
       future2027: 0,
       future2028: 0,
       future2029: 0,
+      futurePrice2027: 57.01,
+      futurePrice2028: 57.01,
+      futurePrice2029: 57.01,
       simAward: 50000,
       severanceWeeks: 10,
       vestingBuffer: 35988,
@@ -1988,6 +1997,11 @@
       onMultiYearInput();
     }
 
+    function getFutureGrantShares(grantAmount, grantPrice) {
+      const safeGrantPrice = Math.max(0.01, safeNum(grantPrice, 57.01));
+      return Math.round((Math.max(0, safeNum(grantAmount, 0)) * 0.5) / safeGrantPrice);
+    }
+
     function onSimAwardInput() {
       const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -2010,6 +2024,12 @@
       const f28 = Math.max(0, safeNum(document.getElementById('cv-future-2028')?.value, careerState.future2028 ?? 0));
       const f29 = Math.max(0, safeNum(document.getElementById('cv-future-2029')?.value, careerState.future2029 ?? 0));
       const stockPrice = Math.max(1, safeNum(document.getElementById('cv-stock-price')?.value, careerState.stockPrice ?? 57.01));
+      const grantPrice27 = Math.max(0.01, safeNum(document.getElementById('cv-future-price-2027')?.value, careerState.futurePrice2027 ?? 57.01));
+      const grantPrice28 = Math.max(0.01, safeNum(document.getElementById('cv-future-price-2028')?.value, careerState.futurePrice2028 ?? 57.01));
+      const grantPrice29 = Math.max(0.01, safeNum(document.getElementById('cv-future-price-2029')?.value, careerState.futurePrice2029 ?? 57.01));
+      const shares27 = getFutureGrantShares(f27, grantPrice27);
+      const shares28 = getFutureGrantShares(f28, grantPrice28);
+      const shares29 = getFutureGrantShares(f29, grantPrice29);
 
       // Keep the mirror inputs in Section 2 synced with the Total Compensation inputs above
       const sim27El = document.getElementById('sim-future-2027');
@@ -2022,27 +2042,27 @@
       const totalAward = f27 + f28 + f29;
       const cashPortion = totalAward / 2;
       const stockPortion = totalAward / 2;
-      const totalShares = Math.round(stockPortion / stockPrice);
+      const totalShares = shares27 + shares28 + shares29;
 
       // 2028 Vesting: 7/12 (58.33%) of 2027 Award
       const vest2028Cash = Math.round((f27 / 2) * (7 / 12));
-      const vest2028Stock = Math.round((f27 / 2) * (7 / 12));
+      const vest2028Stock = Math.round(shares27 * (7 / 12)) * stockPrice;
       const vest2028Total = vest2028Cash + vest2028Stock;
 
       // 2029 Vesting: 4/12 (33.33%) of 2027 Award + 7/12 (58.33%) of 2028 Award
-      const vest2029From27 = 2 * Math.round((f27 / 2) * (4 / 12));
-      const vest2029From28 = 2 * Math.round((f28 / 2) * (7 / 12));
+      const vest2029From27 = Math.round((f27 / 2) * (4 / 12)) + Math.round(shares27 * (4 / 12)) * stockPrice;
+      const vest2029From28 = Math.round((f28 / 2) * (7 / 12)) + Math.round(shares28 * (7 / 12)) * stockPrice;
       const vest2029Total = vest2029From27 + vest2029From28;
 
       // 2030 Vesting: 1/12 (8.33%) of 2027 Award + 4/12 (33.33%) of 2028 Award + 7/12 (58.33%) of 2029 Award
-      const vest2030From27 = 2 * Math.round((f27 / 2) * (1 / 12));
-      const vest2030From28 = 2 * Math.round((f28 / 2) * (4 / 12));
-      const vest2030From29 = 2 * Math.round((f29 / 2) * (7 / 12));
+      const vest2030From27 = Math.round((f27 / 2) * (1 / 12)) + Math.round(shares27 * (1 / 12)) * stockPrice;
+      const vest2030From28 = Math.round((f28 / 2) * (4 / 12)) + Math.round(shares28 * (4 / 12)) * stockPrice;
+      const vest2030From29 = Math.round((f29 / 2) * (7 / 12)) + Math.round(shares29 * (7 / 12)) * stockPrice;
       const vest2030Total = vest2030From27 + vest2030From28 + vest2030From29;
 
       setVal('sim-cash-amt', `$${Math.round(cashPortion).toLocaleString()} Cash (50%)`);
       setVal('sim-stock-amt', `$${Math.round(stockPortion).toLocaleString()} Stock (${totalShares.toLocaleString()} sh)`);
-      setVal('sim-split-sub', `'27: $${Math.round(f27 / 1000)}k · '28: $${Math.round(f28 / 1000)}k · '29: $${Math.round(f29 / 1000)}k`);
+      setVal('sim-split-sub', `Grant prices: '27 $${grantPrice27.toFixed(2)} · '28 $${grantPrice28.toFixed(2)} · '29 $${grantPrice29.toFixed(2)}; valued at $${stockPrice.toFixed(2)}/share`);
 
       setVal('sim-yr1-amt', `$${vest2028Total.toLocaleString()} Total`);
       setVal('sim-yr1-sub', `$${vest2028Cash.toLocaleString()} Cash + $${vest2028Stock.toLocaleString()} Stock (7/12 of '27)`);
@@ -2060,11 +2080,14 @@
       recalculateCareer();
     }
 
-    function getDynamicVestingSchedule(stockPrice, future2027 = 0, future2028 = 0, future2029 = 0) {
+    function getDynamicVestingSchedule(stockPrice, future2027 = 0, future2028 = 0, future2029 = 0, grantPrices = {}) {
       const safePrice = stockPrice > 0 ? stockPrice : 57.01;
       const f27 = Math.max(0, safeNum(future2027, 0));
       const f28 = Math.max(0, safeNum(future2028, 0));
       const f29 = Math.max(0, safeNum(future2029, 0));
+      const grantShares27 = getFutureGrantShares(f27, grantPrices[2027]);
+      const grantShares28 = getFutureGrantShares(f28, grantPrices[2028]);
+      const grantShares29 = getFutureGrantShares(f29, grantPrices[2029]);
 
       // Base quarters from 2027 through 2030
       const baseQuarters = [
@@ -2089,11 +2112,11 @@
       const rows = [];
       baseQuarters.forEach(qItem => {
         let fut27Cash = 0;
-        let fut27StockVal = 0;
+        let fut27Shares = 0;
         let fut28Cash = 0;
-        let fut28StockVal = 0;
+        let fut28Shares = 0;
         let fut29Cash = 0;
-        let fut29StockVal = 0;
+        let fut29Shares = 0;
         const notes = [];
         if (qItem.activeCash > 0 || qItem.activeShares > 0) {
           notes.push(qItem.baseNote);
@@ -2103,11 +2126,11 @@
         if (f27 > 0) {
           if (qItem.year === 2028 && qItem.q === 1) {
             fut27Cash = (f27 / 2) * (4 / 12);
-            fut27StockVal = (f27 / 2) * (4 / 12);
+            fut27Shares = Math.round(grantShares27 * (4 / 12));
             notes.push('+2027 Grant 1/3 Cliff');
           } else if ((qItem.year === 2028 && qItem.q >= 2) || qItem.year === 2029 || (qItem.year === 2030 && qItem.q === 1)) {
             fut27Cash = (f27 / 2) * (1 / 12);
-            fut27StockVal = (f27 / 2) * (1 / 12);
+            fut27Shares = Math.round(grantShares27 * (1 / 12));
             notes.push(qItem.year === 2030 && qItem.q === 1 ? '+2027 Grant Final (1/12)' : '+2027 Grant (1/12)');
           }
         }
@@ -2116,11 +2139,11 @@
         if (f28 > 0) {
           if (qItem.year === 2029 && qItem.q === 1) {
             fut28Cash = (f28 / 2) * (4 / 12);
-            fut28StockVal = (f28 / 2) * (4 / 12);
+            fut28Shares = Math.round(grantShares28 * (4 / 12));
             notes.push('+2028 Grant 1/3 Cliff');
           } else if ((qItem.year === 2029 && qItem.q >= 2) || qItem.year === 2030) {
             fut28Cash = (f28 / 2) * (1 / 12);
-            fut28StockVal = (f28 / 2) * (1 / 12);
+            fut28Shares = Math.round(grantShares28 * (1 / 12));
             notes.push('+2028 Grant (1/12)');
           }
         }
@@ -2129,19 +2152,18 @@
         if (f29 > 0) {
           if (qItem.year === 2030 && qItem.q === 1) {
             fut29Cash = (f29 / 2) * (4 / 12);
-            fut29StockVal = (f29 / 2) * (4 / 12);
+            fut29Shares = Math.round(grantShares29 * (4 / 12));
             notes.push('+2029 Grant 1/3 Cliff');
           } else if (qItem.year === 2030 && qItem.q >= 2) {
             fut29Cash = (f29 / 2) * (1 / 12);
-            fut29StockVal = (f29 / 2) * (1 / 12);
+            fut29Shares = Math.round(grantShares29 * (1 / 12));
             notes.push('+2029 Grant (1/12)');
           }
         }
 
         const totalCash = Math.round(qItem.activeCash + fut27Cash + fut28Cash + fut29Cash);
-        const futShares = Math.round((fut27StockVal + fut28StockVal + fut29StockVal) / safePrice);
-        const totalShares = qItem.activeShares + futShares;
-        const totalStockVal = Math.round(qItem.activeShares * safePrice + fut27StockVal + fut28StockVal + fut29StockVal);
+        const totalShares = qItem.activeShares + fut27Shares + fut28Shares + fut29Shares;
+        const totalStockVal = Math.round(totalShares * safePrice);
 
         if (totalCash > 0 || totalShares > 0) {
           rows.push({
@@ -2156,34 +2178,21 @@
         }
       });
 
-      // Reconcile quarterly rounding on the final vest of each year so Section 2 annual sums match Section 1 to the exact dollar
+      // Reconcile rounded vesting shares by year, then value all shares at the selected market price.
       const expectedByYear = {
-        2027: {
-          cash: 21875,
-          stock: Math.round(805 * safePrice)
-        },
-        2028: {
-          cash: 12500 + Math.round((f27 / 2) * (7 / 12)),
-          stock: Math.round(349 * safePrice) + Math.round((f27 / 2) * (7 / 12))
-        },
-        2029: {
-          cash: 3125 + Math.round((f27 / 2) * (4 / 12)) + Math.round((f28 / 2) * (7 / 12)),
-          stock: Math.round(73 * safePrice) + Math.round((f27 / 2) * (4 / 12)) + Math.round((f28 / 2) * (7 / 12))
-        },
-        2030: {
-          cash: Math.round((f27 / 2) * (1 / 12)) + Math.round((f28 / 2) * (4 / 12)) + Math.round((f29 / 2) * (7 / 12)),
-          stock: Math.round((f27 / 2) * (1 / 12)) + Math.round((f28 / 2) * (4 / 12)) + Math.round((f29 / 2) * (7 / 12))
-        }
+        2027: 805,
+        2028: 349 + Math.round(grantShares27 * (7 / 12)),
+        2029: 73 + Math.round(grantShares27 * (4 / 12)) + Math.round(grantShares28 * (7 / 12)),
+        2030: Math.round(grantShares27 * (1 / 12)) + Math.round(grantShares28 * (4 / 12)) + Math.round(grantShares29 * (7 / 12))
       };
 
       [2027, 2028, 2029, 2030].forEach(yr => {
         const yrRows = rows.filter(r => r.year === yr);
-        if (yrRows.length > 0 && expectedByYear[yr]) {
-          const sumCash = yrRows.reduce((s, r) => s + r.cash, 0);
-          const sumStock = yrRows.reduce((s, r) => s + r.stockVal, 0);
+        if (yrRows.length > 0 && expectedByYear[yr] !== undefined) {
+          const sumShares = yrRows.reduce((s, r) => s + r.shares, 0);
           const lastRow = yrRows[yrRows.length - 1];
-          lastRow.cash += (expectedByYear[yr].cash - sumCash);
-          lastRow.stockVal += (expectedByYear[yr].stock - sumStock);
+          lastRow.shares += expectedByYear[yr] - sumShares;
+          lastRow.stockVal = Math.round(lastRow.shares * safePrice);
           lastRow.dayTotal = lastRow.cash + lastRow.stockVal;
         }
       });
@@ -2199,7 +2208,7 @@
       return rows;
     }
 
-    function renderUnifiedSchedule(stockPrice, isLocked, future2027 = 0, future2028 = 0, future2029 = 0) {
+    function renderUnifiedSchedule(stockPrice, isLocked, future2027 = 0, future2028 = 0, future2029 = 0, grantPrices = {}) {
       const tbody = document.getElementById('unified-vesting-tbody');
       const setHTML = (id, html) => {
         const el = document.getElementById(id);
@@ -2230,7 +2239,7 @@
         return;
       }
 
-      const scheduleRows = getDynamicVestingSchedule(stockPrice, future2027, future2028, future2029);
+      const scheduleRows = getDynamicVestingSchedule(stockPrice, future2027, future2028, future2029, grantPrices);
       const totalCashVal = scheduleRows.reduce((s, r) => s + r.cash, 0);
       const totalShares = scheduleRows.reduce((s, r) => s + r.shares, 0);
       const totalStockVal = scheduleRows.reduce((s, r) => s + r.stockVal, 0);
@@ -2296,11 +2305,11 @@
     function onMultiYearInput(fromCareerRecalc = false) {
       const isLocked = !state.isUnlocked;
 
-      ['cv-base-inc', 'cv-indiv-mod', 'cv-comp-perf', 'cv-stock-price', 'cv-future-2027', 'cv-future-2028', 'cv-future-2029', 'sim-future-2027', 'sim-future-2028', 'sim-future-2029', 'safety-severance-weeks', 'safety-vesting-buffer', 'safety-nj-ui-weekly', 'safety-nj-ui-weeks'].forEach(id => {
+      ['cv-base-inc', 'cv-indiv-mod', 'cv-comp-perf', 'cv-stock-price', 'cv-future-2027', 'cv-future-2028', 'cv-future-2029', 'cv-future-price-2027', 'cv-future-price-2028', 'cv-future-price-2029', 'sim-future-2027', 'sim-future-2028', 'sim-future-2029', 'safety-severance-weeks', 'safety-vesting-buffer', 'safety-nj-ui-weekly', 'safety-nj-ui-weeks'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.disabled = isLocked;
-          if (isLocked && (id === 'cv-future-2027' || id === 'cv-future-2028' || id === 'cv-future-2029' || id === 'sim-future-2027' || id === 'sim-future-2028' || id === 'sim-future-2029' || id === 'safety-vesting-buffer')) {
+          if (isLocked && (id.startsWith('cv-future-') || id === 'sim-future-2027' || id === 'sim-future-2028' || id === 'sim-future-2029' || id === 'safety-vesting-buffer')) {
             el.type = 'password';
             el.value = '••••••';
           } else if (!isLocked && el.type === 'password') {
@@ -2308,6 +2317,10 @@
             if ((id === 'cv-future-2027' || id === 'sim-future-2027') && careerState.future2027 !== undefined) el.value = careerState.future2027;
             else if ((id === 'cv-future-2028' || id === 'sim-future-2028') && careerState.future2028 !== undefined) el.value = careerState.future2028;
             else if ((id === 'cv-future-2029' || id === 'sim-future-2029') && careerState.future2029 !== undefined) el.value = careerState.future2029;
+            else if (id.startsWith('cv-future-price-')) {
+              const year = id.slice(-4);
+              el.value = careerState['futurePrice' + year] ?? 57.01;
+            }
             else if (id === 'safety-vesting-buffer' && careerState.vestingBuffer !== undefined) el.value = careerState.vestingBuffer;
           }
         }
@@ -2320,6 +2333,11 @@
       const future2027 = safeNum(document.getElementById('cv-future-2027')?.value, careerState.future2027 ?? 0);
       const future2028 = safeNum(document.getElementById('cv-future-2028')?.value, careerState.future2028 ?? 0);
       const future2029 = safeNum(document.getElementById('cv-future-2029')?.value, careerState.future2029 ?? 0);
+      const grantPrices = {
+        2027: Math.max(0.01, safeNum(document.getElementById('cv-future-price-2027')?.value, careerState.futurePrice2027 ?? 57.01)),
+        2028: Math.max(0.01, safeNum(document.getElementById('cv-future-price-2028')?.value, careerState.futurePrice2028 ?? 57.01)),
+        2029: Math.max(0.01, safeNum(document.getElementById('cv-future-price-2029')?.value, careerState.futurePrice2029 ?? 57.01))
+      };
 
       if (!isLocked) {
         careerState.baseInc = baseInc;
@@ -2329,6 +2347,9 @@
         careerState.future2027 = future2027;
         careerState.future2028 = future2028;
         careerState.future2029 = future2029;
+        careerState.futurePrice2027 = grantPrices[2027];
+        careerState.futurePrice2028 = grantPrices[2028];
+        careerState.futurePrice2029 = grantPrices[2029];
         saveCareerSettings();
       }
 
@@ -2360,7 +2381,7 @@
           if (chipEl) chipEl.textContent = yr;
         });
         onSimAwardInput();
-        renderUnifiedSchedule(stockPrice, true, future2027, future2028, future2029);
+        renderUnifiedSchedule(stockPrice, true, future2027, future2028, future2029, grantPrices);
         return;
       }
 
@@ -2388,6 +2409,9 @@
       const futureCash2028 = Math.round((future2027 / 2) * (7 / 12));
       const futureCash2029 = Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12));
       const futureCash2030 = Math.round((future2027 / 2) * (1 / 12)) + Math.round((future2028 / 2) * (4 / 12)) + Math.round((future2029 / 2) * (7 / 12));
+      const futureShares2027 = getFutureGrantShares(future2027, grantPrices[2027]);
+      const futureShares2028 = getFutureGrantShares(future2028, grantPrices[2028]);
+      const futureShares2029 = getFutureGrantShares(future2029, grantPrices[2029]);
 
       // 5. Total Cash: Base + AIP Bonus + All Cash Awards
       const trueCash2027 = base2027 + bonus2027 + cashReward2027 + futureCash2027;
@@ -2402,9 +2426,9 @@
       const eq2030 = 0;
 
       const futureStock2027 = 0;
-      const futureStock2028 = Math.round((future2027 / 2) * (7 / 12));
-      const futureStock2029 = Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12));
-      const futureStock2030 = Math.round((future2027 / 2) * (1 / 12)) + Math.round((future2028 / 2) * (4 / 12)) + Math.round((future2029 / 2) * (7 / 12));
+      const futureStock2028 = Math.round(Math.round(futureShares2027 * (7 / 12)) * stockPrice);
+      const futureStock2029 = Math.round((Math.round(futureShares2027 * (4 / 12)) + Math.round(futureShares2028 * (7 / 12))) * stockPrice);
+      const futureStock2030 = Math.round((Math.round(futureShares2027 * (1 / 12)) + Math.round(futureShares2028 * (4 / 12)) + Math.round(futureShares2029 * (7 / 12))) * stockPrice);
 
       const totEq2027 = eq2027 + futureStock2027;
       const totEq2028 = eq2028 + futureStock2028;
@@ -2477,7 +2501,7 @@
       const lblPrice = document.getElementById('lbl-eq-stock-price');
       if (lblPrice) lblPrice.textContent = `$${stockPrice.toFixed(2)}`;
 
-      renderUnifiedSchedule(stockPrice, false, future2027, future2028, future2029);
+      renderUnifiedSchedule(stockPrice, false, future2027, future2028, future2029, grantPrices);
       onSimAwardInput();
 
       // Keep CAREER_YEAR_DATA updated dynamically with calculated base, bonus, cash awards, and equity
@@ -2492,7 +2516,7 @@
       CAREER_YEAR_DATA[2028].bonus = bonus2028;
       CAREER_YEAR_DATA[2028].cashReward = cashReward2028 + futureCash2028;
       CAREER_YEAR_DATA[2028].rsuVesting = totEq2028;
-      CAREER_YEAR_DATA[2028].rsuShares = 349 + Math.round(futureStock2028 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2028].rsuShares = 349 + Math.round(futureShares2027 * (7 / 12));
       CAREER_YEAR_DATA[2028].cashStatus = `$${CAREER_YEAR_DATA[2028].cashReward.toLocaleString()} vesting in 2028`;
       CAREER_YEAR_DATA[2028].cashNext = futureCash2028 > 0 ? `$12,500 active + $${futureCash2028.toLocaleString()} future grant` : '$3,125 quarterly × 4 quarters';
 
@@ -2500,7 +2524,7 @@
       CAREER_YEAR_DATA[2029].bonus = bonus2029;
       CAREER_YEAR_DATA[2029].cashReward = cashReward2029 + futureCash2029;
       CAREER_YEAR_DATA[2029].rsuVesting = totEq2029;
-      CAREER_YEAR_DATA[2029].rsuShares = 73 + Math.round(futureStock2029 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2029].rsuShares = 73 + Math.round(futureShares2027 * (4 / 12)) + Math.round(futureShares2028 * (7 / 12));
       CAREER_YEAR_DATA[2029].cashStatus = `$${CAREER_YEAR_DATA[2029].cashReward.toLocaleString()} vesting in 2029`;
       CAREER_YEAR_DATA[2029].cashNext = futureCash2029 > 0 ? `$3,125 active + $${futureCash2029.toLocaleString()} future grants` : '$3,125 final payout installment on Mar 1, 2029';
 
@@ -2508,7 +2532,7 @@
       CAREER_YEAR_DATA[2030].bonus = bonus2030;
       CAREER_YEAR_DATA[2030].cashReward = cashReward2030 + futureCash2030;
       CAREER_YEAR_DATA[2030].rsuVesting = totEq2030;
-      CAREER_YEAR_DATA[2030].rsuShares = Math.round(futureStock2030 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2030].rsuShares = Math.round(futureShares2027 * (1 / 12)) + Math.round(futureShares2028 * (4 / 12)) + Math.round(futureShares2029 * (7 / 12));
       CAREER_YEAR_DATA[2030].cashStatus = CAREER_YEAR_DATA[2030].cashReward > 0
         ? `$${CAREER_YEAR_DATA[2030].cashReward.toLocaleString()} vesting in 2030`
         : 'Active grant completed in 2029 ($0)';
@@ -2693,6 +2717,12 @@
         if (elFut2028 && elFut2028.type !== 'password') careerState.future2028 = Math.max(0, safeNum(elFut2028.value, 0));
         const elFut2029 = document.getElementById('cv-future-2029');
         if (elFut2029 && elFut2029.type !== 'password') careerState.future2029 = Math.max(0, safeNum(elFut2029.value, 0));
+        ['2027', '2028', '2029'].forEach(year => {
+          const priceInput = document.getElementById('cv-future-price-' + year);
+          if (priceInput && priceInput.type !== 'password') {
+            careerState['futurePrice' + year] = Math.max(0.01, safeNum(priceInput.value, careerState['futurePrice' + year] ?? 57.01));
+          }
+        });
 
         // Safety Net inputs
         careerState.severanceWeeks = Math.max(0, safeNum(document.getElementById('safety-severance-weeks')?.value, 10));
@@ -2741,6 +2771,9 @@
       setInput('cv-future-2027', careerState.future2027);
       setInput('cv-future-2028', careerState.future2028);
       setInput('cv-future-2029', careerState.future2029);
+      setInput('cv-future-price-2027', careerState.futurePrice2027 ?? 57.01);
+      setInput('cv-future-price-2028', careerState.futurePrice2028 ?? 57.01);
+      setInput('cv-future-price-2029', careerState.futurePrice2029 ?? 57.01);
       setInput('sim-future-2027', careerState.future2027);
       setInput('sim-future-2028', careerState.future2028);
       setInput('sim-future-2029', careerState.future2029);
