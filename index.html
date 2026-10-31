@@ -1,30 +1,933 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Fantasy Score / Live Desk</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" id="app-styles" href="styles.css?v=1.3.12">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIRE & Wealth Projections Dashboard</title>
+  <!-- Chart.js for interactive charting -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS to read local Excel (.xlsx) files directly in the browser -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --purple: #8b5cf6;
+      --accent: #06b6d4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 20px; }
+    h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .badge { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 600; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--success); font-weight: 600; margin-top: 6px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+    .sync-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: #334155; color: #f8fafc; }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Top KPI Cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.purple::before { background: var(--purple); }
+    .kpi-card.accent::before { background: var(--accent); }
+    .kpi-label { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 28px; font-weight: 800; color: #ffffff; }
+    .kpi-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Main Dashboard Layout */
+    .main-grid { display: grid; grid-template-columns: 390px 1fr; gap: 24px; }
+    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      h1 { font-size: 20px; }
+      .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
+      .chart-container { height: 280px; }
+      .panel { padding: 14px; }
+      .btn { padding: 8px 12px; font-size: 13px; }
+    }
+
+    /* Controls Panel */
+    .panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 22px; }
+    .panel-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
+    .control-group { margin-bottom: 18px; }
+    .control-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .control-val { color: var(--accent); font-weight: 700; }
+    .sub-indicator { background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: 600; color: #38bdf8; margin-top: 6px; display: flex; justify-content: space-between; }
+    
+    input[type=range] { width: 100%; height: 6px; border-radius: 3px; background: #334155; outline: none; -webkit-appearance: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid #ffffff; }
+    select, input[type=number] { width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px 12px; border-radius: 8px; font-size: 14px; outline: none; }
+    select:focus, input[type=number]:focus { border-color: var(--primary); }
+
+    /* Spending Preset Chips */
+    .chips-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .chip { background: #334155; border: 1px solid #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .chip:hover, .chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+    /* Charts Area */
+    .chart-container { position: relative; height: 380px; width: 100%; margin-bottom: 24px; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-top: 16px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #0f172a; color: var(--text-muted); padding: 12px 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--card-border); }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--card-border); font-variant-numeric: tabular-nums; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .status-pill { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+    .status-pill.achieved { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-pill.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#app">Skip to main content</a>
-  <div id="app" role="main"></div>
-  <div class="drawer-backdrop" id="backdrop"></div>
-  <aside class="drawer" aria-label="Dashboard settings" role="dialog" aria-modal="true">
-    <div class="drawer-head"><div><div class="eyebrow">Control room</div><h2>Dashboard settings</h2><p class="drawer-subtitle">Tune how Fantasy Score watches your leagues.</p></div><button class="btn icon" id="close-settings" aria-label="Close settings">x</button></div>
-    <div class="settings-section"><div class="section-kicker">Refresh</div><div class="setting-card"><label for="poll-interval">Polling interval <span class="range-value" id="poll-value"></span></label><p>Update frequency for live scores (default 1m, minimum 10s).</p><input id="poll-interval" type="range" min="10" max="600" step="5"><div class="poll-presets"><button type="button" class="preset-btn" data-poll="10">10s (Live)</button><button type="button" class="preset-btn" data-poll="15">15s</button><button type="button" class="preset-btn" data-poll="30">30s</button><button type="button" class="preset-btn" data-poll="60">1m</button><button type="button" class="preset-btn" data-poll="120">2m</button><button type="button" class="preset-btn" data-poll="300">5m</button></div></div><label class="setting-card switch"><span><strong>Game window filter</strong><small>Only poll during active NFL game slates (TNF, Sun, MNF).</small></span><input id="window-enabled" type="checkbox"><span class="switch-ui"></span></label></div>
-    <div class="settings-section"><div class="section-kicker">Matchup feed</div><label class="setting-card switch"><span><strong>Track opponent starters</strong><small>Include opponent scoring in the ticker and voice feed.</small></span><input id="track-opponent" type="checkbox"><span class="switch-ui"></span></label></div>
-    <div class="settings-section"><div class="section-kicker">Audio</div><label class="setting-card switch"><span><strong>Voice announcements</strong><small>Kokoro only. If the model cannot load, the app stays silent.</small></span><input id="voice-enabled" type="checkbox"><span class="switch-ui"></span></label><div class="setting-card"><label for="kokoro-voice">Kokoro voice</label><select id="kokoro-voice"><option value="bf_emma">British female - Emma</option><option value="bf_isabella">British female - Isabella</option><option value="bm_george">British male - George</option><option value="bm_lewis">British male - Lewis</option><option value="af_heart">American female - Heart</option><option value="af_bella">American female - Bella</option><option value="am_adam">American male - Adam</option><option value="am_michael">American male - Michael</option></select><small>Kokoro downloads its model once, then runs locally in the browser.</small><button class="btn voice-test" id="voice-test" type="button">Test selected voice</button></div><div class="setting-card"><label for="voice-volume">Voice volume <span class="range-value" id="volume-value"></span></label><input id="voice-volume" type="range" min="0" max="1" step=".05"></div><div class="setting-card"><label for="voice-rate">Speaking rate <span class="range-value" id="voice-rate-value"></span></label><input id="voice-rate" type="range" min="0.5" max="2" step=".1"></div><div class="setting-card"><label for="voice-min-points">Minimum points to announce <span class="range-value" id="voice-min-value"></span></label><p>Ignore smaller point changes in speech, but keep them in the ticker.</p><input id="voice-min-points" type="range" min="0.1" max="10" step=".1"></div></div>
-    <div class="settings-section"><div class="section-kicker">Device</div><label class="setting-card switch"><span><strong>Keep screen awake</strong><small>Request a Screen Wake Lock while the dashboard is open.</small></span><input id="wake-enabled" type="checkbox"><span class="switch-ui"></span></label></div>
-    <div class="settings-section" id="league-exclusions"></div>
-    <div class="drawer-footer"><button class="btn" id="reset-user">Change Sleeper username</button><span>Preferences save automatically</span></div>
-  </aside>
-  <footer class="site-notice"><div class="version-tag">Fantasy Score <span id="app-version">v1.3.12</span></div>Personal, non-commercial use only. Fantasy Score is an independent project and is not affiliated with or endorsed by Sleeper, ESPN, the NFL, or any team.</footer>
-  <script src="app.js?v=1.3.12"></script>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div>
+        <h1>🔥 FIRE & Wealth Projections Simulator <span class="badge">Auto-Sync Enabled</span></h1>
+        <div class="status-badge" id="sync-status">
+          <span class="status-dot"></span>
+          <span id="sync-text">Auto-Syncing live with your Net Worth Sheet...</span>
+        </div>
+      </div>
+      <div class="sync-actions">
+        <button class="btn btn-secondary" onclick="openKeyModal()">
+          🔑 Connect Sheet
+        </button>
+        <button class="btn btn-secondary" onclick="watchLocalExcelFile()">
+          📁 Watch Local Excel File (.xlsx)
+        </button>
+        <button class="btn" id="btn-sync" onclick="syncLiveFromGoogleSheet(true)">
+          🔄 Force Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Connect Sheet Modal (Stores credentials strictly in local device browser) -->
+    <div id="key-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+      <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:24px; max-width:480px; width:90%;">
+        <h3 style="margin-bottom:12px; font-size:18px;">🔑 Connect to Your Google Sheet</h3>
+        <p style="font-size:13px; color:#94a3b8; margin-bottom:16px; line-height:1.5;">
+          For security, your credentials are saved <strong>only in this browser's local storage</strong> on your personal device and are never sent to GitHub or any public server.
+        </p>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:600; color:#cbd5e1; display:block; margin-bottom:4px;">Google Apps Script Web App URL</label>
+          <input type="text" id="modal-script-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; font-size:13px; font-family:monospace;">
+        </div>
+        <div style="margin-bottom:18px;">
+          <label style="font-size:12px; font-weight:600; color:#cbd5e1; display:block; margin-bottom:4px;">Secret Access Key</label>
+          <input type="password" id="modal-script-key" placeholder="Enter your secret key" style="width:100%; font-size:13px; font-family:monospace;">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <button class="btn btn-secondary" onclick="closeKeyModal()">Cancel</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary" style="color:#ef4444;" onclick="clearSavedCredentials()">Disconnect</button>
+            <button class="btn" onclick="saveCredentialsAndSync()">Save & Connect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Current Net Worth</div>
+        <div class="kpi-value" id="kpi-nw">$1,850,000</div>
+        <div class="kpi-sub" id="kpi-age">Current Age: 32 (Turns 33 on Nov 30) • Target: $2.0M</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">FIRE Funded Status</div>
+        <div class="kpi-value" id="kpi-fire-status">131.4%</div>
+        <div class="kpi-sub" id="kpi-fire-sub">At 3.5% SWR w/ Subsidized Silver</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Liquid Runway</div>
+        <div class="kpi-value" id="kpi-runway">37.6 Years</div>
+        <div class="kpi-sub" id="kpi-monthly-spend">$4,105 / month total budget</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Safe Monthly Passive Income</div>
+        <div class="kpi-value" id="kpi-passive">$5,396 / mo</div>
+        <div class="kpi-sub" id="kpi-surplus">+$1,291 / mo Cash Flow Surplus</div>
+      </div>
+    </div>
+
+    <!-- Main Section: Controls + Live Projections Chart -->
+    <div class="main-grid">
+      <!-- Left Controls Panel -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>Simulation Controls</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="saved-badge" style="font-size: 11px; color: #34d399; font-weight: 500; opacity: 0; transition: opacity 0.3s ease;">✓ Settings Saved</span>
+            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="resetDefaults()">Reset</button>
+          </div>
+        </div>
+
+        <!-- Annual Spending Presets: Includes 46.7k, 65k, 75k, 90k, 100k, 125k, 150k, 200k + Fine Slider -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Base Spending Tier:</span>
+            <span class="control-val" id="val-base-spend">$46,684/yr</span>
+          </div>
+          <div class="chips-group">
+            <button class="chip active" id="chip-current" data-spend="current" onclick="setSpendPreset(state.liveBaseSpend || 46684, this)">Current (<span id="lbl-current-spend">$46.7k</span>)</button>
+            <button class="chip" data-spend="65000" onclick="setSpendPreset(65000, this)">$65k</button>
+            <button class="chip" data-spend="75000" onclick="setSpendPreset(75000, this)">$75k</button>
+            <button class="chip" data-spend="90000" onclick="setSpendPreset(90000, this)">$90k</button>
+            <button class="chip" data-spend="100000" onclick="setSpendPreset(100000, this)">$100k</button>
+            <button class="chip" data-spend="125000" onclick="setSpendPreset(125000, this)">$125k</button>
+            <button class="chip" data-spend="150000" onclick="setSpendPreset(150000, this)">$150k</button>
+            <button class="chip" data-spend="200000" onclick="setSpendPreset(200000, this)">$200k</button>
+          </div>
+          <input type="range" id="input-spend-slider" min="30000" max="250000" step="2500" value="46684" oninput="onSpendSliderInput(this.value)" style="margin-top: 10px;">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:2px;">
+            <span>$30k/yr</span>
+            <span>$100k</span>
+            <span>$250k/yr</span>
+          </div>
+        </div>
+
+        <!-- Healthcare Selection -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Healthcare (Early Retirement):</span>
+            <span class="control-val" id="val-health-cost">+$2,580/yr</span>
+          </div>
+          <select id="select-health" onchange="recalculate()">
+            <option value="2580" selected>GetCoveredNJ Silver w/ NJHPS Subsidies (CSR @ &lt;250% FPL) - $215/mo ($2,580/yr)</option>
+            <option value="6600">GetCoveredNJ Bronze Plan (Catastrophic / NJ Mandate) - $550/mo ($6,600/yr)</option>
+            <option value="8520">GetCoveredNJ Silver Plan (Full Retail / Unsubsidized) - $710/mo ($8,520/yr)</option>
+            <option value="4800">Current Goals Benchmark - $400/mo ($4,800/yr)</option>
+            <option value="0">Employer Coverage Active - $0/yr</option>
+          </select>
+        </div>
+
+        <!-- Safe Withdrawal Rate -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Safe Withdrawal Rate (SWR):</span>
+            <span class="control-val" id="val-swr">3.50%</span>
+          </div>
+          <input type="range" id="input-swr" min="2.5" max="5.0" step="0.25" value="3.5" oninput="recalculate()">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:4px;">
+            <span>2.5% (Ultra Safe)</span>
+            <span>3.5% (Baseline)</span>
+            <span>5.0%</span>
+          </div>
+        </div>
+
+        <!-- Slider 1: Nominal Investment Return -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Nominal Investment Return (Pre-Inflation):</span>
+            <span class="control-val" id="val-nominal-return">8.5%</span>
+          </div>
+          <input type="range" id="input-nominal-return" min="4.0" max="14.0" step="0.5" value="8.5" oninput="recalculate()">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:4px;">
+            <span>4.0%</span>
+            <span>8.5% (Historical S&P Avg)</span>
+            <span>14.0%</span>
+          </div>
+        </div>
+
+        <!-- Slider 2: Inflation Rate (CPI) -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Expected Annual Inflation (CPI):</span>
+            <span class="control-val" id="val-inflation">2.5%</span>
+          </div>
+          <input type="range" id="input-inflation" min="1.0" max="6.0" step="0.25" value="2.5" oninput="recalculate()">
+          
+          <!-- Linked Result: Real / Inflation-Adjusted Return -->
+          <div class="sub-indicator">
+            <span>Real Growth Rate (Inflation-Adjusted):</span>
+            <span id="val-real-return" style="color: #34d399; font-weight: 700;">6.00%</span>
+          </div>
+        </div>
+
+        <!-- Annual Savings Contribution -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Annual Savings Additions:</span>
+            <span class="control-val" id="val-savings">$106,650/yr</span>
+          </div>
+          <input type="range" id="input-savings" min="0" max="200000" step="5000" value="106650" oninput="recalculate()">
+        </div>
+
+        <!-- Retirement Age -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Target Retirement Age:</span>
+            <span class="control-val" id="val-retire-age">36 (in 4 yrs)</span>
+          </div>
+          <input type="range" id="input-retire-age" min="32" max="50" step="1" value="36" oninput="recalculate()">
+        </div>
+
+        <!-- House Purchase Outlay -->
+        <div class="control-group">
+          <div class="control-header">
+            <span>Future House Down Payment:</span>
+            <span class="control-val" id="val-house">$0</span>
+          </div>
+          <input type="range" id="input-house" min="0" max="300000" step="25000" value="0" oninput="recalculate()">
+        </div>
+      </div>
+
+      <!-- Right Projections & Chart Area -->
+      <div>
+        <div class="panel" style="margin-bottom: 24px;">
+          <div class="panel-title">
+            <span>15-Year Wealth Trajectory (Nominal vs. Real Inflation-Adjusted)</span>
+            <span style="font-size: 13px; color: var(--text-muted);" id="crossover-label">FIRE Crossover: Reached Today!</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="projectionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Milestones & Income Tiers Table -->
+        <div class="panel">
+          <div class="panel-title">
+            <span>Retirement Income Tiers ($65k to $200k)</span>
+            <span style="font-size: 12px; color: var(--text-muted);" id="table-subtitle">Live sync with sheet</span>
+          </div>
+          <div class="table-container">
+            <table id="tiers-table">
+              <thead>
+                <tr>
+                  <th>Target Annual Spend</th>
+                  <th>Monthly Budget</th>
+                  <th>Portfolio Req. (4%)</th>
+                  <th>Portfolio Req. (3.5%)</th>
+                  <th>Status @ Current NW</th>
+                  <th>Gap / Surplus</th>
+                  <th>Est. Timeline</th>
+                </tr>
+              </thead>
+              <tbody id="tiers-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- New Jersey FIRE, Healthcare & Tax Intelligence Section -->
+        <div class="panel" style="margin-top: 24px;">
+          <div class="panel-title">
+            <span>🏛️ New Jersey FIRE, Healthcare & State Tax Strategy</span>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GetCoveredNJ + NJ Tax Code</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 14px;">
+            <!-- Card 1: NJHPS Subsidies -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+              <div style="font-weight: 700; font-size: 14px; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>1. GetCoveredNJ + NJHPS Subsidies</span>
+                <span style="font-size: 11px; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 4px;">Up to 600% FPL</span>
+              </div>
+              <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
+                New Jersey operates its own exchange (<strong>GetCoveredNJ</strong>) and provides <strong>NJ Health Plan Savings (NJHPS)</strong>—a state-funded cash subsidy that stacks on top of federal Premium Tax Credits.
+              </p>
+              <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
+                <li><strong>Extended Subsidy Cap:</strong> NJ provides state subsidies up to <strong>600% FPL ($93,900/yr for single)</strong>, far higher than the federal limit.</li>
+                <li><strong>CSR Sweet Spot:</strong> If reportable MAGI is kept under <strong>250% FPL (~$39,125)</strong>, you qualify for <em>Cost-Sharing Reductions (CSR)</em>—Silver deductibles drop to $0–$500 with net premiums of <strong>$50–$165/mo</strong>.</li>
+              </ul>
+            </div>
+
+            <!-- Card 2: Spending vs MAGI -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+              <div style="font-weight: 700; font-size: 14px; color: #34d399; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>2. The "Spend $100k, Report $35k" Strategy</span>
+                <span style="font-size: 11px; background: rgba(52, 211, 153, 0.15); padding: 2px 8px; border-radius: 4px;">Portfolio Arbitrage</span>
+              </div>
+              <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
+                In early retirement, <strong>spending does NOT equal taxable income (MAGI)</strong>. You can comfortably fund a $75k–$150k lifestyle while keeping ACA subsidies:
+              </p>
+              <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
+                <li><strong>Zero-MAGI Draws:</strong> Cash reserves, taxable brokerage principal return, and Roth IRA contribution withdrawals generate <strong>$0 reportable MAGI</strong>.</li>
+                <li><strong>Tax-Efficient Spending:</strong> Drawing $40k capital/Roth + $35k gains/dividends lets you spend <strong>$75,000–$100,000/yr</strong> while locking in full NJ Silver subsidies.</li>
+              </ul>
+            </div>
+
+            <!-- Card 3: NJ Individual Mandate -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+              <div style="font-weight: 700; font-size: 14px; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>3. NJ Individual Health Mandate</span>
+                <span style="font-size: 11px; background: rgba(251, 191, 36, 0.15); padding: 2px 8px; border-radius: 4px;">State Tax Penalty</span>
+              </div>
+              <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
+                Unlike federal law, <strong>New Jersey mandates coverage</strong> under the <em>NJ Health Insurance Market Preservation Act</em>.
+              </p>
+              <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
+                <li><strong>Mandate Penalty:</strong> Uninsured NJ residents must pay a state penalty on Line 52 of <strong>Form NJ-1040</strong> (the greater of <strong>$695/adult</strong> or <strong>2.5% of gross income</strong>).</li>
+                <li><strong>FIRE Takeaway:</strong> Going without insurance in NJ is financially penalized; maintaining a subsidized GetCoveredNJ plan is both safer and cheaper.</li>
+              </ul>
+            </div>
+
+            <!-- Card 4: NJ State Taxes & Credits -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+              <div style="font-weight: 700; font-size: 14px; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>4. Other NJ Tax Codes for Early Retirees</span>
+                <span style="font-size: 11px; background: rgba(167, 139, 250, 0.15); padding: 2px 8px; border-radius: 4px;">NJ-1040 Rules</span>
+              </div>
+              <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
+                Key New Jersey state tax idiosyncrasies to model in your wealth projections:
+              </p>
+              <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
+                <li><strong>HSA Taxation:</strong> NJ is one of only two states (NJ & CA) that <em>does NOT recognize HSAs</em>. HSA contributions and yearly interest/dividends are taxable on your NJ-1040.</li>
+                <li><strong>ANCHOR Benefit:</strong> Direct NJ cash rebate (<strong>$450/yr for renters</strong>, <strong>$1,000–$1,500/yr for homeowners</strong>) if gross income is under $150k/$250k.</li>
+                <li><strong>Low Bracket During FIRE:</strong> At an optimized $35k MAGI, your NJ state tax rate is just <strong>1.40% – 1.75%</strong>.</li>
+                <li><strong>Age 62+ Pension Exclusion:</strong> Once you reach 62, NJ lets you exclude up to <strong>$100,000/yr</strong> in retirement income 100% tax-free if total income is &le; $150k.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BIRTH_DATE = new Date(1993, 10, 30); // Nov 30, 1993
+
+    function getCalculatedAge() {
+      const today = new Date();
+      let age = today.getFullYear() - BIRTH_DATE.getFullYear();
+      const m = today.getMonth() - BIRTH_DATE.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < BIRTH_DATE.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    // Live State from Google Sheet (Birthdate: Nov 30, 1993 -> Currently 32)
+    let state = {
+      netWorth: 1850000,
+      currentAge: getCalculatedAge(),
+      baseSpend: 46684,
+      liveBaseSpend: 46684,
+      healthCost: 2580,
+      swr: 0.035,
+      nominalReturn: 0.085,
+      inflationRate: 0.025,
+      annualSavings: 106650,
+      retireAge: 36,
+      houseOutlay: 0
+    };
+
+    let chartInstance = null;
+    let localFileHandle = null;
+    let localFileLastMod = 0;
+
+    const STORAGE_KEY = 'fire_dashboard_user_settings_v1';
+
+    function savePersistedSettings() {
+      try {
+        const isCurrent = document.getElementById('chip-current').classList.contains('active');
+        const settings = {
+          spendType: isCurrent ? 'current' : 'custom',
+          spendAmount: state.baseSpend,
+          healthCost: document.getElementById('select-health').value,
+          swr: document.getElementById('input-swr').value,
+          nominalReturn: document.getElementById('input-nominal-return').value,
+          inflationRate: document.getElementById('input-inflation').value,
+          annualSavings: document.getElementById('input-savings').value,
+          retireAge: document.getElementById('input-retire-age').value,
+          houseOutlay: document.getElementById('input-house').value
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+
+        const saveBadge = document.getElementById('saved-badge');
+        if (saveBadge) {
+          saveBadge.textContent = '✓ Settings Saved';
+          saveBadge.style.opacity = '1';
+          clearTimeout(saveBadge._timer);
+          saveBadge._timer = setTimeout(() => { saveBadge.style.opacity = '0'; }, 1500);
+        }
+      } catch (e) {
+        console.warn('LocalStorage save failed:', e);
+      }
+    }
+
+    function loadPersistedSettings() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const s = JSON.parse(raw);
+
+        if (s.healthCost !== undefined && document.getElementById('select-health')) {
+          document.getElementById('select-health').value = s.healthCost;
+        }
+        if (s.swr !== undefined && document.getElementById('input-swr')) {
+          document.getElementById('input-swr').value = s.swr;
+        }
+        if (s.nominalReturn !== undefined && document.getElementById('input-nominal-return')) {
+          document.getElementById('input-nominal-return').value = s.nominalReturn;
+        }
+        if (s.inflationRate !== undefined && document.getElementById('input-inflation')) {
+          document.getElementById('input-inflation').value = s.inflationRate;
+        }
+        if (s.annualSavings !== undefined && document.getElementById('input-savings')) {
+          document.getElementById('input-savings').value = s.annualSavings;
+        }
+        if (s.retireAge !== undefined && document.getElementById('input-retire-age')) {
+          document.getElementById('input-retire-age').value = s.retireAge;
+        }
+        if (s.houseOutlay !== undefined && document.getElementById('input-house')) {
+          document.getElementById('input-house').value = s.houseOutlay;
+        }
+
+        if (s.spendType === 'current') {
+          document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+          const currentChip = document.getElementById('chip-current');
+          if (currentChip) currentChip.classList.add('active');
+          state.baseSpend = state.liveBaseSpend || 46684;
+          const spendSlider = document.getElementById('input-spend-slider');
+          if (spendSlider) spendSlider.value = state.baseSpend;
+        } else if (s.spendAmount !== undefined) {
+          state.baseSpend = parseFloat(s.spendAmount);
+          const spendSlider = document.getElementById('input-spend-slider');
+          if (spendSlider) spendSlider.value = state.baseSpend;
+
+          document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+          const matchingChip = document.querySelector(`.chip[data-spend="${s.spendAmount}"]`);
+          if (matchingChip) {
+            matchingChip.classList.add('active');
+          }
+        }
+        return true;
+      } catch (e) {
+        console.warn('LocalStorage load failed:', e);
+        return false;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      loadPersistedSettings();
+      recalculate(false);
+      
+      // Auto-Sync immediately on load
+      syncLiveFromGoogleSheet(false);
+
+      // Auto-sync whenever tab gains focus
+      window.addEventListener('focus', () => {
+        syncLiveFromGoogleSheet(false);
+        checkLocalFileUpdate();
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          syncLiveFromGoogleSheet(false);
+          checkLocalFileUpdate();
+        }
+      });
+
+      // Background Polling (Every 30 seconds)
+      setInterval(() => {
+        syncLiveFromGoogleSheet(false);
+        checkLocalFileUpdate();
+      }, 30000);
+    });
+
+    function initChart() {
+      const ctx = document.getElementById('projectionChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Projected Net Worth (Nominal)',
+              data: [],
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.2
+            },
+            {
+              label: 'Real Net Worth (Inflation-Adjusted)',
+              data: [],
+              borderColor: '#10b981',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.2
+            },
+            {
+              label: 'FIRE Target Portfolio',
+              data: [],
+              borderColor: '#f59e0b',
+              borderWidth: 2,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: 'index' },
+          plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': $' + Math.round(context.raw).toLocaleString();
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(51, 65, 85, 0.4)' }, ticks: { color: '#94a3b8' } },
+            y: {
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: {
+                color: '#94a3b8',
+                callback: function(value) { return '$' + (value / 1000000).toFixed(1) + 'M'; }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function setSpendPreset(amount, el) {
+      state.baseSpend = amount;
+      document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      const spendSlider = document.getElementById('input-spend-slider');
+      if (spendSlider) spendSlider.value = amount;
+      recalculate(true);
+    }
+
+    function onSpendSliderInput(val) {
+      state.baseSpend = parseFloat(val);
+      document.querySelectorAll('.chips-group .chip').forEach(c => {
+        c.classList.remove('active');
+        if (c.getAttribute('data-spend') === String(val)) {
+          c.classList.add('active');
+        }
+      });
+      recalculate(true);
+    }
+
+    function resetDefaults() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+      state.baseSpend = state.liveBaseSpend || 46684;
+      document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+      const currChip = document.getElementById('chip-current');
+      if (currChip) currChip.classList.add('active');
+      const spendSlider = document.getElementById('input-spend-slider');
+      if (spendSlider) spendSlider.value = state.baseSpend;
+      document.getElementById('select-health').value = '2580';
+      document.getElementById('input-swr').value = '3.5';
+      document.getElementById('input-nominal-return').value = '8.5';
+      document.getElementById('input-inflation').value = '2.5';
+      document.getElementById('input-savings').value = '106650';
+      document.getElementById('input-retire-age').value = '36';
+      document.getElementById('input-house').value = '0';
+      recalculate(false);
+
+      const saveBadge = document.getElementById('saved-badge');
+      if (saveBadge) {
+        saveBadge.textContent = '↺ Reset to Defaults';
+        saveBadge.style.opacity = '1';
+        clearTimeout(saveBadge._timer);
+        saveBadge._timer = setTimeout(() => { 
+          saveBadge.style.opacity = '0'; 
+          saveBadge.textContent = '✓ Settings Saved';
+        }, 1500);
+      }
+    }
+
+    function recalculate(shouldPersist = true) {
+      state.healthCost = parseFloat(document.getElementById('select-health').value);
+      state.swr = parseFloat(document.getElementById('input-swr').value) / 100;
+      state.nominalReturn = parseFloat(document.getElementById('input-nominal-return').value) / 100;
+      state.inflationRate = parseFloat(document.getElementById('input-inflation').value) / 100;
+      state.annualSavings = parseFloat(document.getElementById('input-savings').value);
+      state.retireAge = parseInt(document.getElementById('input-retire-age').value);
+      state.houseOutlay = parseFloat(document.getElementById('input-house').value);
+
+      // Real Return calculation
+      const realReturn = state.nominalReturn - state.inflationRate;
+
+      // Update Labels
+      document.getElementById('val-base-spend').textContent = '$' + state.baseSpend.toLocaleString() + '/yr';
+      document.getElementById('val-health-cost').textContent = '+$' + state.healthCost.toLocaleString() + '/yr';
+      document.getElementById('val-swr').textContent = (state.swr * 100).toFixed(2) + '%';
+      document.getElementById('val-nominal-return').textContent = (state.nominalReturn * 100).toFixed(1) + '%';
+      document.getElementById('val-inflation').textContent = (state.inflationRate * 100).toFixed(2) + '%';
+      document.getElementById('val-real-return').textContent = (realReturn * 100).toFixed(2) + '%';
+      document.getElementById('val-savings').textContent = '$' + state.annualSavings.toLocaleString() + '/yr';
+      document.getElementById('val-retire-age').textContent = state.retireAge + ' (in ' + Math.max(0, state.retireAge - state.currentAge) + ' yrs)';
+      document.getElementById('val-house').textContent = '$' + state.houseOutlay.toLocaleString();
+
+      const totalAnnualSpend = state.baseSpend + state.healthCost;
+      const fireTarget = totalAnnualSpend / state.swr;
+      const fundedStatus = (state.netWorth / fireTarget) * 100;
+      const runway = state.netWorth / totalAnnualSpend;
+      const monthlyPassive = (state.netWorth * state.swr) / 12;
+      const monthlySpend = totalAnnualSpend / 12;
+      const monthlySurplus = monthlyPassive - monthlySpend;
+
+      document.getElementById('kpi-nw').textContent = '$' + state.netWorth.toLocaleString();
+      const currentCalcedAge = getCalculatedAge();
+      state.currentAge = currentCalcedAge;
+      const today = new Date();
+      const isBeforeBday = (today.getMonth() < 10) || (today.getMonth() === 10 && today.getDate() < 30);
+      document.getElementById('kpi-age').textContent = `Current Age: ${currentCalcedAge} (${isBeforeBday ? 'Turns ' + (currentCalcedAge + 1) + ' on Nov 30' : 'Birthday: Nov 30'}) • Target: $2.0M`;
+      document.getElementById('kpi-fire-status').textContent = fundedStatus.toFixed(1) + '%';
+      document.getElementById('kpi-runway').textContent = runway.toFixed(1) + ' Years';
+      document.getElementById('kpi-monthly-spend').textContent = '$' + Math.round(monthlySpend).toLocaleString() + ' / month total budget';
+      document.getElementById('kpi-passive').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
+      document.getElementById('kpi-surplus').textContent = (monthlySurplus >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus)).toLocaleString() + ' / mo Cash Flow ' + (monthlySurplus >= 0 ? 'Surplus' : 'Deficit');
+
+      // 15-Year Projections (2026 to 2041)
+      const labels = [];
+      const nominalData = [];
+      const realData = [];
+      const fireTargetLine = [];
+      let currentNW = state.netWorth;
+
+      for (let i = 0; i <= 15; i++) {
+        const year = 2026 + i;
+        const age = state.currentAge + i;
+        labels.push(year + ' (Age ' + age + ')');
+
+        if (i === 0) {
+          nominalData.push(currentNW);
+          realData.push(currentNW);
+        } else {
+          const isWorking = age < state.retireAge;
+          const cashFlow = isWorking ? state.annualSavings : -totalAnnualSpend;
+          const houseDeduction = (i === 2) ? state.houseOutlay : 0;
+          const growth = (currentNW + (cashFlow / 2)) * state.nominalReturn;
+          currentNW = currentNW + cashFlow - houseDeduction + growth;
+
+          nominalData.push(currentNW);
+          realData.push(currentNW / Math.pow(1 + state.inflationRate, i));
+        }
+        fireTargetLine.push(fireTarget);
+      }
+
+      chartInstance.data.labels = labels;
+      chartInstance.data.datasets[0].data = nominalData;
+      chartInstance.data.datasets[1].data = realData;
+      chartInstance.data.datasets[2].data = fireTargetLine;
+      chartInstance.update();
+
+      renderTiersTable();
+
+      if (shouldPersist) {
+        savePersistedSettings();
+      }
+    }
+
+    function renderTiersTable() {
+      // Expanded Tiers: $65k, $75k, $90k, $100k, $125k, $150k, $200k
+      const tiers = [
+        { spend: 65000, label: 'Comfortable / Upgraded Lifestyle' },
+        { spend: 75000, label: 'Affluent / Travel & House Upgrade' },
+        { spend: 90000, label: 'Fat FIRE / High Discretionary Spend' },
+        { spend: 100000, label: 'Ultra-Fat FIRE / Complete Abundance' },
+        { spend: 125000, label: 'Luxury Fat FIRE / Dual Home & World Travel' },
+        { spend: 150000, label: 'High Net Worth Lifestyle / Executive Living' },
+        { spend: 200000, label: 'Generational Abundance / Ultimate Freedom' }
+      ];
+
+      const tbody = document.getElementById('tiers-tbody');
+      tbody.innerHTML = '';
+
+      tiers.forEach(t => {
+        const req4 = t.spend / 0.04;
+        const req35 = t.spend / 0.035;
+        const pct35 = (state.netWorth / req35) * 100;
+        const gap = req35 - state.netWorth;
+        const isAchieved = state.netWorth >= req35;
+
+        // Wealth Velocity based on selected nominal return + savings
+        const annualVelocity = state.annualSavings + (state.netWorth * state.nominalReturn);
+        const yearsToReach = isAchieved ? 0 : Math.ceil(gap / annualVelocity);
+        const estYear = isAchieved ? 'CURRENT / ACHIEVED' : (2026 + yearsToReach) + ' (Age ' + (state.currentAge + yearsToReach) + ')';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>$${t.spend.toLocaleString()}</strong></td>
+          <td>$${Math.round(t.spend / 12).toLocaleString()} / mo</td>
+          <td>$${Math.round(req4).toLocaleString()}</td>
+          <td>$${Math.round(req35).toLocaleString()}</td>
+          <td>
+            <span class="status-pill ${isAchieved ? 'achieved' : 'pending'}">
+              ${isAchieved ? '100% ACHIEVED' : pct35.toFixed(1) + '%'}
+            </span>
+          </td>
+          <td>${isAchieved ? '<span style="color:#34d399">+$' + Math.round(state.netWorth - req35).toLocaleString() + ' Surplus</span>' : '<span style="color:#fbbf24">-$' + Math.round(gap).toLocaleString() + ' Gap</span>'}</td>
+          <td><strong>${estYear}</strong></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Modal & Sheet Credentials Management (Stored strictly in this device's localStorage)
+    function openKeyModal() {
+      document.getElementById('modal-script-url').value = localStorage.getItem('sheet_sync_url') || 'https://script.google.com/macros/s/AKfycbxcPxC8gZUi1A5rLAN81jwf_lBvRu1JRV4AcuwFEFgzhYOlWUMM6XB-ReDrS6f4tMpaLQ/exec';
+      document.getElementById('modal-script-key').value = localStorage.getItem('sheet_sync_key') || '';
+      document.getElementById('key-modal').style.display = 'flex';
+    }
+
+    function closeKeyModal() {
+      document.getElementById('key-modal').style.display = 'none';
+    }
+
+    function clearSavedCredentials() {
+      localStorage.removeItem('sheet_sync_key');
+      localStorage.removeItem('sheet_sync_url');
+      document.getElementById('sync-text').textContent = '🔒 Sheet Disconnected (Click "🔑 Connect Sheet" to link)';
+      closeKeyModal();
+    }
+
+    function saveCredentialsAndSync() {
+      const url = document.getElementById('modal-script-url').value.trim();
+      const key = document.getElementById('modal-script-key').value.trim();
+      if (!key) {
+        alert('Please enter your secret access key.');
+        return;
+      }
+      localStorage.setItem('sheet_sync_url', url);
+      localStorage.setItem('sheet_sync_key', key);
+      closeKeyModal();
+      syncLiveFromGoogleSheet(true);
+    }
+
+    // Google Sheets API Sync
+    async function syncLiveFromGoogleSheet(isManual = false) {
+      const textEl = document.getElementById('sync-text');
+      const btn = document.getElementById('btn-sync');
+      
+      const scriptUrl = localStorage.getItem('sheet_sync_url');
+      const secretKey = localStorage.getItem('sheet_sync_key');
+
+      if (!secretKey || !scriptUrl) {
+        textEl.textContent = '🔒 Sheet Disconnected: Click "🔑 Connect Sheet" to sync';
+        if (isManual) {
+          openKeyModal();
+        }
+        return;
+      }
+
+      if (isManual) btn.textContent = '⏳ Syncing...';
+
+      try {
+        const url = `${scriptUrl}?key=${encodeURIComponent(secretKey)}&action=read&sheet=Dashboard&range=A2:B6`;
+        const resp = await fetch(url);
+        const json = await resp.json();
+        
+        if (json && json.data) {
+          const nwVal = parseFloat(json.data[1][1]);
+          const spendVal = parseFloat(json.data[3][1]);
+
+          if (!isNaN(nwVal) && nwVal > 0) state.netWorth = nwVal;
+          if (!isNaN(spendVal) && spendVal > 0) {
+            state.liveBaseSpend = spendVal;
+            if (document.getElementById('chip-current').classList.contains('active')) {
+              state.baseSpend = spendVal;
+              const spendSlider = document.getElementById('input-spend-slider');
+              if (spendSlider) spendSlider.value = spendVal;
+            }
+            document.getElementById('lbl-current-spend').textContent = '$' + (spendVal / 1000).toFixed(1) + 'k';
+          }
+
+          textEl.textContent = '🟢 Auto-Synced live with Sheet (' + new Date().toLocaleTimeString() + ')';
+        } else if (json && json.error) {
+          textEl.textContent = '⚠️ Sheet Sync Error: ' + json.error;
+        }
+      } catch (e) {
+        textEl.textContent = 'Connected (Using snapshot: $' + (state.netWorth / 1000000).toFixed(2) + 'M NW)';
+      } finally {
+        if (isManual) btn.textContent = '🔄 Force Refresh';
+        recalculate(false);
+      }
+    }
+
+    // Excel File Watcher
+    async function watchLocalExcelFile() {
+      if (!('showOpenFilePicker' in window)) {
+        alert('File System watching is supported in Chrome, Edge, and modern browsers.');
+        return;
+      }
+
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{ description: 'Excel Workbook', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
+        });
+        localFileHandle = handle;
+        const file = await localFileHandle.getFile();
+        localFileLastMod = file.lastModified;
+
+        await parseExcelFile(file);
+        document.getElementById('sync-text').textContent = '🟢 Auto-Watching local Excel file: ' + file.name;
+        setInterval(checkLocalFileUpdate, 2000);
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error(err);
+      }
+    }
+
+    async function checkLocalFileUpdate() {
+      if (!localFileHandle) return;
+      try {
+        const file = await localFileHandle.getFile();
+        if (file.lastModified > localFileLastMod) {
+          localFileLastMod = file.lastModified;
+          await parseExcelFile(file);
+          document.getElementById('sync-text').textContent = '⚡ Reloaded from Excel save at ' + new Date().toLocaleTimeString();
+        }
+      } catch (e) {
+        console.warn('File watch error:', e);
+      }
+    }
+
+    async function parseExcelFile(file) {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      
+      if (workbook.Sheets['Dashboard']) {
+        const sheet = workbook.Sheets['Dashboard'];
+        if (sheet['B3'] && sheet['B3'].v) state.netWorth = parseFloat(sheet['B3'].v);
+        if (sheet['B5'] && sheet['B5'].v) {
+          state.liveBaseSpend = parseFloat(sheet['B5'].v);
+          if (document.getElementById('chip-current').classList.contains('active')) {
+            state.baseSpend = state.liveBaseSpend;
+            const spendSlider = document.getElementById('input-spend-slider');
+            if (spendSlider) spendSlider.value = state.baseSpend;
+          }
+        }
+      } else if (workbook.Sheets['Goals']) {
+        const sheet = workbook.Sheets['Goals'];
+        const nwCell = sheet['L3'] || sheet['K3'];
+        if (nwCell && nwCell.v) state.netWorth = parseFloat(nwCell.v);
+      }
+      recalculate(false);
+    }
+  </script>
 </body>
 </html>
