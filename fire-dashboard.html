@@ -168,7 +168,7 @@
       <div class="kpi-card success">
         <div class="kpi-label">FIRE Funded Status</div>
         <div class="kpi-value" id="kpi-fire-status">---%</div>
-        <div class="kpi-sub" id="kpi-fire-sub">At 3.5% SWR w/ Subsidized Silver</div>
+        <div class="kpi-sub" id="kpi-fire-sub">At 3.50% SWR w/ Subsidized Gold</div>
       </div>
       <div class="kpi-card purple">
         <div class="kpi-label">Liquid Runway</div>
@@ -218,18 +218,18 @@
           </div>
         </div>
 
-        <!-- Healthcare Selection -->
+        <!-- Healthcare Selection (Retirement Focus) -->
         <div class="control-group">
           <div class="control-header">
             <span>Healthcare (Early Retirement):</span>
-            <span class="control-val" id="val-health-cost">+$2,580/yr</span>
+            <span class="control-val" id="val-health-cost">+$3,840/yr</span>
           </div>
           <select id="select-health" onchange="recalculate()">
-            <option value="2580" selected>GetCoveredNJ Silver w/ NJHPS Subsidies (CSR @ &lt;250% FPL) - $215/mo ($2,580/yr)</option>
-            <option value="6600">GetCoveredNJ Bronze Plan (Catastrophic / NJ Mandate) - $550/mo ($6,600/yr)</option>
-            <option value="8520">GetCoveredNJ Silver Plan (Full Retail / Unsubsidized) - $710/mo ($8,520/yr)</option>
-            <option value="4800">Current Goals Benchmark - $400/mo ($4,800/yr)</option>
-            <option value="0">Employer Coverage Active - $0/yr</option>
+            <option value="3840" selected>GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) - $320/mo ($3,840/yr)</option>
+            <option value="6240">GetCoveredNJ Gold Plan (Moderate MAGI / Partial Subsidy) - $520/mo ($6,240/yr)</option>
+            <option value="9360">GetCoveredNJ Gold Plan (Full Retail / Unsubsidized) - $780/mo ($9,360/yr)</option>
+            <option value="2580">GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &lt;250% FPL) - $215/mo ($2,580/yr)</option>
+            <option value="6600">GetCoveredNJ Bronze Plan (Catastrophic / High Deductible) - $550/mo ($6,600/yr)</option>
           </select>
         </div>
 
@@ -399,34 +399,34 @@
               </ul>
             </div>
 
-            <!-- Card 4: Federal ACA Subsidies -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
-              <div style="font-weight: 700; font-size: 14px; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>4. Federal ACA Premium Tax Credits (PTC)</span>
-                <span style="font-size: 11px; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 4px;">8.5% Cap & CSR</span>
+            <!-- Card 4: GetCoveredNJ Gold Plan Retirement Strategy -->
+            <div style="background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; padding: 16px;">
+              <div style="font-weight: 700; font-size: 14px; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>4. GetCoveredNJ Gold Plan Retirement Strategy</span>
+                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px;">Top-Tier Coverage</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-                Federal health insurance subsidy rules under the Inflation Reduction Act:
+                Why high-net-worth early retirees often choose <strong>Gold plans</strong> over Silver or Bronze:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>No Subsidy Cliff (8.5% Cap):</strong> Benchmark Silver plan premiums are capped at no more than <strong>8.5% of household MAGI</strong>, even above 400% FPL through 2025/2026.</li>
-                <li><strong>Cost-Sharing Reductions (CSR) Tier:</strong> Keeping MAGI under <strong>250% FPL (~$39,125 single)</strong> activates Silver CSRs, slashing deductibles from $5,000+ down to <strong>$0–$500</strong> with $5–$15 copays.</li>
-                <li><strong>GetCoveredNJ + NJHPS Stack:</strong> New Jersey stacks state cash savings on top of federal credits, extending subsidies all the way to <strong>600% FPL ($93,900 single)</strong>!</li>
+                <li><strong>Near-Zero Deductibles (80% Actuarial Value):</strong> Gold plans feature $0 to $1,000 deductibles with fixed $15–$30 copays, completely avoiding the $7,500+ out-of-pocket exposure of Bronze plans.</li>
+                <li><strong>Cash Subsidies Stack on Gold:</strong> Federal Premium Tax Credits (PTC) and NJ Health Plan Savings (NJHPS) are cash vouchers that apply to <em>any</em> metal tier. At an optimized low early-retirement MAGI (~$35k–$40k), monthly net premiums drop from $780/mo down to <strong>~$320/mo ($3,840/yr)</strong>!</li>
+                <li><strong>Freedom from the 250% FPL CSR Cliff:</strong> With Gold, you get rich doctor networks (Horizon OMNIA Gold / AmeriHealth Gold) with predictable low copays without strict Silver CSR income constraints.</li>
               </ul>
             </div>
 
             <!-- Card 5: Spending vs MAGI Strategy -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
-              <div style="font-weight: 700; font-size: 14px; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-weight: 700; font-size: 14px; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span>5. The "Spend $100k, Report $35k" Playbook</span>
-                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); padding: 2px 8px; border-radius: 4px;">Portfolio Arbitrage</span>
+                <span style="font-size: 11px; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 4px;">Portfolio Arbitrage</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
                 In early retirement, <strong>spending does NOT equal taxable income (MAGI)</strong>:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
                 <li><strong>Zero-MAGI Outflows:</strong> Cash reserves, return of brokerage cost-basis, and Roth IRA contribution withdrawals generate <strong>$0 reportable MAGI</strong>.</li>
-                <li><strong>Living Large on $35k MAGI:</strong> Drawing $40k capital basis + $25k Roth principal + $35k dividends/gains lets you spend <strong>$100,000/yr</strong> in cash flow while locking in full NJ Silver CSR subsidies ($50–$165/mo) and $0 federal tax!</li>
+                <li><strong>Living Large on $35k MAGI:</strong> Drawing $40k capital basis + $25k Roth principal + $35k dividends/gains lets you spend <strong>$100,000/yr</strong> in cash flow while locking in subsidized Gold healthcare ($320/mo) and $0 federal income tax!</li>
               </ul>
             </div>
 
@@ -474,7 +474,7 @@
       currentAge: getCalculatedAge(),
       baseSpend: 0,
       liveBaseSpend: 0,
-      healthCost: 2580,
+      healthCost: 3840,
       swr: 0.035,
       nominalReturn: 0.085,
       inflationRate: 0.025,
@@ -702,7 +702,7 @@
       if (currChip) currChip.classList.add('active');
       const spendSlider = document.getElementById('input-spend-slider');
       if (spendSlider) spendSlider.value = state.baseSpend > 0 ? state.baseSpend : 50000;
-      document.getElementById('select-health').value = '2580';
+      document.getElementById('select-health').value = '3840';
       document.getElementById('input-swr').value = '3.5';
       document.getElementById('input-nominal-return').value = '8.5';
       document.getElementById('input-inflation').value = '2.5';
@@ -755,6 +755,7 @@
       if (!state.isUnlocked) {
         document.getElementById('kpi-nw').textContent = '$---,---';
         document.getElementById('kpi-fire-status').textContent = '---%';
+        document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR w/ Subsidized Gold`;
         document.getElementById('kpi-runway').textContent = '--- Years';
         document.getElementById('kpi-monthly-spend').textContent = '$--- / month total budget';
         document.getElementById('kpi-passive').textContent = '$--- / mo';
@@ -785,8 +786,13 @@
       const monthlySpend = totalAnnualSpend / 12;
       const monthlySurplus = monthlyPassive - monthlySpend;
 
+      const healthSelect = document.getElementById('select-health');
+      const selectedPlanText = healthSelect && healthSelect.selectedIndex >= 0 ? healthSelect.options[healthSelect.selectedIndex].text : '';
+      const planBadge = selectedPlanText.includes('Gold') ? 'Gold Plan' : selectedPlanText.includes('Silver') ? 'Silver Plan' : 'Bronze Plan';
+
       document.getElementById('kpi-nw').textContent = '$' + state.netWorth.toLocaleString();
       document.getElementById('kpi-fire-status').textContent = fundedStatus.toFixed(1) + '%';
+      document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR w/ ${planBadge}`;
       document.getElementById('kpi-runway').textContent = runway.toFixed(1) + ' Years';
       document.getElementById('kpi-monthly-spend').textContent = '$' + Math.round(monthlySpend).toLocaleString() + ' / month total budget';
       document.getElementById('kpi-passive').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
