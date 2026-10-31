@@ -227,26 +227,26 @@
             <span class="control-val" id="val-health-cost">+$3,840/yr</span>
           </div>
           <select id="select-health" onchange="recalculate()">
-            <optgroup label="🌟 100% Fully Subsidized ($0/mo Premiums)">
+            <optgroup label="🌟 100% Fully Subsidized ($0/yr)">
               <option value="0">GetCoveredNJ Silver w/ 100% Subsidies (CSR 94 @ &le;150% FPL) — $0/mo ($0/yr, $0 Ded)</option>
               <option value="0">GetCoveredNJ Bronze HDHP (100% Subsidized @ &le;200% FPL) — $0/mo ($0/yr, HSA Eligible)</option>
             </optgroup>
             
-            <optgroup label="🥇 Gold Plans (Low Deductible, High Coverage)">
-              <option value="3840" selected>GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) — $320/mo ($3,840/yr)</option>
-              <option value="6240">GetCoveredNJ Gold Plan (Partial Subsidy @ Moderate MAGI) — $520/mo ($6,240/yr)</option>
-              <option value="9360">GetCoveredNJ Gold Plan (Full Retail Unsubsidized) — $780/mo ($9,360/yr)</option>
-            </optgroup>
-
-            <optgroup label="🥈 Silver CSR Plans (Enhanced Subsidies & Reduced Copays)">
+            <optgroup label="💵 Deeply Subsidized ($600 – $2,160/yr)">
               <option value="600">GetCoveredNJ Silver w/ Deep Subsidies (CSR 87 @ 150%-200% FPL) — $50/mo ($600/yr)</option>
               <option value="1980">GetCoveredNJ Silver w/ Moderate Subsidies (CSR 73 @ 200%-250% FPL) — $165/mo ($1,980/yr)</option>
-              <option value="7200">GetCoveredNJ Silver Plan (Full Retail Unsubsidized) — $600/mo ($7,200/yr)</option>
+              <option value="2160">GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
             </optgroup>
 
-            <optgroup label="🥉 Bronze Plans (Catastrophic / NJ Mandate)">
-              <option value="2160">GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
+            <optgroup label="🥇 Mid-Tier & Subsidized Gold ($3,840 – $6,240/yr)">
+              <option value="3840" selected>GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) — $320/mo ($3,840/yr)</option>
               <option value="5400">GetCoveredNJ Bronze Plan (Full Retail Unsubsidized) — $450/mo ($5,400/yr)</option>
+              <option value="6240">GetCoveredNJ Gold Plan (Partial Subsidy @ Moderate MAGI) — $520/mo ($6,240/yr)</option>
+            </optgroup>
+
+            <optgroup label="🏢 Full Retail / Unsubsidized ($7,200 – $9,360/yr)">
+              <option value="7200">GetCoveredNJ Silver Plan (Full Retail Unsubsidized) — $600/mo ($7,200/yr)</option>
+              <option value="9360">GetCoveredNJ Gold Plan (Full Retail Unsubsidized) — $780/mo ($9,360/yr)</option>
             </optgroup>
           </select>
         </div>
