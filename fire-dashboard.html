@@ -2470,6 +2470,9 @@
           careerState.cashReward = 21875;
           careerState.rsuVesting = 45893;
         }
+        if (careerState.hsaPreTax === 4300 || !careerState.hsaPreTax) {
+          careerState.hsaPreTax = 4550;
+        }
       } catch (e) {
         console.warn('Failed to load career settings:', e);
       }
@@ -2642,9 +2645,9 @@
       const medSurtax = fica.medSurtax;
       const totalFica = fica.totalFica;
 
-      // 3. New Jersey State Income Tax (NJ-1040 Single)
-      const njGross = Math.max(0, earnedGross - health);
-      const njTaxable = Math.max(0, njGross - 1000); // $1,000 NJ standard exemption
+      // 3. New Jersey State Income Tax (NJ-1040 Single: 401k & Cafeteria Health excluded; HSA taxable in NJ)
+      const njGross = Math.max(0, earnedGross - k401 - health);
+      const njTaxable = Math.max(0, njGross - 1000); // $1,000 NJ standard personal exemption
       const njTax = computeNjTax(njTaxable);
 
       const totalTaxes = fedTax + totalFica + njTax;
@@ -2672,21 +2675,21 @@
         const bFedTaxable = Math.max(0, baseSalary - preTaxDeductions - fedStdDeduction);
         const bFed = computeFedTax(bFedTaxable);
         const bFica = computeFica(Math.max(0, baseSalary - health - hsa));
-        const bNj = computeNjTax(Math.max(0, baseSalary - health - 1000));
+        const bNj = computeNjTax(Math.max(0, baseSalary - k401 - health - 1000));
         bridgeTargetAnnual = baseSalary - (bFed + bFica.totalFica + bNj) - preTaxDeductions;
         bridgeDesc = 'Base Salary Cash Take-Home:';
       } else if (careerState.bridgeTarget === 'total') {
         const tFedTaxable = Math.max(0, totalComp - preTaxDeductions - fedStdDeduction);
         const tFed = computeFedTax(tFedTaxable);
         const tFica = computeFica(Math.max(0, totalComp - health - hsa));
-        const tNj = computeNjTax(Math.max(0, totalComp - health - 1000));
+        const tNj = computeNjTax(Math.max(0, totalComp - k401 - health - 1000));
         bridgeTargetAnnual = totalComp - (tFed + tFica.totalFica + tNj) - preTaxDeductions;
         bridgeDesc = 'Total Comp Take-Home (Cash + RSUs):';
       } else {
         const cFedTaxable = Math.max(0, grossCash - preTaxDeductions - fedStdDeduction);
         const cFed = computeFedTax(cFedTaxable);
         const cFica = computeFica(Math.max(0, grossCash - health - hsa));
-        const cNj = computeNjTax(Math.max(0, grossCash - health - 1000));
+        const cNj = computeNjTax(Math.max(0, grossCash - k401 - health - 1000));
         bridgeTargetAnnual = grossCash - (cFed + cFica.totalFica + cNj) - preTaxDeductions;
         bridgeDesc = 'Total Cash Take-Home (Base + AIP + Cash Reward):';
       }
@@ -2739,31 +2742,46 @@
       // Breakdown Table
       const tbody = document.getElementById('career-tax-tbody');
       if (tbody) {
+        // Compute Cash-only Net vs Net RSU split for crystal-clear note
+        const cFedTaxable = Math.max(0, grossCash - preTaxDeductions - fedStdDeduction);
+        const cFed = computeFedTax(cFedTaxable);
+        const cFica = computeFica(Math.max(0, grossCash - health - hsa));
+        const cNj = computeNjTax(Math.max(0, grossCash - k401 - health - 1000));
+        const netCashOnly = grossCash - (cFed + cFica.totalFica + cNj) - preTaxDeductions;
+        const netRsuOnly = netTakeHomeAnnual - netCashOnly;
+        const totalWealthRetained = netTakeHomeAnnual + k401 + hsa + match;
+
         const rows = [
           { name: '💼 Base Annual Salary', annual: baseSalary, notes: 'Regular base pay ($' + Math.round(baseSalary / 12).toLocaleString() + ' / month)' },
           { name: '🎯 AIP Annual Incentive Bonus', annual: bonus, notes: `AIP Cash Bonus (Target 10% = $${Math.round(baseSalary * 0.1).toLocaleString()}; modifier applied)` },
           { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of active cash grant paid via payroll in USD` : `Vesting begins March 1, 2027 ($21,875 in 2027, $12,500 in 2028, $3,125 in 2029)` },
           { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: `Always included in W-2 gross taxable earnings (${CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares || 'shares'} shares @ $${stockPrice.toFixed(2)}) per IRS & NJ tax law` },
-          { name: '💵 Gross Taxable Earnings (W-2)', annual: earnedGross, notes: `Base ($${Math.round(baseSalary).toLocaleString()}) + AIP Bonus ($${Math.round(bonus).toLocaleString()}) + Cash Reward ($${Math.round(cashReward).toLocaleString()}) + RSUs ($${Math.round(rsuVesting).toLocaleString()})` },
-          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, notes: 'IRS Elective Limit: $24,500. Diverted directly into your 401(k) retirement shield (Saves Federal tax now)' },
-          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, notes: 'HSA limit $4,550 + health insurance. Exempt from Federal Income Tax, Social Security & Medicare taxes' },
-          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $16,100 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
-          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: '6.20% up to $181,800 cap ($11,272 max). Zero tax on income above cap!' },
-          { name: '🏥 Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, notes: `1.45% base Medicare${medSurtax > 0 ? ' + $' + Math.round(medSurtax).toLocaleString() + ' 0.9% additional Medicare surtax (> $200k)' : ' (no wage cap)'}` },
-          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, notes: `NJ Gross: $${Math.round(njGross).toLocaleString()} (NJ progressive rates 1.4% to 6.37%+)` },
-          { name: '💰 Net Take-Home Pay (In Your Pocket)', annual: netTakeHomeAnnual, notes: `Pure disposable income ($${Math.round(monthlyTakeHome).toLocaleString()} / month, $${Math.round(biWeeklyTakeHome).toLocaleString()} / bi-weekly paycheck)` },
-          { name: '🏢 Employer 401(k) Match (Non-Taxable)', annual: match, notes: 'Deposited directly to your 401(k) by employer. Not taxed until retirement withdrawal' }
+          { name: '💵 Gross Taxable Earnings (W-2)', annual: earnedGross, rowStyle: 'background:rgba(59, 130, 246, 0.12); font-weight:700;', notes: `100.0% W-2 Gross = Base ($${Math.round(baseSalary).toLocaleString()}) + AIP ($${Math.round(bonus).toLocaleString()}) + Cash Award ($${Math.round(cashReward).toLocaleString()}) + RSUs ($${Math.round(rsuVesting).toLocaleString()})` },
+          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, isDeduction: true, notes: 'IRS Elective Limit: $24,500. Diverted into your 401(k) shield (Exempt from Federal & NJ income tax)' },
+          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, isDeduction: true, notes: `HSA ($${Math.round(hsa).toLocaleString()}) + Health Insurance ($${Math.round(health).toLocaleString()}). Exempt from Federal & FICA taxes` },
+          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, isDeduction: true, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $16,100 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
+          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, isDeduction: true, notes: '6.20% up to $181,800 cap ($11,272 max). Zero tax on income above cap!' },
+          { name: '🏥 Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, isDeduction: true, notes: `1.45% base Medicare${medSurtax > 0 ? ' + $' + Math.round(medSurtax).toLocaleString() + ' 0.9% additional Medicare surtax (> $200k)' : ' (no wage cap)'}` },
+          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, isDeduction: true, notes: `NJ Taxable: $${Math.round(njTaxable).toLocaleString()} after $${Math.round(k401 + health).toLocaleString()} 401(k)/health deduction & $1k exemption` },
+          { name: '📊 Total Taxes + Pre-Tax Deductions', annual: totalTaxes + preTaxDeductions, isDeduction: true, rowStyle: 'background:rgba(239, 68, 68, 0.08); font-weight:700;', notes: `Taxes: $${Math.round(totalTaxes).toLocaleString()} (${((totalTaxes / earnedGross) * 100).toFixed(1)}%) + Pre-Tax 401k/HSA/Health: $${Math.round(preTaxDeductions).toLocaleString()} (${((preTaxDeductions / earnedGross) * 100).toFixed(1)}%)` },
+          { name: '💰 Net Take-Home (Cash + Net Vested RSUs)', annual: netTakeHomeAnnual, rowStyle: 'background:rgba(16, 185, 129, 0.14); font-weight:700;', notes: `100% Gross − ${((preTaxDeductions / earnedGross) * 100).toFixed(1)}% Pre-Tax − ${((totalTaxes / earnedGross) * 100).toFixed(1)}% Taxes = ${((netTakeHomeAnnual / earnedGross) * 100).toFixed(1)}% Net ($${Math.round(netCashOnly).toLocaleString()} net cash + $${Math.round(netRsuOnly).toLocaleString()} net RSUs)` },
+          { name: '🏢 Employer 401(k) Match (Non-Taxable Bonus)', annual: match, pctOverride: '+' + (earnedGross > 0 ? ((match / earnedGross) * 100).toFixed(1) : '0') + '%', notes: 'Deposited directly to your 401(k) by employer on top of W-2 gross. Not taxed until retirement withdrawal' },
+          { name: '💎 Total Wealth Retained (Net + 401k + HSA + Match)', annual: totalWealthRetained, rowStyle: 'background:rgba(56, 189, 248, 0.12); font-weight:700;', notes: `Net Take-Home ($${Math.round(netTakeHomeAnnual).toLocaleString()}) + 401k ($${Math.round(k401).toLocaleString()}) + HSA ($${Math.round(hsa).toLocaleString()}) + Match ($${Math.round(match).toLocaleString()})` }
         ];
 
-        tbody.innerHTML = rows.map(r => `
-          <tr style="${r.name.includes('Net Take-Home') ? 'background:rgba(16, 185, 129, 0.14); font-weight:700;' : r.name.includes('Gross Taxable') ? 'background:rgba(59, 130, 246, 0.1); font-weight:700;' : ''}">
+        tbody.innerHTML = rows.map(r => {
+          const sign = r.isDeduction ? '-' : '';
+          const pctStr = r.pctOverride || (earnedGross > 0 ? sign + ((r.annual / earnedGross) * 100).toFixed(1) + '%' : '0%');
+          return `
+          <tr style="${r.rowStyle || ''}">
             <td><strong>${r.name}</strong></td>
-            <td><strong>$${Math.round(r.annual).toLocaleString()}</strong></td>
-            <td>$${Math.round(r.annual / 12).toLocaleString()} / mo</td>
-            <td>${earnedGross > 0 ? ((r.annual / earnedGross) * 100).toFixed(1) + '%' : '0%'}</td>
+            <td><strong>${sign}$${Math.round(r.annual).toLocaleString()}</strong></td>
+            <td>${sign}$${Math.round(r.annual / 12).toLocaleString()} / mo</td>
+            <td>${pctStr}</td>
             <td style="color:#94a3b8; font-size:12px;">${r.notes}</td>
           </tr>
-        `).join('');
+        `;
+        }).join('');
       }
     }
 
