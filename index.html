@@ -160,6 +160,17 @@
         display: block !important;
         width: 100% !important;
       }
+
+      body.tab-history .main-grid {
+        display: block !important;
+      }
+      body.tab-history #section-controls {
+        display: none !important;
+      }
+      body.tab-history .desktop-right-col {
+        display: block !important;
+        width: 100% !important;
+      }
     }
 
     /* Controls Panel */
@@ -433,6 +444,10 @@
         grid-template-columns: 1fr !important;
         gap: 12px !important;
       }
+
+      .history-summary-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
     }
   </style>
 </head>
@@ -528,6 +543,7 @@
       <button class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">💼 Career & Compensation</button>
       <button class="mobile-tab-btn mobile-only-tab" data-tab="section-controls" onclick="switchTab('section-controls', this)">⚙️ Controls</button>
       <button class="mobile-tab-btn" data-tab="section-strategy" onclick="switchTab('section-strategy', this)">🏛️ Strategy</button>
+      <button class="mobile-tab-btn" data-tab="section-history" onclick="switchTab('section-history', this)">📚 History</button>
     </nav>
 
     <!-- Main Section: Controls + Live Projections Chart -->
@@ -1655,6 +1671,43 @@
                 <li><strong>Age 62+ Pension Exclusion:</strong> At age 62, NJ allows excluding up to <strong>$100,000/yr</strong> of pension/IRA withdrawals completely tax-free if total income &le; $100k.</li>
               </ul>
             </div>
+          </div>
+        </div>
+
+        <div class="panel tab-section" id="section-history" style="margin-bottom: 24px;">
+          <div class="panel-title">
+            <span>📚 Financial History</span>
+            <span id="history-sync-status" style="font-size: 12px; color: var(--text-muted);">🔒 Locked</span>
+          </div>
+
+          <div id="history-locked" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 28px 20px; text-align: center;">
+            <div style="font-size: 26px; margin-bottom: 8px;">🔒</div>
+            <h3 style="font-size: 16px; margin-bottom: 6px;">Financial history is locked</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0 auto 14px; max-width: 500px; line-height: 1.5;">
+              Enter your secret key to load annual income, taxes, investments, housing, and spending from your spreadsheet.
+            </p>
+            <button class="btn btn-secondary" onclick="openKeyModal()">🔑 Unlock to view history</button>
+          </div>
+
+          <div id="history-content" style="display: none;">
+            <div id="history-message" role="status" style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;"></div>
+            <div class="history-summary-grid" id="history-summary-grid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 18px;"></div>
+            <nav class="career-subnav" aria-label="History categories" style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
+              <button type="button" class="chip active" data-history-view="overview" onclick="switchHistoryView('overview', this)">Overview</button>
+              <button type="button" class="chip" data-history-view="income" onclick="switchHistoryView('income', this)">Income</button>
+              <button type="button" class="chip" data-history-view="taxes" onclick="switchHistoryView('taxes', this)">Taxes & Returns</button>
+              <button type="button" class="chip" data-history-view="investing" onclick="switchHistoryView('investing', this)">Investing & Match</button>
+              <button type="button" class="chip" data-history-view="living" onclick="switchHistoryView('living', this)">Living Costs</button>
+            </nav>
+            <div class="table-container" style="margin-top: 0;">
+              <table aria-label="Annual financial history">
+                <thead id="history-table-head"></thead>
+                <tbody id="history-table-body"></tbody>
+              </table>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+              Values come from the spreadsheet. Any rates or comparisons shown here are calculated from available columns and are not tax or investment advice.
+            </p>
           </div>
         </div>
       </div>
@@ -3151,7 +3204,269 @@
       }
     }
 
-        let currentTab = 'section-chart';
+    const HISTORY_RANGE = 'A1:Z500';
+    const HISTORY_SHEETS = {
+      income: { name: 'Income', label: 'Income' },
+      taxes: { name: 'Taxes', label: 'Taxes' },
+      taxReturns: { name: 'Tax returns', label: 'Tax returns' },
+      investing: { name: 'Investment Contributions', label: 'Investment contributions' },
+      living: { name: 'Living', label: 'Living costs' },
+      match: { name: 'Company Match', label: 'Company match' }
+    };
+    const HISTORY_VIEWS = ['overview', 'income', 'taxes', 'investing', 'living'];
+    let historyState = { sheets: {}, status: 'locked', view: 'overview', error: '', errors: [] };
+
+    function escapeHistoryCell(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function historyYear(value) {
+      const year = Number(value);
+      return Number.isInteger(year) && year >= 1900 && year <= 2200 ? year : null;
+    }
+
+    function historyYearColumns(grid) {
+      if (!Array.isArray(grid) || !Array.isArray(grid[0])) return [];
+      return grid[0].map((value, index) => ({ year: historyYear(value), index })).filter(item => item.year !== null);
+    }
+
+    function historyYears() {
+      const years = new Set();
+      ['income', 'taxes', 'taxReturns', 'investing', 'match'].forEach(key => {
+        historyYearColumns(historyState.sheets[key]).forEach(item => years.add(item.year));
+      });
+      (historyState.sheets.living || []).slice(1).forEach(row => {
+        const year = historyYear(row?.[0]);
+        if (year !== null) years.add(year);
+      });
+      return [...years].sort((a, b) => a - b);
+    }
+
+    function historyMetric(sheetKey, labelPattern, year) {
+      const grid = historyState.sheets[sheetKey];
+      if (!Array.isArray(grid) || !grid.length) return null;
+      if (sheetKey === 'living') {
+        const row = grid.slice(1).find(item => historyYear(item?.[0]) === year);
+        const totalIndex = (grid[0] || []).findIndex(value => /^total$/i.test(String(value ?? '').trim()));
+        if (!row || totalIndex < 0 || row[totalIndex] === '') return null;
+        const value = Number(row[totalIndex]);
+        return Number.isFinite(value) ? value : null;
+      }
+      const yearColumn = historyYearColumns(grid).find(item => item.year === year);
+      if (!yearColumn) return null;
+      const row = grid.slice(1).find(item => labelPattern.test(String(item?.[0] ?? '').trim()));
+      if (!row || row[yearColumn.index] === '' || row[yearColumn.index] === undefined) return null;
+      const value = Number(row[yearColumn.index]);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function historyOverviewGrid() {
+      const years = historyYears();
+      const headers = ['Year', 'Income total', 'Taxes total', 'Effective tax rate', 'Investment contributions', 'Investment rate', 'Employer match', 'Living costs'];
+      const rows = years.map(year => {
+        const income = historyMetric('income', /^total$/i, year);
+        const taxes = historyMetric('taxes', /^total taxes?$/i, year);
+        const investments = historyMetric('investing', /^total$/i, year);
+        const match = historyMetric('match', /^total$/i, year);
+        const living = historyMetric('living', /^total$/i, year);
+        return [
+          year,
+          income,
+          taxes,
+          income > 0 && taxes !== null ? `${(taxes / income * 100).toFixed(1)}%` : null,
+          investments,
+          income > 0 && investments !== null ? `${(investments / income * 100).toFixed(1)}%` : null,
+          match,
+          living
+        ];
+      });
+      return { headers, rows };
+    }
+
+    function historyDetailGrid(view) {
+      if (view === 'living') {
+        const grid = historyState.sheets.living || [];
+        const headers = grid[0] || [];
+        const rows = grid.slice(1).filter(row => historyYear(row?.[0]) !== null).map(row => [historyYear(row[0]), ...headers.slice(1).map((_, index) => row[index + 1] ?? null)]);
+        return { headers: ['Year', ...headers.slice(1).map(value => String(value ?? ''))], rows };
+      }
+
+      const sourceKeys = view === 'income' ? ['income'] : view === 'taxes' ? ['taxes', 'taxReturns'] : ['investing', 'match'];
+      const items = [];
+      sourceKeys.forEach(key => {
+        const grid = historyState.sheets[key];
+        if (!Array.isArray(grid) || !grid.length) return;
+        const yearColumns = historyYearColumns(grid);
+        grid.slice(1).forEach(row => {
+          const label = String(row?.[0] ?? '').trim();
+          if (!label || /^lifetime\s+total$/i.test(label)) return;
+          const prefix = key === 'taxReturns' ? 'Tax return' : key === 'match' ? 'Employer match' : '';
+          items.push({
+            label: prefix ? `${prefix} · ${label}` : label,
+            values: new Map(yearColumns.map(column => [column.year, row[column.index] ?? null]))
+          });
+        });
+      });
+      const years = historyYears();
+      return {
+        headers: ['Year', ...items.map(item => item.label)],
+        rows: years.map(year => [year, ...items.map(item => item.values.get(year) ?? null)])
+      };
+    }
+
+    function formatHistoryValue(value, header) {
+      if (value === null || value === undefined || value === '') return '—';
+      if (typeof value === 'number' || (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim()))) {
+        const number = Number(value);
+        if (/rate|percent|%/i.test(header)) return `${number.toLocaleString('en-US', { maximumFractionDigits: 1 })}%`;
+        if (/^year$/i.test(header)) return String(Math.round(number));
+        const formatted = Math.abs(number).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        return number < 0 ? '-$' + formatted : '$' + formatted;
+      }
+      return String(value);
+    }
+
+    function renderHistory() {
+      const locked = !state.isUnlocked || !sessionKey;
+      const lockedPanel = document.getElementById('history-locked');
+      const content = document.getElementById('history-content');
+      const status = document.getElementById('history-sync-status');
+      const message = document.getElementById('history-message');
+      const head = document.getElementById('history-table-head');
+      const body = document.getElementById('history-table-body');
+      const summary = document.getElementById('history-summary-grid');
+      if (!lockedPanel || !content || !status || !message || !head || !body || !summary) return;
+
+      lockedPanel.style.display = locked ? 'block' : 'none';
+      content.style.display = locked ? 'none' : 'block';
+      if (locked) {
+        status.textContent = '🔒 Locked';
+        head.innerHTML = '';
+        body.innerHTML = '';
+        summary.innerHTML = '';
+        summary.style.display = 'none';
+        return;
+      }
+
+      const years = historyYears();
+      const availableSheets = Object.keys(historyState.sheets).filter(key => historyState.sheets[key]?.length);
+      if (historyState.status === 'loading') {
+        status.textContent = '⏳ Loading';
+        message.textContent = 'Loading income, taxes, investments, and living costs…';
+      } else if (historyState.status === 'error') {
+        status.textContent = '⚠️ Unavailable';
+        message.textContent = historyState.error || 'Could not load financial history from the spreadsheet.';
+      } else if (!years.length) {
+        status.textContent = 'No annual data';
+        message.textContent = 'The requested sheets loaded, but no year columns were found.';
+      } else {
+        status.textContent = `🟢 ${years.length} years`;
+        const loadedLabels = availableSheets.map(key => HISTORY_SHEETS[key].label);
+        const missingLabels = historyState.errors.map(item => HISTORY_SHEETS[item.key].label);
+        message.textContent = `Loaded ${loadedLabels.join(', ')}.${missingLabels.length ? ` Unavailable: ${missingLabels.join(', ')}.` : ''}`;
+      }
+
+      const latestYear = years.slice().reverse().find(year => ['income', 'taxes', 'investing', 'living'].some(key => {
+        const value = historyMetric(key, key === 'taxes' ? /^total taxes?$/i : /^total$/i, year);
+        return value !== null && value !== 0;
+      }));
+      const summaryItems = [];
+      if (latestYear) {
+        const income = historyMetric('income', /^total$/i, latestYear);
+        const taxes = historyMetric('taxes', /^total taxes?$/i, latestYear);
+        const investments = historyMetric('investing', /^total$/i, latestYear);
+        const match = historyMetric('match', /^total$/i, latestYear);
+        const living = historyMetric('living', /^total$/i, latestYear);
+        summaryItems.push({ label: 'Latest year with data', value: String(latestYear) });
+        if (income !== null) summaryItems.push({ label: `Income total · ${latestYear}`, value: '$' + Math.round(income).toLocaleString() });
+        if (taxes !== null) {
+          summaryItems.push({ label: `Taxes total · ${latestYear}`, value: '$' + Math.round(taxes).toLocaleString() });
+          if (income > 0) summaryItems.push({ label: 'Effective tax rate · calculated', value: `${(taxes / income * 100).toFixed(1)}%` });
+        }
+        if (investments !== null) {
+          summaryItems.push({ label: `Investment contributions · ${latestYear}`, value: '$' + Math.round(investments).toLocaleString() });
+          if (income > 0) summaryItems.push({ label: 'Investment rate · calculated', value: `${(investments / income * 100).toFixed(1)}% of income` });
+        }
+        if (match !== null) summaryItems.push({ label: `Employer match · ${latestYear}`, value: '$' + Math.round(match).toLocaleString() });
+        if (living !== null) summaryItems.push({ label: `Living costs · ${latestYear}`, value: '$' + Math.round(living).toLocaleString() });
+      }
+      summary.innerHTML = summaryItems.map(item => `
+        <div class="kpi-card" style="padding: 12px 14px;">
+          <div class="kpi-label">${escapeHistoryCell(item.label)}</div>
+          <div class="kpi-value" style="font-size: 20px;">${escapeHistoryCell(item.value)}</div>
+        </div>
+      `).join('');
+      summary.style.display = summaryItems.length ? 'grid' : 'none';
+
+      const table = historyState.view === 'overview' ? historyOverviewGrid() : historyDetailGrid(historyState.view);
+      if (!table.rows.length || !table.headers.length) {
+        head.innerHTML = '';
+        body.innerHTML = `<tr><td style="text-align:center; padding:24px; color:var(--text-muted);">No data is available for this view.</td></tr>`;
+        return;
+      }
+      head.innerHTML = `<tr>${table.headers.map(header => `<th scope="col">${escapeHistoryCell(header)}</th>`).join('')}</tr>`;
+      body.innerHTML = table.rows.map(row => `<tr>${table.headers.map((header, index) => `<td>${escapeHistoryCell(formatHistoryValue(row[index], header))}</td>`).join('')}</tr>`).join('');
+    }
+
+    function switchHistoryView(view, button) {
+      if (!HISTORY_VIEWS.includes(view)) return;
+      historyState.view = view;
+      document.querySelectorAll('[data-history-view]').forEach(item => item.classList.toggle('active', item === button));
+      renderHistory();
+    }
+
+    function clearHistoryData() {
+      historyState.sheets = {};
+      historyState.status = 'locked';
+      historyState.error = '';
+      historyState.errors = [];
+      renderHistory();
+    }
+
+    async function syncHistoryFromGoogleSheet() {
+      if (!state.isUnlocked || !sessionKey) {
+        clearHistoryData();
+        return;
+      }
+
+      const requestKey = sessionKey;
+      historyState.status = 'loading';
+      historyState.error = '';
+      historyState.errors = [];
+      renderHistory();
+      const requests = Object.entries(HISTORY_SHEETS).map(async ([key, sheet]) => {
+        const params = new URLSearchParams({
+          key: requestKey,
+          action: 'read',
+          sheet: sheet.name,
+          range: HISTORY_RANGE
+        });
+        const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
+        const json = await response.json();
+        if (!response.ok) throw new Error(`Sheets API returned ${response.status}.`);
+        if (json?.error) throw new Error(String(json.error));
+        if (!Array.isArray(json?.data)) throw new Error('No data table returned.');
+        return { key, data: json.data };
+      });
+      const results = await Promise.allSettled(requests);
+      if (sessionKey !== requestKey || !state.isUnlocked) return;
+      historyState.sheets = {};
+      results.forEach((result, index) => {
+        const key = Object.keys(HISTORY_SHEETS)[index];
+        if (result.status === 'fulfilled') historyState.sheets[result.value.key] = result.value.data;
+        else historyState.errors.push({ key, message: result.reason?.message || 'Unavailable' });
+      });
+      const loadedCount = Object.keys(historyState.sheets).length;
+      if (!loadedCount) {
+        historyState.status = 'error';
+        historyState.error = historyState.errors.map(item => `${HISTORY_SHEETS[item.key].label}: ${item.message}`).join(' · ') || 'No financial sheets could be loaded.';
+      } else {
+        historyState.status = historyYears().length ? 'loaded' : 'empty';
+      }
+      renderHistory();
+    }
+
+    let currentTab = 'section-chart';
 
     function dismissChartTooltip() {
       if (!chartInstance) return;
@@ -3178,11 +3493,12 @@
         b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
       });
 
-      document.body.classList.remove('tab-forecast', 'tab-career', 'tab-controls', 'tab-strategy');
+      document.body.classList.remove('tab-forecast', 'tab-career', 'tab-controls', 'tab-strategy', 'tab-history');
       if (tabId === 'section-chart') document.body.classList.add('tab-forecast');
       else if (tabId === 'section-career') document.body.classList.add('tab-career');
       else if (tabId === 'section-controls') document.body.classList.add('tab-controls');
       else if (tabId === 'section-strategy') document.body.classList.add('tab-strategy');
+      else if (tabId === 'section-history') document.body.classList.add('tab-history');
 
       document.querySelectorAll('.tab-section').forEach(sec => {
         const isTarget = sec.id === tabId;
@@ -4089,6 +4405,7 @@
       state.isUnlocked = false;
       state.netWorth = 0;
       state.liveBaseSpend = 0;
+      clearHistoryData();
       if (document.getElementById('chip-current').classList.contains('active')) {
         state.baseSpend = 0;
       }
@@ -4164,6 +4481,7 @@
           restoreCareerInputsFromState();
           recalculate(false);
           recalculateCareer();
+          syncHistoryFromGoogleSheet();
         } else {
           const errMsg = (json && json.error) ? json.error : 'Invalid access key or access denied.';
           alert('Access Denied: ' + errMsg);
@@ -4216,6 +4534,7 @@
         } else if (json && json.error) {
           if (textEl) textEl.textContent = '⚠️ Sheet Sync Error: ' + json.error;
         }
+        await syncHistoryFromGoogleSheet();
       } catch (e) {
         if (textEl) textEl.textContent = '⚠️ Sync error (' + new Date().toLocaleTimeString() + ')';
       } finally {
