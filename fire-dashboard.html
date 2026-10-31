@@ -73,11 +73,61 @@
     /* Main Dashboard Layout */
     .main-grid { display: grid; grid-template-columns: 390px 1fr; gap: 24px; }
     .desktop-right-col { display: block; }
-    .tab-section { display: block; }
-    .mobile-nav { display: none; }
+
+    /* Universal Tab Navigation (Both Desktop & Mobile) */
+    .mobile-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .mobile-nav::-webkit-scrollbar { display: none; }
+    .mobile-tab-btn {
+      padding: 10px 18px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .mobile-tab-btn:hover {
+      background: #334155;
+      color: #fff;
+    }
+    .mobile-tab-btn.active {
+      background: var(--primary) !important;
+      color: #ffffff !important;
+      border-color: var(--primary) !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
+    }
+
     .mobile-quick-jump { display: none; }
     .mobile-swipe-hint { display: none; }
     .desktop-only { display: inline-flex; }
+
+    /* Desktop Tab Switching (Zero Reloads) */
+    @media (min-width: 769px) {
+      .tab-section { display: none; }
+      .tab-section.active-tab { display: block; }
+      body.tab-forecast #section-controls,
+      body.tab-forecast #section-chart {
+        display: block !important;
+      }
+      body:not(.tab-forecast) .main-grid {
+        display: block !important;
+      }
+      body:not(.tab-forecast) #section-controls {
+        display: none !important;
+      }
+    }
 
     /* Controls Panel */
     .panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 22px; }
@@ -353,7 +403,7 @@
     }
   </style>
 </head>
-<body>
+<body class="tab-forecast">
   <div class="container">
     <!-- Header -->
     <header>
@@ -438,12 +488,13 @@
       </div>
     </div>
 
-    <!-- Sticky Mobile Tab Navigation (Visible on mobile <= 768px) -->
+    <!-- Universal Tab Navigation (Desktop & Mobile) -->
     <nav class="mobile-nav" id="mobile-nav">
-      <button class="mobile-tab-btn" data-tab="section-controls" onclick="switchMobileTab('section-controls', this)">⚙️ Controls</button>
-      <button class="mobile-tab-btn active" data-tab="section-chart" onclick="switchMobileTab('section-chart', this)">📊 Forecast</button>
-      <button class="mobile-tab-btn" data-tab="section-tiers" onclick="switchMobileTab('section-tiers', this)">🏆 Milestones</button>
-      <button class="mobile-tab-btn" data-tab="section-strategy" onclick="switchMobileTab('section-strategy', this)">🏛️ Strategy</button>
+      <button class="mobile-tab-btn active" data-tab="section-chart" onclick="switchTab('section-chart', this)">📊 Forecast</button>
+      <button class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">💼 Career & Taxes</button>
+      <button class="mobile-tab-btn" data-tab="section-controls" onclick="switchTab('section-controls', this)">⚙️ Controls</button>
+      <button class="mobile-tab-btn" data-tab="section-tiers" onclick="switchTab('section-tiers', this)">🏆 Milestones</button>
+      <button class="mobile-tab-btn" data-tab="section-strategy" onclick="switchTab('section-strategy', this)">🏛️ Strategy</button>
     </nav>
 
     <!-- Main Section: Controls + Live Projections Chart -->
@@ -610,6 +661,178 @@
             <button class="btn btn-secondary" style="width: 100%; justify-content: center; font-size: 13px; padding: 10px;" onclick="switchMobileTab('section-controls')">
               ⚙️ Tune Assumptions, Spending & Sliders →
             </button>
+          </div>
+        </div>
+
+        <!-- Career Compensation, Taxes & Freedom Replacement Panel -->
+        <div class="panel tab-section" id="section-career" style="margin-bottom: 24px;">
+          <div class="panel-title">
+            <span>💼 Job Compensation, Taxes & Freedom Replacement</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="career-saved-badge" style="font-size: 11px; color: #34d399; font-weight: 500; opacity: 0; transition: opacity 0.3s ease;">✓ Saved</span>
+              <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Federal & NJ Tax Engine</span>
+            </div>
+          </div>
+
+          <!-- Locked Banner (visible when dashboard is locked) -->
+          <div id="career-locked-banner" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 22px; text-align: center; margin-bottom: 18px;">
+            <div style="font-size: 26px; margin-bottom: 6px;">🔒</div>
+            <h3 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Salary & Tax Information Locked</h3>
+            <p style="font-size: 13px; color: #94a3b8; max-width: 480px; margin: 0 auto 14px; line-height: 1.5;">
+              Compensation details, W-2 tax breakdowns, and job replacement metrics are kept private until unlocked. Enter your secret access key above to unlock and calculate.
+            </p>
+            <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
+          </div>
+
+          <!-- Career KPI Summary Cards (4 Cards) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div class="kpi-card accent" style="padding: 14px 16px;">
+              <div class="kpi-label">Gross Compensation</div>
+              <div class="kpi-value" id="kpi-career-gross" style="font-size: 22px;">$---,---</div>
+              <div class="kpi-sub" id="kpi-career-gross-sub">Base Salary + Annual Bonus</div>
+            </div>
+            <div class="kpi-card purple" style="padding: 14px 16px;">
+              <div class="kpi-label">Pre-Tax Deductions</div>
+              <div class="kpi-value" id="kpi-career-pretax" style="font-size: 22px;">$---,---</div>
+              <div class="kpi-sub" id="kpi-career-pretax-sub">401(k), HSA & Medical Shields</div>
+            </div>
+            <div class="kpi-card" style="padding: 14px 16px;">
+              <div class="kpi-label">Total Taxes (Fed + FICA + NJ)</div>
+              <div class="kpi-value" id="kpi-career-taxes" style="font-size: 22px;">$---,---</div>
+              <div class="kpi-sub" id="kpi-career-taxes-sub">Effective Tax Rate: ---%</div>
+            </div>
+            <div class="kpi-card success" style="padding: 14px 16px;">
+              <div class="kpi-label">Net Take-Home Pay</div>
+              <div class="kpi-value" id="kpi-career-net" style="font-size: 22px;">$---,---</div>
+              <div class="kpi-sub" id="kpi-career-net-sub">$--- / month in hand</div>
+            </div>
+          </div>
+
+          <!-- Freedom Bridge: Replace Job Compensation -->
+          <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 12px; padding: 20px; margin-bottom: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">🚀</span>
+                <div>
+                  <h3 style="font-size: 16px; font-weight: 700; color: #34d399;">Job Compensation Replacement Bridge</h3>
+                  <div style="font-size: 12px; color: #94a3b8;">How much of your job take-home paycheck is replaced by your investment portfolio today</div>
+                </div>
+              </div>
+              <div style="font-size: 22px; font-weight: 800; color: #34d399;" id="lbl-replace-pct">---%</div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="background: #334155; border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: 14px; position: relative;">
+              <div id="bar-replace-pct" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.4s ease;"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Current Job Take-Home:</span>
+                <strong style="color: #f8fafc; font-size: 16px;" id="lbl-job-net-monthly">$--- / mo</strong>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Safe Monthly Passive Income:</span>
+                <strong style="color: #34d399; font-size: 16px;" id="lbl-passive-monthly">$--- / mo</strong>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Remaining Monthly Paycheck Gap:</span>
+                <strong style="color: #fbbf24; font-size: 16px;" id="lbl-replace-gap">$--- / mo</strong>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Estimated 100% Replacement:</span>
+                <strong style="color: #38bdf8; font-size: 16px;" id="lbl-replace-timeline">---</strong>
+              </div>
+            </div>
+
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5;">
+              💡 <strong>Retirement Tax Reality:</strong> To retire comfortably, you do <em>not</em> need to replace $180,000 gross salary! In retirement, you stop paying 7.65% FICA payroll taxes ($10,000+), stop saving into a 401(k) ($23,500), and qualified investment withdrawals are eligible for the 0% capital gains bracket.
+            </p>
+          </div>
+
+          <!-- Job Information & Deductions Inputs (2 Columns) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <!-- Column 1: Compensation Inputs -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">1. Annual Job Compensation</h4>
+              
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Base Annual Salary:</span>
+                  <span class="control-val" id="val-career-salary">$165,000</span>
+                </div>
+                <input type="number" id="career-base-salary" value="165000" step="1000" min="0" oninput="onCareerInput()">
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Annual Bonus / Commission:</span>
+                  <span class="control-val" id="val-career-bonus">$15,000</span>
+                </div>
+                <input type="number" id="career-bonus" value="15000" step="1000" min="0" oninput="onCareerInput()">
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Employer 401(k) Match:</span>
+                  <span class="control-val" id="val-career-match">$6,000</span>
+                </div>
+                <input type="number" id="career-match" value="6000" step="500" min="0" oninput="onCareerInput()">
+              </div>
+            </div>
+
+            <!-- Column 2: Pre-Tax Deductions -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">2. Pre-Tax Deductions & Shields</h4>
+              
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Elective 401(k) Contribution:</span>
+                  <span class="control-val" id="val-career-401k">$23,500</span>
+                </div>
+                <input type="number" id="career-401k" value="23500" step="500" min="0" max="24500" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 IRS Elective Limit: $23,500 ($24,500 in 2026)</div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Pre-Tax Health / Dental (Net of Credit):</span>
+                  <span class="control-val" id="val-career-health">$1,000</span>
+                </div>
+                <input type="number" id="career-health" value="1000" step="100" min="0" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">$1,500 HDHP - $500 employer credit = $1,000 net</div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>HSA Annual Contribution:</span>
+                  <span class="control-val" id="val-career-hsa">$4,300</span>
+                </div>
+                <input type="number" id="career-hsa" value="4300" step="100" min="0" max="8550" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 Individual Limit: $4,300 ($8,550 family)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tax Breakdown Detail Table -->
+          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin-bottom: 12px;">3. Annual Tax Breakdown & Government Deductions</h4>
+            <div class="table-container">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Annual Amount</th>
+                    <th>Monthly Impact</th>
+                    <th>% of Gross</th>
+                    <th>Tax Mechanics & Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="career-tax-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -870,7 +1093,237 @@
       }
     }
 
-    let currentMobileTab = 'section-chart';
+    const CAREER_STORAGE_KEY = 'fire_dashboard_career_v1';
+
+    let careerState = {
+      baseSalary: 165000,
+      bonus: 15000,
+      k401: 23500,
+      employerMatch: 6000,
+      healthPreTax: 1000,
+      hsaPreTax: 4300
+    };
+
+    function saveCareerSettings() {
+      try {
+        if (!state.isUnlocked) return;
+        careerState.baseSalary = parseFloat(document.getElementById('career-base-salary').value) || 0;
+        careerState.bonus = parseFloat(document.getElementById('career-bonus').value) || 0;
+        careerState.employerMatch = parseFloat(document.getElementById('career-match').value) || 0;
+        careerState.k401 = parseFloat(document.getElementById('career-401k').value) || 0;
+        careerState.healthPreTax = parseFloat(document.getElementById('career-health').value) || 0;
+        careerState.hsaPreTax = parseFloat(document.getElementById('career-hsa').value) || 0;
+        localStorage.setItem(CAREER_STORAGE_KEY, JSON.stringify(careerState));
+
+        const badge = document.getElementById('career-saved-badge');
+        if (badge) {
+          badge.textContent = '✓ Saved';
+          badge.style.opacity = '1';
+          clearTimeout(badge._timer);
+          badge._timer = setTimeout(() => { badge.style.opacity = '0'; }, 1500);
+        }
+      } catch (e) {
+        console.warn('Failed to save career settings:', e);
+      }
+    }
+
+    function loadCareerSettings() {
+      try {
+        const raw = localStorage.getItem(CAREER_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          careerState = Object.assign(careerState, parsed);
+        }
+      } catch (e) {
+        console.warn('Failed to load career settings:', e);
+      }
+    }
+
+    function onCareerInput() {
+      if (!state.isUnlocked) return;
+      saveCareerSettings();
+      recalculateCareer();
+    }
+
+    function recalculateCareer() {
+      const isLocked = !state.isUnlocked;
+      const lockedBanner = document.getElementById('career-locked-banner');
+      if (lockedBanner) lockedBanner.style.display = isLocked ? 'block' : 'none';
+
+      // Toggle inputs enabled/disabled
+      const inputIds = ['career-base-salary', 'career-bonus', 'career-match', 'career-401k', 'career-health', 'career-hsa'];
+      inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = isLocked;
+          if (isLocked) {
+            el.type = 'password';
+            el.value = '••••••';
+          } else {
+            el.type = 'number';
+          }
+        }
+      });
+
+      if (isLocked) {
+        document.getElementById('val-career-salary').textContent = '$---,---';
+        document.getElementById('val-career-bonus').textContent = '$---,---';
+        document.getElementById('val-career-match').textContent = '$---,---';
+        document.getElementById('val-career-401k').textContent = '$---,---';
+        document.getElementById('val-career-health').textContent = '$---,---';
+        document.getElementById('val-career-hsa').textContent = '$---,---';
+
+        document.getElementById('kpi-career-gross').textContent = '$---,---';
+        document.getElementById('kpi-career-pretax').textContent = '$---,---';
+        document.getElementById('kpi-career-taxes').textContent = '$---,---';
+        document.getElementById('kpi-career-taxes-sub').textContent = 'Effective Tax Rate: ---%';
+        document.getElementById('kpi-career-net').textContent = '$---,---';
+        document.getElementById('kpi-career-net-sub').textContent = '$--- / month in hand';
+
+        document.getElementById('lbl-replace-pct').textContent = '---%';
+        document.getElementById('bar-replace-pct').style.width = '0%';
+        document.getElementById('lbl-job-net-monthly').textContent = '$--- / mo';
+        document.getElementById('lbl-passive-monthly').textContent = '$--- / mo';
+        document.getElementById('lbl-replace-gap').textContent = '$--- / mo';
+        document.getElementById('lbl-replace-timeline').textContent = '---';
+
+        const tbody = document.getElementById('career-tax-tbody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">🔒 Locked — Enter secret access key above to calculate taxes & deductions</td></tr>`;
+        }
+        return;
+      }
+
+      // Unlocked: read values from inputs or careerState
+      const baseSalary = parseFloat(document.getElementById('career-base-salary').value) || careerState.baseSalary;
+      const bonus = parseFloat(document.getElementById('career-bonus').value) || careerState.bonus;
+      const match = parseFloat(document.getElementById('career-match').value) || careerState.employerMatch;
+      const k401 = parseFloat(document.getElementById('career-401k').value) || careerState.k401;
+      const health = parseFloat(document.getElementById('career-health').value) || careerState.healthPreTax;
+      const hsa = parseFloat(document.getElementById('career-hsa').value) || careerState.hsaPreTax;
+
+      if (document.getElementById('career-base-salary').value !== String(baseSalary)) document.getElementById('career-base-salary').value = baseSalary;
+      if (document.getElementById('career-bonus').value !== String(bonus)) document.getElementById('career-bonus').value = bonus;
+      if (document.getElementById('career-match').value !== String(match)) document.getElementById('career-match').value = match;
+      if (document.getElementById('career-401k').value !== String(k401)) document.getElementById('career-401k').value = k401;
+      if (document.getElementById('career-health').value !== String(health)) document.getElementById('career-health').value = health;
+      if (document.getElementById('career-hsa').value !== String(hsa)) document.getElementById('career-hsa').value = hsa;
+
+      document.getElementById('val-career-salary').textContent = '$' + Math.round(baseSalary).toLocaleString();
+      document.getElementById('val-career-bonus').textContent = '$' + Math.round(bonus).toLocaleString();
+      document.getElementById('val-career-match').textContent = '$' + Math.round(match).toLocaleString();
+      document.getElementById('val-career-401k').textContent = '$' + Math.round(k401).toLocaleString();
+      document.getElementById('val-career-health').textContent = '$' + Math.round(health).toLocaleString();
+      document.getElementById('val-career-hsa').textContent = '$' + Math.round(hsa).toLocaleString();
+
+      const grossEarnings = baseSalary + bonus;
+      const preTaxDeductions = k401 + health + hsa;
+
+      // 1. Federal Income Tax (2025 Standard Deduction: $15,750 Single)
+      const fedStdDeduction = 15750;
+      const fedTaxable = Math.max(0, grossEarnings - preTaxDeductions - fedStdDeduction);
+      let fedTax = 0;
+      if (fedTaxable > 626350) {
+        fedTax = 186601 + (fedTaxable - 626350) * 0.37;
+      } else if (fedTaxable > 250525) {
+        fedTax = 55062.25 + (fedTaxable - 250525) * 0.35;
+      } else if (fedTaxable > 197300) {
+        fedTax = 38030.25 + (fedTaxable - 197300) * 0.32;
+      } else if (fedTaxable > 103350) {
+        fedTax = 15482.25 + (fedTaxable - 103350) * 0.24;
+      } else if (fedTaxable > 48475) {
+        fedTax = 5585.50 + (fedTaxable - 48475) * 0.22;
+      } else if (fedTaxable > 11925) {
+        fedTax = 1192.50 + (fedTaxable - 11925) * 0.12;
+      } else {
+        fedTax = fedTaxable * 0.10;
+      }
+
+      // 2. FICA (Social Security & Medicare)
+      const ficaWageBase = Math.max(0, grossEarnings - health - hsa);
+      const ssTax = Math.min(ficaWageBase, 176100) * 0.062;
+      const medBaseTax = ficaWageBase * 0.0145;
+      const medSurtax = ficaWageBase > 200000 ? (ficaWageBase - 200000) * 0.009 : 0;
+      const totalFica = ssTax + medBaseTax + medSurtax;
+
+      // 3. New Jersey State Income Tax (NJ-1040 Single)
+      const njGross = Math.max(0, grossEarnings - health);
+      const njTaxable = Math.max(0, njGross - 1000);
+      let njTax = 0;
+      if (njTaxable > 1000000) {
+        njTax = 66250 + (njTaxable - 1000000) * 0.1075;
+      } else if (njTaxable > 500000) {
+        njTax = 21400 + (njTaxable - 500000) * 0.0897;
+      } else if (njTaxable > 75000) {
+        njTax = 2777.50 + (njTaxable - 75000) * 0.0637;
+      } else if (njTaxable > 40000) {
+        njTax = 843.75 + (njTaxable - 40000) * 0.05525;
+      } else if (njTaxable > 35000) {
+        njTax = 668.75 + (njTaxable - 35000) * 0.035;
+      } else if (njTaxable > 20000) {
+        njTax = 280 + (njTaxable - 20000) * 0.0175;
+      } else {
+        njTax = njTaxable * 0.014;
+      }
+
+      const totalTaxes = fedTax + totalFica + njTax;
+      const netTakeHomeAnnual = grossEarnings - totalTaxes - preTaxDeductions;
+      const monthlyTakeHome = netTakeHomeAnnual / 12;
+      const biWeeklyTakeHome = netTakeHomeAnnual / 26;
+      const effectiveTaxRate = grossEarnings > 0 ? (totalTaxes / grossEarnings) * 100 : 0;
+
+      // Update KPI Cards
+      document.getElementById('kpi-career-gross').textContent = '$' + Math.round(grossEarnings).toLocaleString();
+      document.getElementById('kpi-career-pretax').textContent = '$' + Math.round(preTaxDeductions).toLocaleString();
+      document.getElementById('kpi-career-taxes').textContent = '$' + Math.round(totalTaxes).toLocaleString();
+      document.getElementById('kpi-career-taxes-sub').textContent = `Effective Tax Rate: ${effectiveTaxRate.toFixed(1)}%`;
+      document.getElementById('kpi-career-net').textContent = '$' + Math.round(netTakeHomeAnnual).toLocaleString();
+      document.getElementById('kpi-career-net-sub').textContent = `$${Math.round(monthlyTakeHome).toLocaleString()} / mo ($${Math.round(biWeeklyTakeHome).toLocaleString()} / pay)`;
+
+      // Freedom Replacement Bridge
+      const monthlyPassive = (state.netWorth * state.swr) / 12;
+      const replacePct = monthlyTakeHome > 0 ? (monthlyPassive / monthlyTakeHome) * 100 : 0;
+      const monthlyGap = Math.max(0, monthlyTakeHome - monthlyPassive);
+      
+      const annualVelocity = state.annualSavings + (state.netWorth * state.nominalReturn);
+      const targetPortReq = netTakeHomeAnnual / state.swr;
+      const portGap = Math.max(0, targetPortReq - state.netWorth);
+      const yearsToReplace = portGap <= 0 ? 0 : Math.ceil(portGap / annualVelocity);
+      const timelineText = portGap <= 0 ? '🎉 100% Replaced Today!' : `in ~${yearsToReplace} yrs (${2026 + yearsToReplace}, Age ${state.currentAge + yearsToReplace})`;
+
+      document.getElementById('lbl-replace-pct').textContent = replacePct.toFixed(1) + '%';
+      document.getElementById('bar-replace-pct').style.width = Math.min(100, replacePct).toFixed(1) + '%';
+      document.getElementById('lbl-job-net-monthly').textContent = '$' + Math.round(monthlyTakeHome).toLocaleString() + ' / mo';
+      document.getElementById('lbl-passive-monthly').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
+      document.getElementById('lbl-replace-gap').textContent = monthlyGap <= 0 ? '$0 / mo (Surplus!)' : '-$' + Math.round(monthlyGap).toLocaleString() + ' / mo';
+      document.getElementById('lbl-replace-timeline').textContent = timelineText;
+
+      // Breakdown Table
+      const tbody = document.getElementById('career-tax-tbody');
+      if (tbody) {
+        const rows = [
+          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $15,750 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
+          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: `6.20% on earned income up to the $176,100 cap ($${Math.round(ficaWageBase).toLocaleString()} subject)` },
+          { name: '🏥 Medicare Tax (FICA)', annual: medBaseTax + medSurtax, notes: `1.45% base Medicare${medSurtax > 0 ? ' + 0.9% additional high-earner surtax' : ' (no wage cap)'}` },
+          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, notes: `NJ Gross: $${Math.round(njGross).toLocaleString()} (NJ does NOT exempt 401k/HSA; progressive rates 1.4% to 6.37%+)` },
+          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, notes: `Diverted directly into your 401(k) retirement shield (Saves Federal tax now)` },
+          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, notes: `Exempt from Federal Income Tax, Social Security & Medicare taxes` },
+          { name: '💰 Net Take-Home Pay (In Hand)', annual: netTakeHomeAnnual, notes: `Pure disposable income ($${Math.round(monthlyTakeHome).toLocaleString()} / month, $${Math.round(biWeeklyTakeHome).toLocaleString()} / bi-weekly paycheck)` }
+        ];
+
+        tbody.innerHTML = rows.map(r => `
+          <tr style="${r.name.includes('Net Take-Home') ? 'background:rgba(16, 185, 129, 0.12); font-weight:700;' : ''}">
+            <td><strong>${r.name}</strong></td>
+            <td><strong>$${Math.round(r.annual).toLocaleString()}</strong></td>
+            <td>$${Math.round(r.annual / 12).toLocaleString()} / mo</td>
+            <td>${grossEarnings > 0 ? ((r.annual / grossEarnings) * 100).toFixed(1) + '%' : '0%'}</td>
+            <td style="color:#94a3b8; font-size:12px;">${r.notes}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    let currentTab = 'section-chart';
 
     function dismissChartTooltip() {
       if (!chartInstance) return;
@@ -888,20 +1341,33 @@
       }
     }
 
-    function switchMobileTab(tabId, btn) {
+    function switchTab(tabId, btn) {
       dismissChartTooltip();
-      currentMobileTab = tabId;
+      currentTab = tabId;
+
       document.querySelectorAll('.mobile-tab-btn').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
       });
+
+      document.body.classList.remove('tab-forecast', 'tab-career', 'tab-controls', 'tab-tiers', 'tab-strategy');
+      if (tabId === 'section-chart') document.body.classList.add('tab-forecast');
+      else if (tabId === 'section-career') document.body.classList.add('tab-career');
+      else if (tabId === 'section-controls') document.body.classList.add('tab-controls');
+      else if (tabId === 'section-tiers') document.body.classList.add('tab-tiers');
+      else if (tabId === 'section-strategy') document.body.classList.add('tab-strategy');
+
       document.querySelectorAll('.tab-section').forEach(sec => {
-        sec.classList.toggle('active-mobile-tab', sec.id === tabId);
+        const isTarget = sec.id === tabId;
+        sec.classList.toggle('active-tab', isTarget);
+        sec.classList.toggle('active-mobile-tab', isTarget);
       });
+
       if (tabId === 'section-chart' && chartInstance) {
         setTimeout(() => {
           chartInstance.resize();
         }, 40);
       }
+
       const nav = document.getElementById('mobile-nav');
       if (nav && window.innerWidth <= 768) {
         const navRect = nav.getBoundingClientRect();
@@ -913,18 +1379,17 @@
         }
       }
     }
+    const switchMobileTab = switchTab;
 
     function handleResponsiveLayout() {
       const isMobile = window.innerWidth <= 768;
       if (!isMobile) {
-        document.querySelectorAll('.tab-section').forEach(sec => {
-          sec.style.display = '';
-        });
+        switchTab(currentTab);
       } else {
         document.querySelectorAll('.tab-section').forEach(sec => {
-          sec.classList.toggle('active-mobile-tab', sec.id === currentMobileTab);
+          sec.classList.toggle('active-mobile-tab', sec.id === currentTab);
         });
-        if (currentMobileTab === 'section-chart' && chartInstance) {
+        if (currentTab === 'section-chart' && chartInstance) {
           chartInstance.resize();
         }
       }
@@ -947,9 +1412,11 @@
 
       initChart();
       loadPersistedSettings();
+      loadCareerSettings();
       state.isUnlocked = false;
       state.netWorth = 0;
       recalculate(false);
+      recalculateCareer();
       handleResponsiveLayout();
 
       // Auto-sync whenever tab gains focus (only if unlocked)
@@ -1141,6 +1608,7 @@
         }
 
         renderTiersTable();
+        recalculateCareer();
 
         if (shouldPersist) {
           savePersistedSettings();
@@ -1216,6 +1684,7 @@
       chartInstance.update();
 
       renderTiersTable();
+      recalculateCareer();
 
       if (shouldPersist) {
         savePersistedSettings();
@@ -1338,6 +1807,7 @@
       if (currLbl) currLbl.textContent = '$---';
 
       recalculate(false);
+      recalculateCareer();
     }
 
     async function unlockWithKey(key) {
@@ -1389,7 +1859,9 @@
           if (keyBtn) keyBtn.textContent = '🔒 Lock Dashboard';
 
           if (syncText) syncText.textContent = '🟢 Live Google Sheet Connected (' + new Date().toLocaleTimeString() + ')';
+          loadCareerSettings();
           recalculate(false);
+          recalculateCareer();
         } else {
           const errMsg = (json && json.error) ? json.error : 'Invalid access key or access denied.';
           alert('Access Denied: ' + errMsg);
