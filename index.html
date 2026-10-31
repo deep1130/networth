@@ -662,13 +662,13 @@
         <div class="control-group">
           <div class="control-header">
             <span>Target Retirement Age:</span>
-            <span class="control-val" id="val-retire-age">Age 44 (2037 — in 11 yrs)</span>
+            <span class="control-val" id="val-retire-age">Age 36 (Target: 2029 — in 3 yrs)</span>
           </div>
-          <input type="range" id="input-retire-age" min="32" max="65" step="1" value="44" oninput="recalculate()">
+          <input type="range" id="input-retire-age" min="34" max="65" step="1" value="36" oninput="recalculate()">
           <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-            <span>32</span>
-            <span style="color: #38bdf8; font-weight: 700;">44 (2037 Focus)</span>
-            <span>55</span>
+            <span style="color: #38bdf8; font-weight: 700;">34 (2027 Start)</span>
+            <span>36 (2029)</span>
+            <span>45</span>
             <span>65</span>
           </div>
         </div>
@@ -694,40 +694,35 @@
         <!-- 15-Year Trajectory Panel -->
         <div class="panel tab-section active-mobile-tab" id="section-chart" style="margin-bottom: 24px;">
           <div class="panel-title">
-            <span>Wealth Trajectory & Future Freedom (2037 Focus)</span>
-            <span style="font-size: 13px; color: var(--text-muted);" id="crossover-label">🎯 Target Retirement: 2037 (Age 44)</span>
+            <span>15-Year Wealth Trajectory & Future Freedom (2027 – 2041)</span>
+            <span style="font-size: 13px; color: var(--text-muted);" id="crossover-label">🎯 2027 – 2041 Forecast</span>
           </div>
 
-          <!-- Horizon Focus Selector (15-Year Horizon) -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-            <div class="chips-group" id="chart-horizon-chips" style="margin-top: 0;">
-              <button type="button" class="chip active" id="chip-horizon-2037" onclick="setChartHorizon('2037', this)">🎯 2037 Retirement & Beyond (2037 – 2041)</button>
-              <button type="button" class="chip" id="chip-horizon-all" onclick="setChartHorizon('all', this)">📈 15-Year Horizon (2027 – 2041)</button>
-            </div>
-            <div style="font-size: 11px; color: #38bdf8; font-weight: 600;" id="chart-horizon-desc">
-              15-Year Horizon: Modeling 2037 (Age 44) through 2041 retirement freedom
+            <div style="font-size: 12px; color: #38bdf8; font-weight: 600;" id="chart-horizon-desc">
+              📈 15-Year Horizon: Modeling 2027 (Age 34) through 2041 (Age 48) wealth trajectory & retirement freedom
             </div>
           </div>
 
-          <!-- 2037 Focus Milestone KPI Card -->
-          <div id="card-2037-focus" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+          <!-- 2027 Baseline & Target Milestone KPI Card -->
+          <div id="card-2027-focus" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
             <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;">Retirement Milestone</span>
-              <strong style="font-size: 16px; color: #f8fafc;" id="val-2037-year">Year 2037 (Age 44)</strong>
-              <div style="font-size: 10px; color: #38bdf8;" id="val-2037-countdown">in 11 years</div>
+              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-2027-start">2027 Starting Forecast</span>
+              <strong style="font-size: 16px; color: #38bdf8;" id="val-2027-nw">$---,---</strong>
+              <div style="font-size: 10px; color: #cbd5e1;" id="val-2027-real">Year 2027 (Age 34) · Real: $---</div>
             </div>
             <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;">Projected 2037 Net Worth</span>
-              <strong style="font-size: 16px; color: #38bdf8;" id="val-2037-nw">$---,---</strong>
+              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-2027-budget">2027 Safe Annual Budget</span>
+              <strong style="font-size: 16px; color: #34d399;" id="val-2027-passive">$--- / yr</strong>
+              <div style="font-size: 10px; color: #34d399;" id="val-2027-monthly">$--- / mo passive</div>
+            </div>
+            <div>
+              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-target-milestone">Target Retirement (2029)</span>
+              <strong style="font-size: 16px; color: #f8fafc;" id="val-2037-nw">$---,---</strong>
               <div style="font-size: 10px; color: #64748b;" id="val-2037-real">Real: $--- in today's $</div>
             </div>
             <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;">2037 Safe Annual Budget</span>
-              <strong style="font-size: 16px; color: #34d399;" id="val-2037-passive">$--- / yr</strong>
-              <div style="font-size: 10px; color: #34d399;" id="val-2037-monthly">$--- / month passive</div>
-            </div>
-            <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;">2037 Freedom Surplus</span>
+              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-target-surplus">Retirement Freedom Surplus</span>
               <strong style="font-size: 16px; color: #fbbf24;" id="val-2037-status">---% Funded</strong>
               <div style="font-size: 10px; color: #cbd5e1;" id="val-2037-surplus">+$---/mo surplus</div>
             </div>
@@ -1588,8 +1583,8 @@
       nominalReturn: 0.085,
       inflationRate: 0.025,
       annualSavings: 106650,
-      retireAge: 44,
-      chartHorizon: '2037',
+      retireAge: 36,
+      chartHorizon: 'all',
       houseOutlay: 0
     };
 
@@ -1610,8 +1605,9 @@
           nominalReturn: safeNum(document.getElementById('input-nominal-return')?.value, 8.5),
           inflationRate: safeNum(document.getElementById('input-inflation')?.value, 2.5),
           annualSavings: safeNum(document.getElementById('input-savings')?.value, 100000),
-          retireAge: parseInt(document.getElementById('input-retire-age')?.value) || 44,
-          chartHorizon: state.chartHorizon || '2037',
+          retireAge: parseInt(document.getElementById('input-retire-age')?.value) || 36,
+          retireAgeMigrated2027: true,
+          chartHorizon: 'all',
           houseOutlay: safeNum(document.getElementById('input-house')?.value, 0)
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -1628,22 +1624,8 @@
       }
     }
 
-    function setChartHorizon(horizon, btn) {
-      state.chartHorizon = horizon;
-      document.querySelectorAll('#chart-horizon-chips .chip').forEach(c => c.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      else {
-        const el = document.getElementById('chip-horizon-' + horizon);
-        if (el) el.classList.add('active');
-      }
-
-      const desc = document.getElementById('chart-horizon-desc');
-      if (desc) {
-        desc.textContent = horizon === '2037' 
-          ? '15-Year Horizon: Modeling 2037 (Age 44) through 2041 retirement freedom'
-          : '15-Year Horizon: Full trajectory (2027 accumulation through 2041 retirement)';
-      }
-
+    function setChartHorizon(horizon) {
+      state.chartHorizon = 'all';
       savePersistedSettings();
       recalculate(false);
     }
@@ -1685,16 +1667,11 @@
         }
         if (s.retireAge !== undefined && document.getElementById('input-retire-age')) {
           const loadedAge = parseInt(s.retireAge);
-          const activeAge = (loadedAge === 36 || isNaN(loadedAge)) ? 44 : loadedAge;
+          const activeAge = (isNaN(loadedAge) || (!s.retireAgeMigrated2027 && loadedAge === 44)) ? 36 : Math.max(34, loadedAge);
           document.getElementById('input-retire-age').value = activeAge;
           state.retireAge = activeAge;
         }
-        if (s.chartHorizon && document.getElementById('chip-horizon-' + s.chartHorizon)) {
-          state.chartHorizon = s.chartHorizon;
-          document.querySelectorAll('#chart-horizon-chips .chip').forEach(c => c.classList.remove('active'));
-          const hChip = document.getElementById('chip-horizon-' + s.chartHorizon);
-          if (hChip) hChip.classList.add('active');
-        }
+        state.chartHorizon = 'all';
         if (s.houseOutlay !== undefined && document.getElementById('input-house')) {
           document.getElementById('input-house').value = safeNum(s.houseOutlay, 0);
         }
@@ -3012,10 +2989,10 @@
       document.getElementById('input-nominal-return').value = '8.5';
       document.getElementById('input-inflation').value = '2.5';
       document.getElementById('input-savings').value = '106650';
-      document.getElementById('input-retire-age').value = '44';
+      document.getElementById('input-retire-age').value = '36';
       document.getElementById('input-house').value = '0';
-      state.retireAge = 44;
-      setChartHorizon('2037');
+      state.retireAge = 36;
+      state.chartHorizon = 'all';
       recalculate(false);
 
       const saveBadge = document.getElementById('saved-badge');
@@ -3037,7 +3014,7 @@
       state.nominalReturn = safeNum(document.getElementById('input-nominal-return')?.value, 8.5) / 100;
       state.inflationRate = safeNum(document.getElementById('input-inflation')?.value, 2.5) / 100;
       state.annualSavings = safeNum(document.getElementById('input-savings')?.value, 100000);
-      state.retireAge = parseInt(document.getElementById('input-retire-age')?.value) || 44;
+      state.retireAge = parseInt(document.getElementById('input-retire-age')?.value) || 36;
       state.houseOutlay = safeNum(document.getElementById('input-house')?.value, 0);
       if (isNaN(state.baseSpend) || state.baseSpend <= 0) {
         state.baseSpend = (state.liveBaseSpend > 0) ? state.liveBaseSpend : safeNum(document.getElementById('input-spend-slider')?.value, 95000);
@@ -3074,21 +3051,30 @@
         document.getElementById('kpi-surplus').textContent = '🔒 Locked — Enter key to unlock';
         document.getElementById('crossover-label').textContent = 'Locked — Enter key to calculate';
 
+        const el2027NW = document.getElementById('val-2027-nw');
+        if (el2027NW) el2027NW.textContent = '$---,---';
+        const el2027Real = document.getElementById('val-2027-real');
+        if (el2027Real) el2027Real.textContent = 'Year 2027 (Age 34) · Real: $---';
+        const el2027Passive = document.getElementById('val-2027-passive');
+        if (el2027Passive) el2027Passive.textContent = '$--- / yr';
+        const el2027Monthly = document.getElementById('val-2027-monthly');
+        if (el2027Monthly) el2027Monthly.textContent = '$--- / mo';
         const el2037NW = document.getElementById('val-2037-nw');
         if (el2037NW) el2037NW.textContent = '$---,---';
         const el2037Real = document.getElementById('val-2037-real');
         if (el2037Real) el2037Real.textContent = 'Real: $--- in today\'s $';
-        const el2037Passive = document.getElementById('val-2037-passive');
-        if (el2037Passive) el2037Passive.textContent = '$--- / yr';
-        const el2037Monthly = document.getElementById('val-2037-monthly');
-        if (el2037Monthly) el2037Monthly.textContent = '$--- / mo';
         const el2037Status = document.getElementById('val-2037-status');
         if (el2037Status) el2037Status.textContent = '---% Funded';
         const el2037Surplus = document.getElementById('val-2037-surplus');
         if (el2037Surplus) el2037Surplus.textContent = '🔒 Locked';
 
         if (chartInstance) {
-          chartInstance.data.labels = ['2037 (Age 44 — RETIRED)', '2038 (Age 45)', '2039 (Age 46)', '2040 (Age 47)', '2041 (Age 48)'];
+          const lockedLabels = [];
+          for (let yr = 2027; yr <= 2041; yr++) {
+            const age = yr - 1993;
+            lockedLabels.push(yr === retireYear ? `${yr} (Age ${age} — RETIRED)` : `${yr} (Age ${age})`);
+          }
+          chartInstance.data.labels = lockedLabels;
           chartInstance.data.datasets[0].data = [];
           chartInstance.data.datasets[1].data = [];
           chartInstance.data.datasets[2].data = [];
@@ -3135,7 +3121,7 @@
       document.getElementById('kpi-monthly-spend').textContent = '$' + Math.round(monthlySpend).toLocaleString() + ' / month total budget';
       document.getElementById('kpi-passive').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
       document.getElementById('kpi-surplus').textContent = (monthlySurplus >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus)).toLocaleString() + ' / mo Cash Flow ' + (monthlySurplus >= 0 ? 'Surplus' : 'Deficit');
-      document.getElementById('crossover-label').textContent = `🎯 Target Retirement: ${retireYear} (Age ${state.retireAge})`;
+      document.getElementById('crossover-label').textContent = `🎯 2027 – 2041 Horizon · Target Retirement: ${retireYear} (Age ${state.retireAge})`;
 
       // Model 15-year trajectory from 2026 base through 2041 (displaying 2027-2041)
       const allYears = [];
@@ -3170,39 +3156,56 @@
         }
       }
 
-      // Find 2037 metrics (Age 44 Focus Milestone)
-      const yr2037 = allYears.find(y => y.year === 2037) || allYears[11] || allYears[allYears.length - 1];
-      const nw2037 = yr2037.nominal;
-      const real2037 = yr2037.real;
-      const passive2037 = nw2037 * state.swr;
-      const monthlyPassive2037 = passive2037 / 12;
-      const funded2037 = (nw2037 / fireTarget) * 100;
-      const monthlySurplus2037 = monthlyPassive2037 - monthlySpend;
+      // 1. 2027 Starting Forecast Metrics (Year 1 of 15-Year Horizon)
+      const yr2027 = allYears.find(y => y.year === 2027) || allYears[1] || allYears[0];
+      const nw2027 = yr2027.nominal;
+      const real2027 = yr2027.real;
+      const passive2027 = nw2027 * state.swr;
+      const monthlyPassive2027 = passive2027 / 12;
+      const funded2027 = (nw2027 / fireTarget) * 100;
 
-      // Update 2037 Focus Milestone Card
-      const el2037Year = document.getElementById('val-2037-year');
-      if (el2037Year) el2037Year.textContent = `Year 2037 (Age ${yr2037.age})`;
-      const el2037Count = document.getElementById('val-2037-countdown');
-      if (el2037Count) el2037Count.textContent = `in ${Math.max(0, 2037 - 2026)} years`;
+      const el2027NW = document.getElementById('val-2027-nw');
+      if (el2027NW) el2027NW.textContent = '$' + Math.round(nw2027).toLocaleString();
+      const el2027Real = document.getElementById('val-2027-real');
+      if (el2027Real) el2027Real.textContent = `Year 2027 (Age ${yr2027.age}) · Real: $${Math.round(real2027).toLocaleString()}`;
+      const el2027Passive = document.getElementById('val-2027-passive');
+      if (el2027Passive) el2027Passive.textContent = '$' + Math.round(passive2027).toLocaleString() + ' / yr';
+      const el2027Monthly = document.getElementById('val-2027-monthly');
+      if (el2027Monthly) el2027Monthly.textContent = `$${Math.round(monthlyPassive2027).toLocaleString()}/mo (${funded2027.toFixed(0)}% Funded)`;
+
+      // 2. Target Retirement Milestone Metrics (or 2041 Horizon End if retireYear <= 2027)
+      const targetYearNum = retireYear > 2027 ? Math.min(2041, retireYear) : 2041;
+      const yrTarget = allYears.find(y => y.year === targetYearNum) || allYears[allYears.length - 1];
+      const nwTarget = yrTarget.nominal;
+      const realTarget = yrTarget.real;
+      const passiveTarget = nwTarget * state.swr;
+      const monthlyPassiveTarget = passiveTarget / 12;
+      const fundedTarget = (nwTarget / fireTarget) * 100;
+      const monthlySurplusTarget = monthlyPassiveTarget - monthlySpend;
+
+      const lblTargetMilestone = document.getElementById('lbl-target-milestone');
+      if (lblTargetMilestone) {
+        lblTargetMilestone.textContent = retireYear > 2027
+          ? `Target Retirement (${yrTarget.year}, Age ${yrTarget.age})`
+          : `15-Yr Horizon End (${yrTarget.year}, Age ${yrTarget.age})`;
+      }
+      const lblTargetSurplus = document.getElementById('lbl-target-surplus');
+      if (lblTargetSurplus) {
+        lblTargetSurplus.textContent = `${yrTarget.year} Freedom Surplus`;
+      }
       const el2037NW = document.getElementById('val-2037-nw');
-      if (el2037NW) el2037NW.textContent = '$' + Math.round(nw2037).toLocaleString();
+      if (el2037NW) el2037NW.textContent = '$' + Math.round(nwTarget).toLocaleString();
       const el2037Real = document.getElementById('val-2037-real');
-      if (el2037Real) el2037Real.textContent = `Real: $${Math.round(real2037).toLocaleString()} in today's $`;
-      const el2037Passive = document.getElementById('val-2037-passive');
-      if (el2037Passive) el2037Passive.textContent = '$' + Math.round(passive2037).toLocaleString() + ' / yr';
-      const el2037Monthly = document.getElementById('val-2037-monthly');
-      if (el2037Monthly) el2037Monthly.textContent = '$' + Math.round(monthlyPassive2037).toLocaleString() + ' / mo';
+      if (el2037Real) el2037Real.textContent = `Real: $${Math.round(realTarget).toLocaleString()} in today's $`;
       const el2037Status = document.getElementById('val-2037-status');
-      if (el2037Status) el2037Status.textContent = `${funded2037.toFixed(0)}% Funded`;
+      if (el2037Status) el2037Status.textContent = `${fundedTarget.toFixed(0)}% Funded`;
       const el2037Surplus = document.getElementById('val-2037-surplus');
       if (el2037Surplus) {
-        el2037Surplus.textContent = (monthlySurplus2037 >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus2037)).toLocaleString() + '/mo ' + (monthlySurplus2037 >= 0 ? 'surplus' : 'gap');
+        el2037Surplus.textContent = `$${Math.round(monthlyPassiveTarget).toLocaleString()}/mo (${monthlySurplusTarget >= 0 ? '+$' : '-$'}${Math.round(Math.abs(monthlySurplusTarget)).toLocaleString()} surplus)`;
       }
 
-      // Filter chart datasets based on selected 15-year horizon (skipping 2026)
-      const displayedYears = (state.chartHorizon === 'all')
-        ? allYears.filter(y => y.year >= 2027)
-        : allYears.filter(y => y.year >= 2037);
+      // Always display full 15-year horizon starting at 2027 (2027 through 2041)
+      const displayedYears = allYears.filter(y => y.year >= 2027);
 
       const labels = displayedYears.map(y => {
         if (y.year === retireYear) return `${y.year} (Age ${y.age} — RETIRED)`;
