@@ -664,13 +664,22 @@
             <span>Target Retirement Age:</span>
             <span class="control-val" id="val-retire-age">Age 37 (Target: 2030 — in 4 yrs)</span>
           </div>
-          <input type="range" id="input-retire-age" min="33" max="100" step="1" value="37" oninput="recalculate()">
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;" id="retire-age-chips">
+            <button type="button" class="chip" data-age="34" onclick="setRetireAgePreset(34, this)">34 (2027)</button>
+            <button type="button" class="chip" data-age="36" onclick="setRetireAgePreset(36, this)">36 (2029)</button>
+            <button type="button" class="chip active" data-age="37" onclick="setRetireAgePreset(37, this)">37 (2030)</button>
+            <button type="button" class="chip" data-age="40" onclick="setRetireAgePreset(40, this)">40 (2033)</button>
+            <button type="button" class="chip" data-age="45" onclick="setRetireAgePreset(45, this)">45</button>
+            <button type="button" class="chip" data-age="55" onclick="setRetireAgePreset(55, this)">55</button>
+            <button type="button" class="chip" data-age="65" onclick="setRetireAgePreset(65, this)">65</button>
+          </div>
+          <input type="range" id="input-retire-age" min="34" max="100" step="1" value="37" oninput="onRetireAgeSliderInput(this.value)">
           <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
             <span>34 (2027)</span>
-            <span style="color: #38bdf8; font-weight: 700;">37 (2030)</span>
             <span>50</span>
-            <span>65</span>
-            <span>100</span>
+            <span>67</span>
+            <span>84</span>
+            <span>100 (2093)</span>
           </div>
         </div>
 
@@ -1614,7 +1623,7 @@
           inflationRate: safeNum(document.getElementById('input-inflation')?.value, 2.5),
           annualSavings: safeNum(document.getElementById('input-savings')?.value, 100000),
           retireAge: parseInt(document.getElementById('input-retire-age')?.value) || 37,
-          retireAgeMigrated2027: true,
+          retireAgeMigratedV3: true,
           chartMaxAge: state.chartMaxAge || 100,
           chartHorizon: 'all',
           houseOutlay: safeNum(document.getElementById('input-house')?.value, 0)
@@ -1688,9 +1697,12 @@
         }
         if (s.retireAge !== undefined && document.getElementById('input-retire-age')) {
           const loadedAge = parseInt(s.retireAge);
-          const activeAge = (isNaN(loadedAge) || (!s.retireAgeMigrated2027 && loadedAge === 44)) ? 37 : Math.max(33, Math.min(100, loadedAge));
+          const activeAge = (isNaN(loadedAge) || (!s.retireAgeMigratedV3 && (loadedAge === 44 || loadedAge === 36))) ? 37 : Math.max(34, Math.min(100, loadedAge));
           document.getElementById('input-retire-age').value = activeAge;
           state.retireAge = activeAge;
+          document.querySelectorAll('#retire-age-chips .chip').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-age') === String(activeAge));
+          });
         }
         if (s.chartMaxAge && [50, 65, 100].includes(parseInt(s.chartMaxAge))) {
           state.chartMaxAge = parseInt(s.chartMaxAge);
@@ -3038,6 +3050,23 @@
       recalculate(true);
     }
 
+    function setRetireAgePreset(age, el) {
+      state.retireAge = parseInt(age) || 37;
+      const ageSlider = document.getElementById('input-retire-age');
+      if (ageSlider) ageSlider.value = state.retireAge;
+      document.querySelectorAll('#retire-age-chips .chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      recalculate(true);
+    }
+
+    function onRetireAgeSliderInput(val) {
+      state.retireAge = parseInt(val) || 37;
+      document.querySelectorAll('#retire-age-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-age') === String(state.retireAge));
+      });
+      recalculate(true);
+    }
+
     function resetDefaults() {
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -3056,6 +3085,9 @@
       document.getElementById('input-retire-age').value = '37';
       document.getElementById('input-house').value = '0';
       state.retireAge = 37;
+      document.querySelectorAll('#retire-age-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-age') === '37');
+      });
       state.chartMaxAge = 100;
       state.chartHorizon = 'all';
       document.querySelectorAll('#chart-horizon-chips .chip').forEach(c => c.classList.remove('active'));
