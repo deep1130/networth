@@ -683,13 +683,42 @@
           </div>
         </div>
 
-        <!-- House Purchase Outlay -->
+        <!-- House Purchase Outlay & Age -->
         <div class="control-group">
           <div class="control-header">
             <span>Future House Down Payment:</span>
             <span class="control-val" id="val-house">$0</span>
           </div>
-          <input type="range" id="input-house" min="0" max="300000" step="25000" value="0" oninput="recalculate()">
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;" id="house-amount-chips">
+            <button type="button" class="chip active" data-house="0" onclick="setHousePreset(0, this)">$0</button>
+            <button type="button" class="chip" data-house="50000" onclick="setHousePreset(50000, this)">$50k</button>
+            <button type="button" class="chip" data-house="100000" onclick="setHousePreset(100000, this)">$100k</button>
+            <button type="button" class="chip" data-house="150000" onclick="setHousePreset(150000, this)">$150k</button>
+            <button type="button" class="chip" data-house="200000" onclick="setHousePreset(200000, this)">$200k</button>
+            <button type="button" class="chip" data-house="300000" onclick="setHousePreset(300000, this)">$300k</button>
+          </div>
+          <input type="range" id="input-house" min="0" max="500000" step="10000" value="0" oninput="onHouseSliderInput(this.value)">
+          <div id="house-age-subcontrol" style="margin-top: 10px; padding: 10px 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid #334155; border-radius: 8px;">
+            <div class="control-header" style="margin-bottom: 6px;">
+              <span style="font-size: 12px; color: #94a3b8;">🏠 Down Payment Age (Year):</span>
+              <span class="control-val" style="font-size: 12px;" id="val-house-age">Age 36 (2029)</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;" id="house-age-chips">
+              <button type="button" class="chip" data-hage="34" onclick="setHouseAgePreset(34, this)" style="padding: 3px 8px; font-size: 11px;">34 (2027)</button>
+              <button type="button" class="chip" data-hage="35" onclick="setHouseAgePreset(35, this)" style="padding: 3px 8px; font-size: 11px;">35 (2028)</button>
+              <button type="button" class="chip active" data-hage="36" onclick="setHouseAgePreset(36, this)" style="padding: 3px 8px; font-size: 11px;">36 (2029)</button>
+              <button type="button" class="chip" data-hage="37" onclick="setHouseAgePreset(37, this)" style="padding: 3px 8px; font-size: 11px;">37 (2030)</button>
+              <button type="button" class="chip" data-hage="40" onclick="setHouseAgePreset(40, this)" style="padding: 3px 8px; font-size: 11px;">40 (2033)</button>
+            </div>
+            <input type="range" id="input-house-age" min="34" max="70" step="1" value="36" oninput="onHouseAgeSliderInput(this.value)">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 3px;">
+              <span>34 (2027)</span>
+              <span>43</span>
+              <span>52</span>
+              <span>61</span>
+              <span>70 (2063)</span>
+            </div>
+          </div>
         </div>
 
         <div class="mobile-quick-jump" style="display: none; margin-top: 18px;">
@@ -1626,6 +1655,7 @@
       chartMaxAge: 100,
       chartHorizon: 'all',
       houseOutlay: 0,
+      houseAge: 36,
       displayedYearsData: []
     };
 
@@ -1650,7 +1680,8 @@
           retireAgeMigratedV3: true,
           chartMaxAge: state.chartMaxAge || 100,
           chartHorizon: 'all',
-          houseOutlay: safeNum(document.getElementById('input-house')?.value, 0)
+          houseOutlay: safeNum(document.getElementById('input-house')?.value, 0),
+          houseAge: parseInt(document.getElementById('input-house-age')?.value) || 36
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 
@@ -1736,7 +1767,20 @@
         }
         state.chartHorizon = 'all';
         if (s.houseOutlay !== undefined && document.getElementById('input-house')) {
-          document.getElementById('input-house').value = safeNum(s.houseOutlay, 0);
+          const hVal = safeNum(s.houseOutlay, 0);
+          document.getElementById('input-house').value = hVal;
+          state.houseOutlay = hVal;
+          document.querySelectorAll('#house-amount-chips .chip').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-house') === String(hVal));
+          });
+        }
+        if (s.houseAge !== undefined && document.getElementById('input-house-age')) {
+          const hAge = Math.max(34, Math.min(70, parseInt(s.houseAge) || 36));
+          document.getElementById('input-house-age').value = hAge;
+          state.houseAge = hAge;
+          document.querySelectorAll('#house-age-chips .chip').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-hage') === String(hAge));
+          });
         }
 
         if (s.spendType === 'current') {
@@ -2984,7 +3028,7 @@
     }
 
     // Deterministic 500-Path Monte Carlo Engine (Lognormal Returns + Sequence-of-Returns Risk, sigma = 15%)
-    function runMonteCarloQuantiles(startNW, retireYear, totalAnnualSpend, annualSavings, nominalReturn, inflationRate, houseOutlay) {
+    function runMonteCarloQuantiles(startNW, retireYear, totalAnnualSpend, annualSavings, nominalReturn, inflationRate, houseOutlay, houseYear) {
       const NUM_PATHS = 500;
       const YEARS = 67; // 2026 (i=0) to 2093 (Age 100, i=67)
       const sigma = 0.15; // 15% historical annual equity portfolio volatility
@@ -3023,7 +3067,7 @@
         const inflationFactor = Math.pow(1 + inflationRate, i);
         const nominalWithdrawal = totalAnnualSpend * inflationFactor;
         const cashFlow = isWorking ? annualSavings : -nominalWithdrawal;
-        const houseDed = (i === 2) ? houseOutlay : 0;
+        const houseDed = (year === houseYear) ? houseOutlay : 0;
 
         let aliveCount = 0;
         for (let p = 0; p < NUM_PATHS; p++) {
@@ -3127,6 +3171,9 @@
                   } else {
                     lines.push(`🏖️ Retired (Withdrawing): -$${Math.round(Math.abs(yrObj.cashFlow)).toLocaleString()}/yr (-$${Math.round(Math.abs(yrObj.realCashFlow)).toLocaleString()} in today's $)`);
                   }
+                  if (yrObj.houseDeduction > 0) {
+                    lines.push(`🏠 House Down Payment: -$${Math.round(yrObj.houseDeduction).toLocaleString()} deducted at Age ${yrObj.age} (${yrObj.year})`);
+                  }
                   lines.push(`📊 Median (50th %ile) in Today's $: $${Math.round(yrObj.p50Real || 0).toLocaleString()}`);
                   lines.push(`🛡️ 10th Percentile (P10) in Today's $: $${Math.round(yrObj.p10Real || 0).toLocaleString()} (Survival: ${(yrObj.survivalRate ?? 100).toFixed(1)}%)`);
                   const netSign = yrObj.netChange >= 0 ? '+' : '-';
@@ -3194,6 +3241,40 @@
       recalculate(true);
     }
 
+    function setHousePreset(amount, el) {
+      state.houseOutlay = safeNum(amount, 0);
+      const houseSlider = document.getElementById('input-house');
+      if (houseSlider) houseSlider.value = state.houseOutlay;
+      document.querySelectorAll('#house-amount-chips .chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      recalculate(true);
+    }
+
+    function onHouseSliderInput(val) {
+      state.houseOutlay = safeNum(val, 0);
+      document.querySelectorAll('#house-amount-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-house') === String(state.houseOutlay));
+      });
+      recalculate(true);
+    }
+
+    function setHouseAgePreset(age, el) {
+      state.houseAge = parseInt(age) || 36;
+      const hAgeSlider = document.getElementById('input-house-age');
+      if (hAgeSlider) hAgeSlider.value = state.houseAge;
+      document.querySelectorAll('#house-age-chips .chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      recalculate(true);
+    }
+
+    function onHouseAgeSliderInput(val) {
+      state.houseAge = parseInt(val) || 36;
+      document.querySelectorAll('#house-age-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-hage') === String(state.houseAge));
+      });
+      recalculate(true);
+    }
+
     function resetDefaults() {
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -3211,6 +3292,17 @@
       document.getElementById('input-savings').value = '106650';
       document.getElementById('input-retire-age').value = '37';
       document.getElementById('input-house').value = '0';
+      state.houseOutlay = 0;
+      document.querySelectorAll('#house-amount-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-house') === '0');
+      });
+      if (document.getElementById('input-house-age')) {
+        document.getElementById('input-house-age').value = '36';
+      }
+      state.houseAge = 36;
+      document.querySelectorAll('#house-age-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-hage') === '36');
+      });
       state.retireAge = 37;
       document.querySelectorAll('#retire-age-chips .chip').forEach(c => {
         c.classList.toggle('active', c.getAttribute('data-age') === '37');
@@ -3243,6 +3335,8 @@
       state.annualSavings = safeNum(document.getElementById('input-savings')?.value, 100000);
       state.retireAge = parseInt(document.getElementById('input-retire-age')?.value) || 37;
       state.houseOutlay = safeNum(document.getElementById('input-house')?.value, 0);
+      state.houseAge = parseInt(document.getElementById('input-house-age')?.value) || 36;
+      const houseYear = 1993 + state.houseAge;
       if (isNaN(state.baseSpend) || state.baseSpend <= 0) {
         state.baseSpend = (state.liveBaseSpend > 0) ? state.liveBaseSpend : safeNum(document.getElementById('input-spend-slider')?.value, 95000);
       }
@@ -3264,7 +3358,17 @@
       document.getElementById('val-real-return').textContent = (realReturn * 100).toFixed(2) + '%';
       document.getElementById('val-savings').textContent = '$' + Math.round(state.annualSavings).toLocaleString() + '/yr';
       document.getElementById('val-retire-age').textContent = `Age ${state.retireAge} (Target: ${retireYear} — in ${Math.max(0, retireYear - 2026)} yrs)`;
-      document.getElementById('val-house').textContent = '$' + Math.round(state.houseOutlay).toLocaleString();
+      document.getElementById('val-house').textContent = state.houseOutlay > 0
+        ? `$${Math.round(state.houseOutlay).toLocaleString()} at Age ${state.houseAge} (${houseYear})`
+        : '$0';
+      const valHouseAgeEl = document.getElementById('val-house-age');
+      if (valHouseAgeEl) {
+        valHouseAgeEl.textContent = `Age ${state.houseAge} (${houseYear} — in ${Math.max(0, houseYear - 2026)} yrs)`;
+      }
+      const houseAgeSubEl = document.getElementById('house-age-subcontrol');
+      if (houseAgeSubEl) {
+        houseAgeSubEl.style.opacity = state.houseOutlay > 0 ? '1' : '0.6';
+      }
 
       const currentCalcedAge = getCalculatedAge();
       state.currentAge = currentCalcedAge;
@@ -3376,7 +3480,8 @@
 
       const descEl = document.getElementById('chart-horizon-desc');
       if (descEl) {
-        descEl.textContent = `📈 Modeling 2027 (Age 34) to ${maxYear} (Age ${maxAge}): Saving +$${Math.round(state.annualSavings).toLocaleString()}/yr until Age ${state.retireAge} (${retireYear}), then withdrawing -$${Math.round(totalAnnualSpend).toLocaleString()}/yr (inflation-adjusted) through Age ${maxAge}`;
+        const houseNote = state.houseOutlay > 0 ? ` · 🏠 -$${Math.round(state.houseOutlay).toLocaleString()} House Down Payment at Age ${state.houseAge} (${houseYear})` : '';
+        descEl.textContent = `📈 Modeling 2027 (Age 34) to ${maxYear} (Age ${maxAge}): Saving +$${Math.round(state.annualSavings).toLocaleString()}/yr until Age ${state.retireAge} (${retireYear}), then withdrawing -$${Math.round(totalAnnualSpend).toLocaleString()}/yr (inflation-adjusted) through Age ${maxAge}${houseNote}`;
       }
 
       // Run 500-Path Monte Carlo Quantiles (Median P50 & 10th Percentile P10 with 15% annual volatility)
@@ -3387,7 +3492,8 @@
         state.annualSavings,
         state.nominalReturn,
         state.inflationRate,
-        state.houseOutlay
+        state.houseOutlay,
+        houseYear
       );
 
       // Model lifetime trajectory from 2026 base through Age 100 (Year 2093, i = 67)
@@ -3416,6 +3522,7 @@
             isWorking: true,
             cashFlow: state.annualSavings,
             realCashFlow: state.annualSavings,
+            houseDeduction: 0,
             growth: 0,
             netChange: 0
           });
@@ -3426,7 +3533,7 @@
           const nominalWithdrawal = totalAnnualSpend * inflationFactor;
           const cashFlow = isWorking ? state.annualSavings : -nominalWithdrawal;
           const realCashFlow = isWorking ? state.annualSavings : -totalAnnualSpend;
-          const houseDeduction = (i === 2) ? state.houseOutlay : 0;
+          const houseDeduction = (year === houseYear) ? state.houseOutlay : 0;
           const investableBase = Math.max(0, runningNW + (cashFlow / 2) - houseDeduction);
           const growth = investableBase * state.nominalReturn;
           runningNW = Math.max(0, runningNW + cashFlow - houseDeduction + growth);
@@ -3449,6 +3556,7 @@
             isWorking,
             cashFlow,
             realCashFlow,
+            houseDeduction,
             growth,
             netChange: runningNW - prevNW
           });
@@ -3561,7 +3669,9 @@
       state.displayedYearsData = displayedYears;
 
       const labels = displayedYears.map(y => {
+        if (y.year === retireYear && y.houseDeduction > 0) return `🎯🏠 ${y.year} (Age ${y.age} — RETIRED + HOUSE)`;
         if (y.year === retireYear) return `🎯 ${y.year} (Age ${y.age} — RETIRED)`;
+        if (y.houseDeduction > 0) return `🏠 ${y.year} (Age ${y.age} — HOUSE)`;
         return `${y.year} (Age ${y.age})`;
       });
       const nominalData = displayedYears.map(y => y.nominal);
