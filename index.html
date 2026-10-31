@@ -872,7 +872,24 @@
 
     let currentMobileTab = 'section-chart';
 
+    function dismissChartTooltip() {
+      if (!chartInstance) return;
+      try {
+        chartInstance.setActiveElements([]);
+        if (chartInstance.tooltip) {
+          if (chartInstance.tooltip.setActiveElements) {
+            chartInstance.tooltip.setActiveElements([], { x: 0, y: 0 });
+          }
+          chartInstance.tooltip.opacity = 0;
+        }
+        chartInstance.update('none');
+      } catch (e) {
+        console.warn('Error dismissing chart tooltip:', e);
+      }
+    }
+
     function switchMobileTab(tabId, btn) {
+      dismissChartTooltip();
       currentMobileTab = tabId;
       document.querySelectorAll('.mobile-tab-btn').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
@@ -913,6 +930,14 @@
       }
     }
     window.addEventListener('resize', handleResponsiveLayout);
+
+    // Dismiss chart tooltip when clicking/tapping outside the chart canvas
+    document.addEventListener('pointerdown', (e) => {
+      const canvas = document.getElementById('projectionChart');
+      if (canvas && !canvas.contains(e.target)) {
+        dismissChartTooltip();
+      }
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       // Ensure any legacy stored key is purged for complete privacy
