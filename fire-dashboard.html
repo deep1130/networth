@@ -553,7 +553,7 @@
             <span>Base Spending Tier:</span>
             <span class="control-val" id="val-base-spend">$---/yr</span>
           </div>
-          <div class="chips-group">
+          <div class="chips-group" id="spend-chips-group">
             <button class="chip active" id="chip-current" data-spend="current" onclick="setSpendPreset(state.liveBaseSpend || 0, this)">Current (<span id="lbl-current-spend">$---</span>)</button>
             <button class="chip" data-spend="65000" onclick="setSpendPreset(65000, this)">$65k</button>
             <button class="chip" data-spend="75000" onclick="setSpendPreset(75000, this)">$75k</button>
@@ -644,8 +644,8 @@
           
           <!-- Linked Result: Real / Inflation-Adjusted Return -->
           <div class="sub-indicator">
-            <span>Real Growth Rate (Inflation-Adjusted):</span>
-            <span id="val-real-return" style="color: #34d399; font-weight: 700;">6.00%</span>
+            <span>Real Growth Rate (Fisher Inflation-Adjusted):</span>
+            <span id="val-real-return" style="color: #34d399; font-weight: 700;">5.85%</span>
           </div>
         </div>
 
@@ -655,14 +655,14 @@
             <span>Annual Savings Additions:</span>
             <span class="control-val" id="val-savings">$106,650/yr</span>
           </div>
-          <input type="range" id="input-savings" min="0" max="200000" step="5000" value="106650" oninput="recalculate()">
+          <input type="range" id="input-savings" min="0" max="200000" step="50" value="106650" oninput="recalculate()">
         </div>
 
         <!-- Retirement Age -->
         <div class="control-group">
           <div class="control-header">
             <span>Target Retirement Age:</span>
-            <span class="control-val" id="val-retire-age">Age 37 (Target: 2030 — in 4 yrs)</span>
+            <span class="control-val" id="val-retire-age">Age 37 (Target: 2030 — in 3 yrs)</span>
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;" id="retire-age-chips">
             <button type="button" class="chip" data-age="34" onclick="setRetireAgePreset(34, this)">34 (2027)</button>
@@ -1277,14 +1277,14 @@
                 <div class="kpi-sub" id="kpi-career-taxes-sub">Effective Tax Rate: ---%</div>
               </div>
               <div class="kpi-card success" style="padding: 14px 16px;">
-                <div class="kpi-label">Net Take-Home Cash</div>
+                <div class="kpi-label">Net Take-Home (Cash + RSUs)</div>
                 <div class="kpi-value" id="kpi-career-net" style="font-size: 22px;">$---,---</div>
                 <div class="kpi-sub" id="kpi-career-net-sub">$--- / month in hand</div>
               </div>
               <div class="kpi-card" style="padding: 14px 16px; border-color: rgba(56, 189, 248, 0.4);">
-                <div class="kpi-label">Total Comp (w/ RSUs)</div>
+                <div class="kpi-label">Total Wealth Retained</div>
                 <div class="kpi-value" id="kpi-career-total-comp" style="font-size: 22px; color: #38bdf8;">$---,---</div>
-                <div class="kpi-sub" id="kpi-career-total-comp-sub">Includes $--- RSU vesting</div>
+                <div class="kpi-sub" id="kpi-career-total-comp-sub">Net + 401(k) + HSA + Match</div>
               </div>
             </div>
 
@@ -1706,14 +1706,16 @@
     function savePersistedSettings() {
       try {
         const isCurrent = document.getElementById('chip-current')?.classList.contains('active');
+        const healthSelect = document.getElementById('select-health');
         const settings = {
           spendType: isCurrent ? 'current' : 'custom',
           spendAmount: safeNum(state.baseSpend, 95000),
-          healthCost: safeNum(document.getElementById('select-health')?.value, 3840),
+          healthCost: safeNum(healthSelect?.value, 3840),
+          healthPlanIndex: healthSelect ? healthSelect.selectedIndex : 6,
           swr: safeNum(document.getElementById('input-swr')?.value, 3.5),
           nominalReturn: safeNum(document.getElementById('input-nominal-return')?.value, 8.5),
           inflationRate: safeNum(document.getElementById('input-inflation')?.value, 2.5),
-          annualSavings: safeNum(document.getElementById('input-savings')?.value, 100000),
+          annualSavings: safeNum(document.getElementById('input-savings')?.value, 106650),
           retireAge: parseInt(document.getElementById('input-retire-age')?.value) || 37,
           retireAgeMigratedV3: true,
           chartMaxAge: state.chartMaxAge || 100,
@@ -1761,7 +1763,10 @@
 
         if (document.getElementById('select-health')) {
           const select = document.getElementById('select-health');
-          if (s.healthCost !== undefined && s.healthCost !== null) {
+          if (typeof s.healthPlanIndex === 'number' && s.healthPlanIndex >= 0 && s.healthPlanIndex < select.options.length) {
+            select.selectedIndex = s.healthPlanIndex;
+            state.healthCost = safeNum(select.value, 3840);
+          } else if (s.healthCost !== undefined && s.healthCost !== null) {
             const valStr = String(s.healthCost);
             const hasOption = Array.from(select.options).some(o => o.value === valStr);
             if (hasOption) {
@@ -1786,7 +1791,7 @@
           document.getElementById('input-inflation').value = safeNum(s.inflationRate, 2.5);
         }
         if (s.annualSavings !== undefined && document.getElementById('input-savings')) {
-          document.getElementById('input-savings').value = safeNum(s.annualSavings, 100000);
+          document.getElementById('input-savings').value = safeNum(s.annualSavings, 106650);
         }
         if (s.retireAge !== undefined && document.getElementById('input-retire-age')) {
           const loadedAge = parseInt(s.retireAge);
@@ -1822,7 +1827,7 @@
         }
 
         if (s.spendType === 'current') {
-          document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+          document.querySelectorAll('#spend-chips-group .chip').forEach(c => c.classList.remove('active'));
           const currentChip = document.getElementById('chip-current');
           if (currentChip) currentChip.classList.add('active');
           state.baseSpend = state.liveBaseSpend || 0;
@@ -1833,8 +1838,8 @@
           const spendSlider = document.getElementById('input-spend-slider');
           if (spendSlider) spendSlider.value = state.baseSpend;
 
-          document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
-          const matchingChip = document.querySelector(`.chip[data-spend="${s.spendAmount}"]`);
+          document.querySelectorAll('#spend-chips-group .chip').forEach(c => c.classList.remove('active'));
+          const matchingChip = document.querySelector(`#spend-chips-group .chip[data-spend="${s.spendAmount}"]`);
           if (matchingChip) {
             matchingChip.classList.add('active');
           }
@@ -2011,19 +2016,19 @@
       const totalShares = Math.round(stockPortion / stockPrice);
 
       // 2028 Vesting: 7/12 (58.33%) of 2027 Award
-      const vest2028Total = Math.round(f27 * (7 / 12));
       const vest2028Cash = Math.round((f27 / 2) * (7 / 12));
       const vest2028Stock = Math.round((f27 / 2) * (7 / 12));
+      const vest2028Total = vest2028Cash + vest2028Stock;
 
       // 2029 Vesting: 4/12 (33.33%) of 2027 Award + 7/12 (58.33%) of 2028 Award
-      const vest2029From27 = Math.round(f27 * (4 / 12));
-      const vest2029From28 = Math.round(f28 * (7 / 12));
+      const vest2029From27 = 2 * Math.round((f27 / 2) * (4 / 12));
+      const vest2029From28 = 2 * Math.round((f28 / 2) * (7 / 12));
       const vest2029Total = vest2029From27 + vest2029From28;
 
       // 2030 Vesting: 1/12 (8.33%) of 2027 Award + 4/12 (33.33%) of 2028 Award + 7/12 (58.33%) of 2029 Award
-      const vest2030From27 = Math.round(f27 * (1 / 12));
-      const vest2030From28 = Math.round(f28 * (4 / 12));
-      const vest2030From29 = Math.round(f29 * (7 / 12));
+      const vest2030From27 = 2 * Math.round((f27 / 2) * (1 / 12));
+      const vest2030From28 = 2 * Math.round((f28 / 2) * (4 / 12));
+      const vest2030From29 = 2 * Math.round((f29 / 2) * (7 / 12));
       const vest2030Total = vest2030From27 + vest2030From28 + vest2030From29;
 
       setVal('sim-cash-amt', `$${Math.round(cashPortion).toLocaleString()} Cash (50%)`);
@@ -2139,6 +2144,38 @@
             dayTotal: totalCash + totalStockVal,
             note: notes.join(' • ')
           });
+        }
+      });
+
+      // Reconcile quarterly rounding on the final vest of each year so Section 2 annual sums match Section 1 to the exact dollar
+      const expectedByYear = {
+        2027: {
+          cash: 21875,
+          stock: Math.round(805 * safePrice)
+        },
+        2028: {
+          cash: 12500 + Math.round((f27 / 2) * (7 / 12)),
+          stock: Math.round(349 * safePrice) + Math.round((f27 / 2) * (7 / 12))
+        },
+        2029: {
+          cash: 3125 + Math.round((f27 / 2) * (4 / 12)) + Math.round((f28 / 2) * (7 / 12)),
+          stock: Math.round(73 * safePrice) + Math.round((f27 / 2) * (4 / 12)) + Math.round((f28 / 2) * (7 / 12))
+        },
+        2030: {
+          cash: Math.round((f27 / 2) * (1 / 12)) + Math.round((f28 / 2) * (4 / 12)) + Math.round((f29 / 2) * (7 / 12)),
+          stock: Math.round((f27 / 2) * (1 / 12)) + Math.round((f28 / 2) * (4 / 12)) + Math.round((f29 / 2) * (7 / 12))
+        }
+      };
+
+      [2027, 2028, 2029, 2030].forEach(yr => {
+        const yrRows = rows.filter(r => r.year === yr);
+        if (yrRows.length > 0 && expectedByYear[yr]) {
+          const sumCash = yrRows.reduce((s, r) => s + r.cash, 0);
+          const sumStock = yrRows.reduce((s, r) => s + r.stockVal, 0);
+          const lastRow = yrRows[yrRows.length - 1];
+          lastRow.cash += (expectedByYear[yr].cash - sumCash);
+          lastRow.stockVal += (expectedByYear[yr].stock - sumStock);
+          lastRow.dayTotal = lastRow.cash + lastRow.stockVal;
         }
       });
 
@@ -2309,6 +2346,10 @@
         });
         const lblPrice = document.getElementById('lbl-eq-stock-price');
         if (lblPrice) lblPrice.textContent = '$--.--';
+        ['2027', '2028', '2029', '2030'].forEach(yr => {
+          const chipEl = document.getElementById('chip-year-' + yr);
+          if (chipEl) chipEl.textContent = yr;
+        });
         onSimAwardInput();
         renderUnifiedSchedule(stockPrice, true, future2027, future2028, future2029);
         return;
@@ -2336,8 +2377,8 @@
       // 4. Future Cash Award Vesting (50% Cash portion: 1/3 cliff Year N+1, then 1/12 quarterly)
       const futureCash2027 = 0;
       const futureCash2028 = Math.round((future2027 / 2) * (7 / 12));
-      const futureCash2029 = Math.round((future2027 / 2) * (4 / 12) + (future2028 / 2) * (7 / 12));
-      const futureCash2030 = Math.round((future2027 / 2) * (1 / 12) + (future2028 / 2) * (4 / 12) + (future2029 / 2) * (7 / 12));
+      const futureCash2029 = Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12));
+      const futureCash2030 = Math.round((future2027 / 2) * (1 / 12)) + Math.round((future2028 / 2) * (4 / 12)) + Math.round((future2029 / 2) * (7 / 12));
 
       // 5. Total Cash: Base + AIP Bonus + All Cash Awards
       const trueCash2027 = base2027 + bonus2027 + cashReward2027 + futureCash2027;
@@ -2353,8 +2394,8 @@
 
       const futureStock2027 = 0;
       const futureStock2028 = Math.round((future2027 / 2) * (7 / 12));
-      const futureStock2029 = Math.round((future2027 / 2) * (4 / 12) + (future2028 / 2) * (7 / 12));
-      const futureStock2030 = Math.round((future2027 / 2) * (1 / 12) + (future2028 / 2) * (4 / 12) + (future2029 / 2) * (7 / 12));
+      const futureStock2029 = Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12));
+      const futureStock2030 = Math.round((future2027 / 2) * (1 / 12)) + Math.round((future2028 / 2) * (4 / 12)) + Math.round((future2029 / 2) * (7 / 12));
 
       const totEq2027 = eq2027 + futureStock2027;
       const totEq2028 = eq2028 + futureStock2028;
@@ -2436,24 +2477,35 @@
       CAREER_YEAR_DATA[2027].cashReward = cashReward2027 + futureCash2027;
       CAREER_YEAR_DATA[2027].rsuVesting = totEq2027;
       CAREER_YEAR_DATA[2027].rsuShares = 805;
+      CAREER_YEAR_DATA[2027].cashStatus = `$${CAREER_YEAR_DATA[2027].cashReward.toLocaleString()} vesting in 2027`;
 
       CAREER_YEAR_DATA[2028].baseSalary = base2028;
       CAREER_YEAR_DATA[2028].bonus = bonus2028;
       CAREER_YEAR_DATA[2028].cashReward = cashReward2028 + futureCash2028;
       CAREER_YEAR_DATA[2028].rsuVesting = totEq2028;
       CAREER_YEAR_DATA[2028].rsuShares = 349 + Math.round(futureStock2028 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2028].cashStatus = `$${CAREER_YEAR_DATA[2028].cashReward.toLocaleString()} vesting in 2028`;
+      CAREER_YEAR_DATA[2028].cashNext = futureCash2028 > 0 ? `$12,500 active + $${futureCash2028.toLocaleString()} future grant` : '$3,125 quarterly × 4 quarters';
 
       CAREER_YEAR_DATA[2029].baseSalary = base2029;
       CAREER_YEAR_DATA[2029].bonus = bonus2029;
       CAREER_YEAR_DATA[2029].cashReward = cashReward2029 + futureCash2029;
       CAREER_YEAR_DATA[2029].rsuVesting = totEq2029;
       CAREER_YEAR_DATA[2029].rsuShares = 73 + Math.round(futureStock2029 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2029].cashStatus = `$${CAREER_YEAR_DATA[2029].cashReward.toLocaleString()} vesting in 2029`;
+      CAREER_YEAR_DATA[2029].cashNext = futureCash2029 > 0 ? `$3,125 active + $${futureCash2029.toLocaleString()} future grants` : '$3,125 final payout installment on Mar 1, 2029';
 
       CAREER_YEAR_DATA[2030].baseSalary = base2030;
       CAREER_YEAR_DATA[2030].bonus = bonus2030;
       CAREER_YEAR_DATA[2030].cashReward = cashReward2030 + futureCash2030;
       CAREER_YEAR_DATA[2030].rsuVesting = totEq2030;
       CAREER_YEAR_DATA[2030].rsuShares = Math.round(futureStock2030 / (stockPrice > 0 ? stockPrice : 57.01));
+      CAREER_YEAR_DATA[2030].cashStatus = CAREER_YEAR_DATA[2030].cashReward > 0
+        ? `$${CAREER_YEAR_DATA[2030].cashReward.toLocaleString()} vesting in 2030`
+        : 'Active grant completed in 2029 ($0)';
+      CAREER_YEAR_DATA[2030].cashNext = CAREER_YEAR_DATA[2030].cashReward > 0
+        ? 'Quarterly vesting from 2027–2029 awards'
+        : 'Enter 2027–2029 grants above to model 2030 awards';
 
       // Update Plan Year chip labels so they reflect any future cash awards
       const c27 = document.getElementById('chip-year-2027');
@@ -2608,36 +2660,36 @@
     function saveCareerSettings() {
       try {
         if (!state.isUnlocked) return;
-        careerState.baseSalary = parseFloat(document.getElementById('career-base-salary')?.value) || 0;
-        careerState.bonus = parseFloat(document.getElementById('career-bonus')?.value) || 0;
-        careerState.cashReward = parseFloat(document.getElementById('career-cash-reward')?.value) || 0;
-        careerState.rsuVesting = parseFloat(document.getElementById('career-rsu')?.value) || 0;
-        careerState.employerMatch = parseFloat(document.getElementById('career-match')?.value) || 0;
-        careerState.k401 = parseFloat(document.getElementById('career-401k')?.value) || 0;
-        careerState.healthPreTax = parseFloat(document.getElementById('career-health')?.value) || 0;
-        careerState.hsaPreTax = parseFloat(document.getElementById('career-hsa')?.value) || 0;
+        careerState.baseSalary = Math.max(0, safeNum(document.getElementById('career-base-salary')?.value, careerState.baseSalary ?? 192376));
+        careerState.bonus = Math.max(0, safeNum(document.getElementById('career-bonus')?.value, careerState.bonus ?? 19238));
+        careerState.cashReward = Math.max(0, safeNum(document.getElementById('career-cash-reward')?.value, careerState.cashReward ?? 21875));
+        careerState.rsuVesting = Math.max(0, safeNum(document.getElementById('career-rsu')?.value, careerState.rsuVesting ?? 45893));
+        careerState.employerMatch = Math.max(0, safeNum(document.getElementById('career-match')?.value, careerState.employerMatch ?? 6000));
+        careerState.k401 = Math.max(0, safeNum(document.getElementById('career-401k')?.value, careerState.k401 ?? 24500));
+        careerState.healthPreTax = Math.max(0, safeNum(document.getElementById('career-health')?.value, careerState.healthPreTax ?? 1000));
+        careerState.hsaPreTax = Math.max(0, safeNum(document.getElementById('career-hsa')?.value, careerState.hsaPreTax ?? 4550));
 
         // Multi-Year & Future Awards inputs (persisted to localStorage)
         const elBaseInc = document.getElementById('cv-base-inc');
-        if (elBaseInc && elBaseInc.type !== 'password') careerState.baseInc = parseFloat(elBaseInc.value) || 0;
+        if (elBaseInc && elBaseInc.type !== 'password') careerState.baseInc = Math.max(0, safeNum(elBaseInc.value, 3));
         const elIndivMod = document.getElementById('cv-indiv-mod');
-        if (elIndivMod && elIndivMod.type !== 'password') careerState.indivMod = parseFloat(elIndivMod.value) || 100;
+        if (elIndivMod && elIndivMod.type !== 'password') careerState.indivMod = Math.max(0, safeNum(elIndivMod.value, 100));
         const elCompPerf = document.getElementById('cv-comp-perf');
-        if (elCompPerf && elCompPerf.type !== 'password') careerState.compPerf = parseFloat(elCompPerf.value) || 100;
+        if (elCompPerf && elCompPerf.type !== 'password') careerState.compPerf = Math.max(0, safeNum(elCompPerf.value, 100));
         const elStockPrice = document.getElementById('cv-stock-price');
-        if (elStockPrice && elStockPrice.type !== 'password') careerState.stockPrice = parseFloat(elStockPrice.value) || 57.01;
+        if (elStockPrice && elStockPrice.type !== 'password') careerState.stockPrice = Math.max(1, safeNum(elStockPrice.value, 57.01));
         const elFut2027 = document.getElementById('cv-future-2027');
-        if (elFut2027 && elFut2027.type !== 'password') careerState.future2027 = parseFloat(elFut2027.value) || 0;
+        if (elFut2027 && elFut2027.type !== 'password') careerState.future2027 = Math.max(0, safeNum(elFut2027.value, 0));
         const elFut2028 = document.getElementById('cv-future-2028');
-        if (elFut2028 && elFut2028.type !== 'password') careerState.future2028 = parseFloat(elFut2028.value) || 0;
+        if (elFut2028 && elFut2028.type !== 'password') careerState.future2028 = Math.max(0, safeNum(elFut2028.value, 0));
         const elFut2029 = document.getElementById('cv-future-2029');
-        if (elFut2029 && elFut2029.type !== 'password') careerState.future2029 = parseFloat(elFut2029.value) || 0;
+        if (elFut2029 && elFut2029.type !== 'password') careerState.future2029 = Math.max(0, safeNum(elFut2029.value, 0));
 
         // Safety Net inputs
-        careerState.severanceWeeks = parseFloat(document.getElementById('safety-severance-weeks')?.value) || 10;
-        careerState.vestingBuffer = parseFloat(document.getElementById('safety-vesting-buffer')?.value) || 35988;
-        careerState.njUiWeekly = parseFloat(document.getElementById('safety-nj-ui-weekly')?.value) || 854;
-        careerState.njUiWeeks = parseFloat(document.getElementById('safety-nj-ui-weeks')?.value) || 26;
+        careerState.severanceWeeks = Math.max(0, safeNum(document.getElementById('safety-severance-weeks')?.value, 10));
+        careerState.vestingBuffer = Math.max(0, safeNum(document.getElementById('safety-vesting-buffer')?.value, 35988));
+        careerState.njUiWeekly = Math.max(0, safeNum(document.getElementById('safety-nj-ui-weekly')?.value, 854));
+        careerState.njUiWeeks = Math.max(0, safeNum(document.getElementById('safety-nj-ui-weeks')?.value, 26));
 
         localStorage.setItem(CAREER_STORAGE_KEY, JSON.stringify(careerState));
 
@@ -2713,13 +2765,13 @@
         if (careerState.selectedYear === 2026 || !careerState.selectedYear) {
           careerState.selectedYear = 2027;
         }
-        if (careerState.baseSalary === 186773 || !careerState.baseSalary) {
+        if (careerState.baseSalary === 186773 || careerState.baseSalary === undefined) {
           careerState.baseSalary = 192376;
           careerState.bonus = 19238;
           careerState.cashReward = 21875;
           careerState.rsuVesting = 45893;
         }
-        if (careerState.hsaPreTax === 4300 || !careerState.hsaPreTax) {
+        if (careerState.hsaPreTax === 4300 || careerState.hsaPreTax === undefined) {
           careerState.hsaPreTax = 4550;
         }
       } catch (e) {
@@ -2729,6 +2781,16 @@
 
     function onCareerInput() {
       if (!state.isUnlocked) return;
+      const activeId = document.activeElement?.id;
+      if (['career-base-salary', 'career-bonus', 'career-cash-reward', 'career-rsu'].includes(activeId)) {
+        careerState.selectedYear = 'custom';
+        ['2027', '2028', '2029', '2030', 'custom'].forEach(y => {
+          const btn = document.getElementById('chip-year-' + y);
+          if (btn) btn.classList.toggle('active', y === 'custom');
+        });
+        const sub = document.getElementById('career-year-subtitle');
+        if (sub) sub.textContent = 'Custom compensation figures';
+      }
       saveCareerSettings();
       recalculateCareer();
     }
@@ -2787,7 +2849,7 @@
         document.getElementById('kpi-career-net').textContent = '$---,---';
         document.getElementById('kpi-career-net-sub').textContent = '$--- / month in hand';
         document.getElementById('kpi-career-total-comp').textContent = '$---,---';
-        document.getElementById('kpi-career-total-comp-sub').textContent = 'Includes $--- RSU vesting';
+        document.getElementById('kpi-career-total-comp-sub').textContent = 'Net + 401(k) + HSA + Match';
 
         const cashAwardStatus = document.getElementById('lbl-cash-award-status');
         if (cashAwardStatus) cashAwardStatus.textContent = '🔒 Locked';
@@ -2808,6 +2870,10 @@
         document.getElementById('lbl-safety-severance').textContent = '$---,---';
         document.getElementById('lbl-safety-vesting').textContent = '$---,---';
         document.getElementById('lbl-safety-nj-ui').textContent = '$---,---';
+        const runwayDescLocked = document.getElementById('lbl-safety-runway-desc');
+        if (runwayDescLocked) {
+          runwayDescLocked.innerHTML = '🔒 <strong>Locked:</strong> Enter secret access key above to calculate your severance and NJ unemployment runway.';
+        }
 
         const tbody = document.getElementById('career-tax-tbody');
         if (tbody) {
@@ -2816,34 +2882,40 @@
         return;
       }
 
-      // Unlocked: read values from inputs or careerState
-      const baseSalary = parseFloat(document.getElementById('career-base-salary').value) || careerState.baseSalary;
-      const bonus = parseFloat(document.getElementById('career-bonus').value) || careerState.bonus;
-      const cashReward = parseFloat(document.getElementById('career-cash-reward').value) || careerState.cashReward;
-      const match = parseFloat(document.getElementById('career-match').value) || careerState.employerMatch;
-      const k401 = parseFloat(document.getElementById('career-401k').value) || careerState.k401;
-      const health = parseFloat(document.getElementById('career-health').value) || careerState.healthPreTax;
-      const hsa = parseFloat(document.getElementById('career-hsa').value) || careerState.hsaPreTax;
-      const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
+      // Unlocked: read values from inputs or careerState (zero-safe)
+      const baseSalary = Math.max(0, safeNum(document.getElementById('career-base-salary').value, careerState.baseSalary ?? 192376));
+      const bonus = Math.max(0, safeNum(document.getElementById('career-bonus').value, careerState.bonus ?? 19238));
+      const cashReward = Math.max(0, safeNum(document.getElementById('career-cash-reward').value, careerState.cashReward ?? 21875));
+      const match = Math.max(0, safeNum(document.getElementById('career-match').value, careerState.employerMatch ?? 6000));
+      const k401 = Math.max(0, safeNum(document.getElementById('career-401k').value, careerState.k401 ?? 24500));
+      const health = Math.max(0, safeNum(document.getElementById('career-health').value, careerState.healthPreTax ?? 1000));
+      const hsa = Math.max(0, safeNum(document.getElementById('career-hsa').value, careerState.hsaPreTax ?? 4550));
+      const stockPrice = Math.max(1, safeNum(document.getElementById('cv-stock-price')?.value, 57.01));
 
-      // Automatically sync RSU value from active RSU schedule + future stock awards
-      let rsuVesting = parseFloat(document.getElementById('career-rsu').value);
+      // Automatically sync RSU value from active RSU schedule + future stock awards when a preset year is active
+      let rsuVesting = safeNum(document.getElementById('career-rsu').value, NaN);
       if (careerState.selectedYear && CAREER_YEAR_DATA[careerState.selectedYear]) {
         const dynRsu = CAREER_YEAR_DATA[careerState.selectedYear].rsuVesting;
         if (isNaN(rsuVesting) || document.activeElement !== document.getElementById('career-rsu')) {
           rsuVesting = dynRsu;
         }
       }
-      if (isNaN(rsuVesting)) rsuVesting = careerState.rsuVesting;
+      if (isNaN(rsuVesting)) rsuVesting = careerState.rsuVesting ?? 0;
 
-      if (document.getElementById('career-base-salary').value !== String(baseSalary)) document.getElementById('career-base-salary').value = baseSalary;
-      if (document.getElementById('career-bonus').value !== String(bonus)) document.getElementById('career-bonus').value = bonus;
-      if (document.getElementById('career-cash-reward').value !== String(cashReward)) document.getElementById('career-cash-reward').value = cashReward;
-      if (document.getElementById('career-rsu').value !== String(rsuVesting)) document.getElementById('career-rsu').value = rsuVesting;
-      if (document.getElementById('career-match').value !== String(match)) document.getElementById('career-match').value = match;
-      if (document.getElementById('career-401k').value !== String(k401)) document.getElementById('career-401k').value = k401;
-      if (document.getElementById('career-health').value !== String(health)) document.getElementById('career-health').value = health;
-      if (document.getElementById('career-hsa').value !== String(hsa)) document.getElementById('career-hsa').value = hsa;
+      const setIfNotActive = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && document.activeElement !== el && el.value !== String(val)) {
+          el.value = val;
+        }
+      };
+      setIfNotActive('career-base-salary', baseSalary);
+      setIfNotActive('career-bonus', bonus);
+      setIfNotActive('career-cash-reward', cashReward);
+      setIfNotActive('career-rsu', rsuVesting);
+      setIfNotActive('career-match', match);
+      setIfNotActive('career-401k', k401);
+      setIfNotActive('career-health', health);
+      setIfNotActive('career-hsa', hsa);
 
       document.getElementById('val-career-salary').textContent = '$' + Math.round(baseSalary).toLocaleString();
       document.getElementById('val-career-bonus').textContent = '$' + Math.round(bonus).toLocaleString();
@@ -2854,13 +2926,16 @@
       document.getElementById('val-career-health').textContent = '$' + Math.round(health).toLocaleString();
       document.getElementById('val-career-hsa').textContent = '$' + Math.round(hsa).toLocaleString();
 
+      const yrShares = CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares ?? Math.round(rsuVesting / stockPrice);
       const noteRsu = document.getElementById('note-career-rsu');
       if (noteRsu) {
-        const yrShares = CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares || 0;
         noteRsu.innerHTML = `⚡ Auto-computed: <strong>${yrShares.toLocaleString()} shares × $${stockPrice.toFixed(2)}</strong> live price`;
       }
       const noteBonus = document.getElementById('note-career-bonus');
-      if (noteBonus) noteBonus.textContent = `${careerState.selectedYear}: $${Math.round(bonus).toLocaleString()} target projection (10% of base)`;
+      if (noteBonus) {
+        const yrLabel = careerState.selectedYear === 'custom' ? 'Custom' : careerState.selectedYear;
+        noteBonus.textContent = `${yrLabel}: $${Math.round(bonus).toLocaleString()} target projection (10% of base)`;
+      }
       const noteCashReward = document.getElementById('note-career-cash-reward');
       if (noteCashReward) noteCashReward.textContent = 'Active Grant: 2027: $21,875 | 2028: $12,500 | 2029: $3,125';
 
@@ -2904,17 +2979,18 @@
       const monthlyTakeHome = netTakeHomeAnnual / 12;
       const biWeeklyTakeHome = netTakeHomeAnnual / 26;
       const effectiveTaxRate = earnedGross > 0 ? (totalTaxes / earnedGross) * 100 : 0;
+      const totalWealthRetained = netTakeHomeAnnual + k401 + hsa + match;
 
       // Update KPI Cards
       document.getElementById('kpi-career-gross').textContent = '$' + Math.round(earnedGross).toLocaleString();
-      document.getElementById('kpi-career-gross-sub').textContent = `Base + AIP + Cash + RSUs ($${Math.round(earnedGross/1000)}k total)`;
+      document.getElementById('kpi-career-gross-sub').textContent = `Base + AIP + Cash + RSUs ($${Math.round(earnedGross / 1000)}k W-2)`;
       document.getElementById('kpi-career-pretax').textContent = '$' + Math.round(preTaxDeductions).toLocaleString();
       document.getElementById('kpi-career-taxes').textContent = '$' + Math.round(totalTaxes).toLocaleString();
       document.getElementById('kpi-career-taxes-sub').textContent = `Effective Tax Rate: ${effectiveTaxRate.toFixed(1)}%`;
       document.getElementById('kpi-career-net').textContent = '$' + Math.round(netTakeHomeAnnual).toLocaleString();
       document.getElementById('kpi-career-net-sub').textContent = `$${Math.round(monthlyTakeHome).toLocaleString()} / mo ($${Math.round(biWeeklyTakeHome).toLocaleString()} / pay)`;
-      document.getElementById('kpi-career-total-comp').textContent = '$' + Math.round(totalComp).toLocaleString();
-      document.getElementById('kpi-career-total-comp-sub').textContent = `Includes $${Math.round(rsuVesting).toLocaleString()} RSU vesting (Taxed in W-2)`;
+      document.getElementById('kpi-career-total-comp').textContent = '$' + Math.round(totalWealthRetained).toLocaleString();
+      document.getElementById('kpi-career-total-comp-sub').textContent = `Net + $${Math.round((k401 + hsa + match) / 1000)}k (401k/HSA/Match)`;
 
       // Freedom Replacement Bridge
       let bridgeTargetAnnual = netTakeHomeAnnual;
@@ -2962,17 +3038,18 @@
       document.getElementById('lbl-replace-gap').textContent = monthlyGap <= 0 ? '$0 / mo (Surplus!)' : '-$' + Math.round(monthlyGap).toLocaleString() + ' / mo';
       document.getElementById('lbl-replace-timeline').textContent = timelineText;
 
-      // Severance, Layoff & New Jersey Unemployment Safety Net Calculation
-      const sevWeeks = parseFloat(document.getElementById('safety-severance-weeks')?.value) || 10;
-      const vestBuffer = parseFloat(document.getElementById('safety-vesting-buffer')?.value) || 35988;
-      const njWeekly = parseFloat(document.getElementById('safety-nj-ui-weekly')?.value) || 854;
-      const njWeeks = parseFloat(document.getElementById('safety-nj-ui-weeks')?.value) || 26;
+      // Severance, Layoff & New Jersey Unemployment Safety Net Calculation (zero-safe)
+      const sevWeeks = Math.max(0, safeNum(document.getElementById('safety-severance-weeks')?.value, 10));
+      const vestBuffer = Math.max(0, safeNum(document.getElementById('safety-vesting-buffer')?.value, 35988));
+      const njWeekly = Math.max(0, safeNum(document.getElementById('safety-nj-ui-weekly')?.value, 854));
+      const njWeeks = Math.max(0, safeNum(document.getElementById('safety-nj-ui-weeks')?.value, 26));
 
       const severancePay = Math.round((sevWeeks / 52) * baseSalary);
       const njUiTotal = Math.round(njWeekly * njWeeks);
       const grossSafety = severancePay + vestBuffer + njUiTotal;
       const netSafety = Math.round(grossSafety * 0.80); // Est ~20% withholding & taxes
-      const monthlySpend = Math.round(state.baseSpend / 12) || 11700;
+      const totalAnnualBudget = (state.baseSpend > 0 ? state.baseSpend : 95000) + (state.healthCost ?? 3840);
+      const monthlySpend = Math.max(1, Math.round(totalAnnualBudget / 12));
       const runwayMonths = monthlySpend > 0 ? (netSafety / monthlySpend) : 0;
 
       document.getElementById('lbl-safety-severance').textContent = '$' + severancePay.toLocaleString();
@@ -2984,7 +3061,7 @@
       document.getElementById('bar-safety-runway').style.width = Math.min(100, (runwayMonths / 12) * 100).toFixed(1) + '%';
       const runwayDesc = document.getElementById('lbl-safety-runway-desc');
       if (runwayDesc) {
-        runwayDesc.innerHTML = `💡 <strong>Zero Asset Drawdown:</strong> This package covers over <strong>${runwayMonths.toFixed(1)} months</strong> of living expenses ($${monthlySpend.toLocaleString()}/mo) with zero investment liquidation.`;
+        runwayDesc.innerHTML = `💡 <strong>Zero Asset Drawdown:</strong> This package covers over <strong>${runwayMonths.toFixed(1)} months</strong> of total living + healthcare expenses ($${monthlySpend.toLocaleString()}/mo) with zero investment liquidation.`;
       }
 
       // Breakdown Table
@@ -2997,13 +3074,12 @@
         const cNj = computeNjTax(Math.max(0, grossCash - k401 - health - 1000));
         const netCashOnly = grossCash - (cFed + cFica.totalFica + cNj) - preTaxDeductions;
         const netRsuOnly = netTakeHomeAnnual - netCashOnly;
-        const totalWealthRetained = netTakeHomeAnnual + k401 + hsa + match;
 
         const rows = [
           { name: '💼 Base Annual Salary', annual: baseSalary, notes: 'Regular base pay ($' + Math.round(baseSalary / 12).toLocaleString() + ' / month)' },
           { name: '🎯 AIP Annual Incentive Bonus', annual: bonus, notes: `AIP Cash Bonus (Target 10% = $${Math.round(baseSalary * 0.1).toLocaleString()}; modifier applied)` },
-          { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of active cash grant paid via payroll in USD` : `Vesting begins March 1, 2027 ($21,875 in 2027, $12,500 in 2028, $3,125 in 2029)` },
-          { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: `Always included in W-2 gross taxable earnings (${CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares || 'shares'} shares @ $${stockPrice.toFixed(2)}) per IRS & NJ tax law` },
+          { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of active/future cash grants paid via payroll in USD` : `Active grant completed in 2029 ($21,875 in 2027, $12,500 in 2028, $3,125 in 2029)` },
+          { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: `Always included in W-2 gross taxable earnings (${yrShares.toLocaleString()} shares @ $${stockPrice.toFixed(2)}) per IRS & NJ tax law` },
           { name: '💵 Gross Taxable Earnings (W-2)', annual: earnedGross, rowStyle: 'background:rgba(59, 130, 246, 0.12); font-weight:700;', notes: `100.0% W-2 Gross = Base ($${Math.round(baseSalary).toLocaleString()}) + AIP ($${Math.round(bonus).toLocaleString()}) + Cash Award ($${Math.round(cashReward).toLocaleString()}) + RSUs ($${Math.round(rsuVesting).toLocaleString()})` },
           { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, isDeduction: true, notes: 'IRS Elective Limit: $24,500. Diverted into your 401(k) shield (Exempt from Federal & NJ income tax)' },
           { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, isDeduction: true, notes: `HSA ($${Math.round(hsa).toLocaleString()}) + Health Insurance ($${Math.round(health).toLocaleString()}). Exempt from Federal & FICA taxes` },
@@ -3310,7 +3386,9 @@
                   const yrObj = state.displayedYearsData && state.displayedYearsData[idx];
                   if (!yrObj) return [];
                   const lines = [];
-                  if (yrObj.isWorking) {
+                  if (yrObj.isBaseline) {
+                    lines.push(`📍 2027 Starting Baseline: Actual Current Net Worth`);
+                  } else if (yrObj.isWorking) {
                     lines.push(`💼 Working Phase: Saving +$${Math.round(yrObj.cashFlow).toLocaleString()}/yr`);
                   } else {
                     lines.push(`🏖️ Retired (Withdrawing): -$${Math.round(Math.abs(yrObj.cashFlow)).toLocaleString()}/yr (-$${Math.round(Math.abs(yrObj.realCashFlow)).toLocaleString()} in today's $)`);
@@ -3320,8 +3398,10 @@
                   }
                   lines.push(`📊 Median (50th %ile) in Today's $: $${Math.round(yrObj.p50Real || 0).toLocaleString()}`);
                   lines.push(`🛡️ 10th Percentile (P10) in Today's $: $${Math.round(yrObj.p10Real || 0).toLocaleString()} (Survival: ${(yrObj.survivalRate ?? 100).toFixed(1)}%)`);
-                  const netSign = yrObj.netChange >= 0 ? '+' : '-';
-                  lines.push(`🔄 Net Mean Portfolio Change: ${netSign}$${Math.round(Math.abs(yrObj.netChange)).toLocaleString()}/yr (${yrObj.netChange >= 0 ? 'Growing' : 'Drawing Down'})`);
+                  if (!yrObj.isBaseline || yrObj.houseDeduction > 0) {
+                    const netSign = yrObj.netChange >= 0 ? '+' : '-';
+                    lines.push(`🔄 Net Mean Portfolio Change: ${netSign}$${Math.round(Math.abs(yrObj.netChange)).toLocaleString()}/yr (${yrObj.netChange >= 0 ? 'Growing' : 'Drawing Down'})`);
+                  }
                   return lines;
                 }
               }
@@ -3350,7 +3430,7 @@
         return;
       }
       state.baseSpend = amount;
-      document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#spend-chips-group .chip').forEach(c => c.classList.remove('active'));
       if (el) el.classList.add('active');
       const spendSlider = document.getElementById('input-spend-slider');
       if (spendSlider && amount > 0) spendSlider.value = amount;
@@ -3359,7 +3439,7 @@
 
     function onSpendSliderInput(val) {
       state.baseSpend = parseFloat(val);
-      document.querySelectorAll('.chips-group .chip').forEach(c => {
+      document.querySelectorAll('#spend-chips-group .chip').forEach(c => {
         c.classList.remove('active');
         if (c.getAttribute('data-spend') === String(val)) {
           c.classList.add('active');
@@ -3424,7 +3504,7 @@
         localStorage.removeItem(STORAGE_KEY);
       } catch (e) {}
       state.baseSpend = state.liveBaseSpend || 0;
-      document.querySelectorAll('.chips-group .chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#spend-chips-group .chip').forEach(c => c.classList.remove('active'));
       const currChip = document.getElementById('chip-current');
       if (currChip) currChip.classList.add('active');
       const spendSlider = document.getElementById('input-spend-slider');
@@ -3476,7 +3556,7 @@
       if (state.swr <= 0) state.swr = 0.035;
       state.nominalReturn = safeNum(document.getElementById('input-nominal-return')?.value, 8.5) / 100;
       state.inflationRate = safeNum(document.getElementById('input-inflation')?.value, 2.5) / 100;
-      state.annualSavings = safeNum(document.getElementById('input-savings')?.value, 100000);
+      state.annualSavings = safeNum(document.getElementById('input-savings')?.value, 106650);
       state.retireAge = parseInt(document.getElementById('input-retire-age')?.value) || 37;
       state.houseOutlay = safeNum(document.getElementById('input-house')?.value, 0);
       state.houseAge = parseInt(document.getElementById('input-house-age')?.value) || 36;
@@ -3485,10 +3565,17 @@
         state.baseSpend = (state.liveBaseSpend > 0) ? state.liveBaseSpend : safeNum(document.getElementById('input-spend-slider')?.value, 95000);
       }
 
-      // Real Return calculation
-      const realReturn = state.nominalReturn - state.inflationRate;
+      // Exact Fisher Equation Real Return: (1 + nominalReturn) / (1 + inflationRate) - 1
+      const realReturn = ((1 + state.nominalReturn) / (1 + state.inflationRate)) - 1;
       const retireYear = 1993 + state.retireAge;
-      const maxAge = state.chartMaxAge || 100;
+      let maxAge = state.chartMaxAge || 100;
+      if (state.retireAge > maxAge) {
+        maxAge = state.retireAge <= 65 ? 65 : 100;
+        state.chartMaxAge = maxAge;
+        document.querySelectorAll('#chart-horizon-chips .chip').forEach(c => c.classList.remove('active'));
+        const autoChip = document.getElementById('chip-maxage-' + maxAge);
+        if (autoChip) autoChip.classList.add('active');
+      }
       const maxYear = 1993 + maxAge;
 
       // Update Labels
@@ -3518,10 +3605,26 @@
       state.currentAge = currentCalcedAge;
       document.getElementById('kpi-age').textContent = `Current Age: ${currentCalcedAge}`;
 
+      const healthSelect = document.getElementById('select-health');
+      const selectedPlanText = healthSelect && healthSelect.selectedIndex >= 0 ? healthSelect.options[healthSelect.selectedIndex].text : '';
+      let planBadge = 'Healthcare';
+      if (selectedPlanText.includes('$0/mo')) {
+        planBadge = selectedPlanText.includes('Bronze') ? '$0/mo Bronze HDHP' : '$0/mo Subsidized Silver';
+      } else if (selectedPlanText.includes('Gold')) {
+        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
+        planBadge = 'Gold Plan' + (costPart ? ` (${costPart})` : '');
+      } else if (selectedPlanText.includes('Silver')) {
+        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
+        planBadge = 'Silver Plan' + (costPart ? ` (${costPart})` : '');
+      } else if (selectedPlanText.includes('Bronze')) {
+        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
+        planBadge = 'Bronze Plan' + (costPart ? ` (${costPart})` : '');
+      }
+
       if (!state.isUnlocked) {
         document.getElementById('kpi-nw').textContent = '$---,---';
         document.getElementById('kpi-fire-status').textContent = '---%';
-        document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR w/ Subsidized Gold`;
+        document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR (${(1 / state.swr).toFixed(1)}× Rule) w/ ${planBadge}`;
         document.getElementById('kpi-runway').textContent = '--- Years';
         document.getElementById('kpi-monthly-spend').textContent = '$--- / month total budget';
         document.getElementById('kpi-passive').textContent = '$--- / mo';
@@ -3597,22 +3700,6 @@
       const coastFireTarget = fireTarget / Math.pow(1 + Math.max(0.001, realReturn), yearsUntilRetire);
       const isCoastAchieved = state.netWorth >= coastFireTarget;
 
-      const healthSelect = document.getElementById('select-health');
-      const selectedPlanText = healthSelect && healthSelect.selectedIndex >= 0 ? healthSelect.options[healthSelect.selectedIndex].text : '';
-      let planBadge = 'Healthcare';
-      if (selectedPlanText.includes('$0/mo')) {
-        planBadge = '$0/mo Subsidized Plan';
-      } else if (selectedPlanText.includes('Gold')) {
-        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
-        planBadge = 'Gold Plan' + (costPart ? ` (${costPart})` : '');
-      } else if (selectedPlanText.includes('Silver')) {
-        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
-        planBadge = 'Silver Plan' + (costPart ? ` (${costPart})` : '');
-      } else if (selectedPlanText.includes('Bronze')) {
-        const costPart = (selectedPlanText.split('—')[1] || '').trim().split(' ')[0];
-        planBadge = 'Bronze Plan' + (costPart ? ` (${costPart})` : '');
-      }
-
       document.getElementById('kpi-nw').textContent = '$' + Math.round(state.netWorth).toLocaleString();
       document.getElementById('kpi-fire-status').textContent = fundedStatus.toFixed(1) + '%';
       document.getElementById('kpi-fire-sub').textContent = `At ${(state.swr * 100).toFixed(2)}% SWR (${(1 / state.swr).toFixed(1)}× Rule) w/ ${planBadge}`;
@@ -3665,9 +3752,10 @@
             p10Real: mc.p10Real,
             survivalRate: mc.survivalRate,
             target: fireTarget,
-            isWorking: true,
-            cashFlow: state.annualSavings,
-            realCashFlow: state.annualSavings,
+            isBaseline: true,
+            isWorking: year <= retireYear,
+            cashFlow: 0,
+            realCashFlow: 0,
             houseDeduction: initHouseDed,
             growth: 0,
             netChange: -initHouseDed
@@ -3699,6 +3787,7 @@
             p10Real: mc.p10Real,
             survivalRate: mc.survivalRate,
             target: fireTarget,
+            isBaseline: false,
             isWorking,
             cashFlow,
             realCashFlow,
@@ -3710,7 +3799,7 @@
       }
 
       // 1. 2027 Starting Forecast Metrics
-      const yr2027 = allYears.find(y => y.year === 2027) || allYears[1] || allYears[0];
+      const yr2027 = allYears.find(y => y.year === 2027) || allYears[0];
       const nw2027 = yr2027.nominal;
       const real2027 = yr2027.real;
 
@@ -3734,8 +3823,13 @@
       const el2037Real = document.getElementById('val-2037-real');
       if (el2037Real) el2037Real.textContent = `Real: $${Math.round(realRetire).toLocaleString()} in today's $`;
 
-      // 3. Post-Retirement Annual Withdrawal & Year-1 Net Portfolio Adjustment
-      const yrPostRetire = allYears.find(y => y.year === Math.min(2093, clampedRetireYear + 1)) || yrRetire;
+      // 3. Post-Retirement Annual Withdrawal & Year-1 Recurring Net Portfolio Adjustment
+      const postRetireYearsFrom2027 = (clampedRetireYear - 2027) + 1;
+      const postRetireInflation = Math.pow(1 + state.inflationRate, postRetireYearsFrom2027);
+      const postRetireNominalWithdrawal = totalAnnualSpend * postRetireInflation;
+      const postRetireGrowth = Math.max(0, nwRetire - (postRetireNominalWithdrawal / 2)) * state.nominalReturn;
+      const recurringPostRetireNetChg = Math.max(0, nwRetire - postRetireNominalWithdrawal + postRetireGrowth) - nwRetire;
+
       const lblBudget = document.getElementById('lbl-2027-budget');
       if (lblBudget) {
         lblBudget.textContent = `Post-Age ${yrRetire.age} Withdrawal`;
@@ -3746,7 +3840,7 @@
       }
       const el2027Monthly = document.getElementById('val-2027-monthly');
       if (el2027Monthly) {
-        const netChg = yrPostRetire.netChange;
+        const netChg = recurringPostRetireNetChg;
         const sign = netChg >= 0 ? '+$' : '-$';
         el2027Monthly.style.color = netChg >= 0 ? '#34d399' : '#f87171';
         el2027Monthly.textContent = `${sign}${Math.round(Math.abs(netChg)).toLocaleString()}/yr net ${netChg >= 0 ? 'growth' : 'drawdown'} after Age ${yrRetire.age}`;
