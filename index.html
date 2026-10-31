@@ -3300,6 +3300,11 @@
         grid.slice(1).forEach(row => {
           const label = String(row?.[0] ?? '').trim();
           if (!label || /^lifetime\s+total$/i.test(label)) return;
+          const hasAnnualValues = yearColumns.some(column => {
+            const value = row[column.index];
+            return value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value));
+          });
+          if (!hasAnnualValues) return;
           const prefix = key === 'taxReturns' ? 'Tax return' : key === 'match' ? 'Employer match' : '';
           items.push({
             label: prefix ? `${prefix} · ${label}` : label,
