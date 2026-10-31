@@ -2951,7 +2951,7 @@
       const targetPortReq = bridgeTargetAnnual / state.swr;
       const portGap = Math.max(0, targetPortReq - state.netWorth);
       const yearsToReplace = computeOfficialYearsToFire(state.netWorth, targetPortReq, state.annualSavings, state.nominalReturn);
-      const timelineText = portGap <= 0 ? '🎉 100% Replaced Today!' : `in ~${yearsToReplace} yrs (${2026 + yearsToReplace}, Age ${2026 + yearsToReplace - 1993})`;
+      const timelineText = portGap <= 0 ? '🎉 100% Replaced Today!' : `in ~${yearsToReplace} yrs (${2027 + yearsToReplace}, Age ${2027 + yearsToReplace - 1993})`;
 
       const lblDesc = document.getElementById('lbl-bridge-target-desc');
       if (lblDesc) lblDesc.textContent = bridgeDesc;
@@ -3172,7 +3172,7 @@
     // Deterministic 500-Path Monte Carlo Engine (Lognormal Returns + Sequence-of-Returns Risk, sigma = 15%)
     function runMonteCarloQuantiles(startNW, retireYear, totalAnnualSpend, annualSavings, nominalReturn, inflationRate, houseOutlay, houseYear) {
       const NUM_PATHS = 500;
-      const YEARS = 67; // 2026 (i=0) to 2093 (Age 100, i=67)
+      const YEARS = 66; // 2027 (i=0, Age 34) to 2093 (Age 100, i=66)
       const sigma = 0.15; // 15% historical annual equity portfolio volatility
       // Drift so E[1+r] = 1 + nominalReturn, while Median experiences -0.5*sigma^2 volatility drag
       const logMean = Math.log(Math.max(0.01, 1 + nominalReturn)) - 0.5 * sigma * sigma;
@@ -3191,20 +3191,22 @@
         return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
       };
 
+      const initHouseDed = (houseYear === 2027) ? houseOutlay : 0;
+      const initNW = Math.max(0, startNW - initHouseDed);
       const paths = new Float64Array(NUM_PATHS);
-      for (let p = 0; p < NUM_PATHS; p++) paths[p] = startNW;
+      for (let p = 0; p < NUM_PATHS; p++) paths[p] = initNW;
 
       const quantiles = [{
-        p50Nominal: startNW,
-        p50Real: startNW,
-        p10Nominal: startNW,
-        p10Real: startNW,
+        p50Nominal: initNW,
+        p50Real: initNW,
+        p10Nominal: initNW,
+        p10Real: initNW,
         survivalRate: 100
       }];
 
       const sorted = new Float64Array(NUM_PATHS);
       for (let i = 1; i <= YEARS; i++) {
-        const year = 2026 + i;
+        const year = 2027 + i;
         const isWorking = year <= retireYear;
         const inflationFactor = Math.pow(1 + inflationRate, i);
         const nominalWithdrawal = totalAnnualSpend * inflationFactor;
@@ -3499,13 +3501,13 @@
       document.getElementById('val-inflation').textContent = (state.inflationRate * 100).toFixed(2) + '%';
       document.getElementById('val-real-return').textContent = (realReturn * 100).toFixed(2) + '%';
       document.getElementById('val-savings').textContent = '$' + Math.round(state.annualSavings).toLocaleString() + '/yr';
-      document.getElementById('val-retire-age').textContent = `Age ${state.retireAge} (Target: ${retireYear} — in ${Math.max(0, retireYear - 2026)} yrs)`;
+      document.getElementById('val-retire-age').textContent = `Age ${state.retireAge} (Target: ${retireYear} — in ${Math.max(0, retireYear - 2027)} yrs)`;
       document.getElementById('val-house').textContent = state.houseOutlay > 0
         ? `$${Math.round(state.houseOutlay).toLocaleString()} at Age ${state.houseAge} (${houseYear})`
         : '$0';
       const valHouseAgeEl = document.getElementById('val-house-age');
       if (valHouseAgeEl) {
-        valHouseAgeEl.textContent = `Age ${state.houseAge} (${houseYear} — in ${Math.max(0, houseYear - 2026)} yrs)`;
+        valHouseAgeEl.textContent = `Age ${state.houseAge} (${houseYear} — in ${Math.max(0, houseYear - 2027)} yrs)`;
       }
       const houseAgeSubEl = document.getElementById('house-age-subcontrol');
       if (houseAgeSubEl) {
@@ -3590,8 +3592,8 @@
       const monthlySpend = totalAnnualSpend / 12;
       const monthlySurplus = monthlyPassive - monthlySpend;
 
-      // Official Coast FIRE Formula: CoastTarget = FIRE_Target / (1 + realReturn)^(retireYear - 2026)
-      const yearsUntilRetire = Math.max(0, retireYear - 2026);
+      // Official Coast FIRE Formula: CoastTarget = FIRE_Target / (1 + realReturn)^(retireYear - 2027)
+      const yearsUntilRetire = Math.max(0, retireYear - 2027);
       const coastFireTarget = fireTarget / Math.pow(1 + Math.max(0.001, realReturn), yearsUntilRetire);
       const isCoastAchieved = state.netWorth >= coastFireTarget;
 
@@ -3638,18 +3640,20 @@
         houseYear
       );
 
-      // Model lifetime trajectory from 2026 base through Age 100 (Year 2093, i = 67)
+      // Model lifetime trajectory starting at 2027 (i = 0, Age 34 = actual Net Worth) through Age 100 (Year 2093, i = 66)
       const allYears = [];
       let runningNW = state.netWorth;
       let depletedYear = null;
       let depletedAge = null;
 
-      for (let i = 0; i <= 67; i++) {
-        const year = 2026 + i;
+      for (let i = 0; i <= 66; i++) {
+        const year = 2027 + i;
         const age = year - 1993;
         const inflationFactor = Math.pow(1 + state.inflationRate, i);
         const mc = mcQuantiles[i] || mcQuantiles[mcQuantiles.length - 1];
         if (i === 0) {
+          const initHouseDed = (year === houseYear) ? state.houseOutlay : 0;
+          runningNW = Math.max(0, state.netWorth - initHouseDed);
           allYears.push({
             year,
             age,
@@ -3664,9 +3668,9 @@
             isWorking: true,
             cashFlow: state.annualSavings,
             realCashFlow: state.annualSavings,
-            houseDeduction: 0,
+            houseDeduction: initHouseDed,
             growth: 0,
-            netChange: 0
+            netChange: -initHouseDed
           });
         } else {
           // Accumulation phase up to retirement milestone year; Drawdown phase after retirement milestone year
@@ -3903,7 +3907,7 @@
 
         // Official Logarithmic NPER Compounding Formula for Years to Reach Milestone
         const yearsToReach = computeOfficialYearsToFire(state.netWorth, req35, state.annualSavings, state.nominalReturn);
-        const estYear = isAchieved ? 'CURRENT / ACHIEVED' : (2026 + yearsToReach) + ' (Age ' + (1993 ? (2026 + yearsToReach - 1993) : (state.currentAge + yearsToReach)) + ')';
+        const estYear = isAchieved ? 'CURRENT / ACHIEVED' : (2027 + yearsToReach) + ' (Age ' + (2027 + yearsToReach - 1993) + ')';
 
         const row = document.createElement('tr');
         row.innerHTML = `
