@@ -684,27 +684,94 @@
             <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
           </div>
 
-          <!-- Career KPI Summary Cards (4 Cards) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <!-- Plan Year Selector Pills -->
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">📅 PayPal Plan Year:</span>
+              <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded PayPal CompView figures for 2026</span>
+            </div>
+            <div class="chips-group" id="career-year-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="chip active" id="chip-year-2026" onclick="setCareerYear(2026)">2026 (Current)</button>
+              <button type="button" class="chip" id="chip-year-2027" onclick="setCareerYear(2027)">2027 (+Cash Reward)</button>
+              <button type="button" class="chip" id="chip-year-2028" onclick="setCareerYear(2028)">2028 (+Cash Reward)</button>
+              <button type="button" class="chip" id="chip-year-custom" onclick="setCareerYear('custom')">Custom</button>
+            </div>
+          </div>
+
+          <!-- Career KPI Summary Cards (5 Cards) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
             <div class="kpi-card accent" style="padding: 14px 16px;">
-              <div class="kpi-label">Gross Compensation</div>
+              <div class="kpi-label">Gross Cash Pay</div>
               <div class="kpi-value" id="kpi-career-gross" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-gross-sub">Base Salary + Annual Bonus</div>
+              <div class="kpi-sub" id="kpi-career-gross-sub">Base + AIP + Cash Reward</div>
             </div>
             <div class="kpi-card purple" style="padding: 14px 16px;">
               <div class="kpi-label">Pre-Tax Deductions</div>
               <div class="kpi-value" id="kpi-career-pretax" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-pretax-sub">401(k), HSA & Medical Shields</div>
+              <div class="kpi-sub" id="kpi-career-pretax-sub">401(k), HSA & Health Shields</div>
             </div>
             <div class="kpi-card" style="padding: 14px 16px;">
-              <div class="kpi-label">Total Taxes (Fed + FICA + NJ)</div>
+              <div class="kpi-label">Total Taxes (Fed+FICA+NJ)</div>
               <div class="kpi-value" id="kpi-career-taxes" style="font-size: 22px;">$---,---</div>
               <div class="kpi-sub" id="kpi-career-taxes-sub">Effective Tax Rate: ---%</div>
             </div>
             <div class="kpi-card success" style="padding: 14px 16px;">
-              <div class="kpi-label">Net Take-Home Pay</div>
+              <div class="kpi-label">Net Take-Home Cash</div>
               <div class="kpi-value" id="kpi-career-net" style="font-size: 22px;">$---,---</div>
               <div class="kpi-sub" id="kpi-career-net-sub">$--- / month in hand</div>
+            </div>
+            <div class="kpi-card" style="padding: 14px 16px; border-color: rgba(56, 189, 248, 0.4);">
+              <div class="kpi-label">Total Comp (w/ RSUs)</div>
+              <div class="kpi-value" id="kpi-career-total-comp" style="font-size: 22px; color: #38bdf8;">$---,---</div>
+              <div class="kpi-sub" id="kpi-career-total-comp-sub">Includes $--- RSU vesting</div>
+            </div>
+          </div>
+
+          <!-- Long Term Cash Award Detail & Schedule Card -->
+          <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; flex-wrap: wrap; gap: 8px;" onclick="toggleCashAwardSchedule()">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">🎁</span>
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: #fbbf24; margin-bottom: 2px;">PayPal Long Term Cash Award Schedule</h3>
+                  <div style="font-size: 12px; color: #94a3b8;">50% Cash / 50% RSU Award ($37,500 total cash grant) • Paid via payroll in USD</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="text-align: right;">
+                  <span style="font-size: 14px; font-weight: 700; color: #fbbf24;" id="lbl-cash-award-status">$0 vesting in 2026</span>
+                  <span style="display: block; font-size: 11px; color: #34d399;" id="lbl-cash-award-next">Vesting begins March 1, 2027</span>
+                </div>
+                <span id="cash-schedule-toggle-arrow" style="font-size: 14px; color: #94a3b8; background: #334155; padding: 4px 8px; border-radius: 4px;">▼</span>
+              </div>
+            </div>
+            
+            <div id="cash-award-schedule-body" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid #334155;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; font-size: 11px; display: block;">March 1, 2027 (33.33%)</span>
+                  <strong style="color: #34d399; font-size: 15px;">$12,500.00</strong>
+                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">1st major installment</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; font-size: 11px; display: block;">Jun / Sep / Dec 2027</span>
+                  <strong style="color: #34d399; font-size: 15px;">$9,375.00</strong>
+                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">$3,125.00 per quarter</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; font-size: 11px; display: block;">2028 (4 Quarters)</span>
+                  <strong style="color: #34d399; font-size: 15px;">$12,500.00</strong>
+                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">$3,125.00 × 4 quarters</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; font-size: 11px; display: block;">March 1, 2029 (Final)</span>
+                  <strong style="color: #34d399; font-size: 15px;">$3,125.00</strong>
+                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">Full $37,500 completed</span>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #94a3b8; line-height: 1.5; background: rgba(15, 23, 42, 0.5); padding: 8px 12px; border-radius: 6px;">
+                💡 <strong>Why this was missing from CompView:</strong> PayPal's CompView portal displays standard "Total Cash" (Base + AIP) and "Total Equity", omitting the Long Term Cash Award from standard cash tables. Our dashboard bridges this gap, showing your true $227,148 cash income for 2027 and $217,950 for 2028!
+              </div>
             </div>
           </div>
 
@@ -721,6 +788,16 @@
               <div style="font-size: 22px; font-weight: 800; color: #34d399;" id="lbl-replace-pct">---%</div>
             </div>
 
+            <!-- Target Selection Chips -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+              <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Replace Target:</span>
+              <div class="chips-group" id="bridge-target-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="chip active" id="chip-bridge-cash" onclick="setBridgeTarget('cash')">💵 Total Cash Paycheck (Base + AIP + Cash Reward)</button>
+                <button type="button" class="chip" id="chip-bridge-base" onclick="setBridgeTarget('base')">💼 Base Paycheck Only</button>
+                <button type="button" class="chip" id="chip-bridge-total" onclick="setBridgeTarget('total')">📈 Total Comp (+ RSUs)</button>
+              </div>
+            </div>
+
             <!-- Progress Bar -->
             <div style="background: #334155; border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: 14px; position: relative;">
               <div id="bar-replace-pct" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.4s ease;"></div>
@@ -728,7 +805,7 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
               <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Current Job Take-Home:</span>
+                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;" id="lbl-bridge-target-desc">Target Job Take-Home:</span>
                 <strong style="color: #f8fafc; font-size: 16px;" id="lbl-job-net-monthly">$--- / mo</strong>
               </div>
               <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
@@ -746,7 +823,7 @@
             </div>
 
             <p style="font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5;">
-              💡 <strong>Retirement Tax Reality:</strong> To retire comfortably, you do <em>not</em> need to replace $180,000 gross salary! In retirement, you stop paying 7.65% FICA payroll taxes ($10,000+), stop saving into a 401(k) ($23,500), and qualified investment withdrawals are eligible for the 0% capital gains bracket.
+              💡 <strong>Retirement Tax Reality:</strong> To retire comfortably, you do <em>not</em> need to replace $186,000+ gross salary! In retirement, you stop paying 7.65% FICA payroll taxes ($10,900+), stop saving into a 401(k) ($23,500), and qualified investment withdrawals are eligible for the 0% capital gains bracket.
             </p>
           </div>
 
@@ -754,22 +831,48 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
             <!-- Column 1: Compensation Inputs -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-              <h4 style="font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">1. Annual Job Compensation</h4>
+              <h4 style="font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">1. Annual Job Compensation (PayPal)</h4>
               
               <div class="control-group">
                 <div class="control-header">
                   <span>Base Annual Salary:</span>
-                  <span class="control-val" id="val-career-salary">$165,000</span>
+                  <span class="control-val" id="val-career-salary">$186,773</span>
                 </div>
-                <input type="number" id="career-base-salary" value="165000" step="1000" min="0" oninput="onCareerInput()">
+                <input type="number" id="career-base-salary" value="186773" step="1000" min="0" oninput="onCareerInput()">
               </div>
 
               <div class="control-group">
                 <div class="control-header">
-                  <span>Annual Bonus / Commission:</span>
-                  <span class="control-val" id="val-career-bonus">$15,000</span>
+                  <span>AIP Annual Bonus:</span>
+                  <span class="control-val" id="val-career-bonus">$17,449</span>
                 </div>
-                <input type="number" id="career-bonus" value="15000" step="1000" min="0" oninput="onCareerInput()">
+                <input type="number" id="career-bonus" value="17449" step="500" min="0" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">2026: $17,449 (93.4% modifier) | 2027: $18,500 | 2028: $18,677</div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Long Term Cash Award (Cash Reward):</span>
+                  <span class="control-val" id="val-career-cash-reward">$0</span>
+                </div>
+                <input type="number" id="career-cash-reward" value="0" step="500" min="0" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: #fbbf24; margin-top: 4px;" id="note-career-cash-reward">$37.5k Grant: 2026: $0 | 2027: $21,875 | 2028: $12,500 | 2029: $3,125</div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-header">
+                  <span>Equity Award (RSUs Vesting):</span>
+                  <span class="control-val" id="val-career-rsu">$38,418</span>
+                </div>
+                <input type="number" id="career-rsu" value="38418" step="500" min="0" oninput="onCareerInput()">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">2026: 674 shares ($38.4k) | 2027: 805 sh ($45.9k) | 2028: 349 sh ($19.9k) @ $57</div>
+              </div>
+
+              <div style="margin-top: 10px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e2e8f0; cursor: pointer; user-select: none;">
+                  <input type="checkbox" id="career-include-rsu" onchange="onCareerInput()" style="accent-color: #38bdf8; width: 16px; height: 16px;">
+                  <span>Include RSU equity vesting in take-home cash flow & taxes</span>
+                </label>
               </div>
 
               <div class="control-group">
@@ -791,7 +894,7 @@
                   <span class="control-val" id="val-career-401k">$23,500</span>
                 </div>
                 <input type="number" id="career-401k" value="23500" step="500" min="0" max="24500" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 IRS Elective Limit: $23,500 ($24,500 in 2026)</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 IRS Limit: $23,500 ($24,500 in 2026). Shields Federal tax</div>
               </div>
 
               <div class="control-group">
@@ -800,7 +903,7 @@
                   <span class="control-val" id="val-career-health">$1,000</span>
                 </div>
                 <input type="number" id="career-health" value="1000" step="100" min="0" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">$1,500 HDHP - $500 employer credit = $1,000 net</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">$1,500 HDHP - $500 employer credit = $1,000 net pre-tax cafeteria</div>
               </div>
 
               <div class="control-group">
@@ -809,14 +912,17 @@
                   <span class="control-val" id="val-career-hsa">$4,300</span>
                 </div>
                 <input type="number" id="career-hsa" value="4300" step="100" min="0" max="8550" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 Individual Limit: $4,300 ($8,550 family)</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 Individual Limit: $4,300 ($8,550 family). Shields Fed + FICA</div>
               </div>
             </div>
           </div>
 
           <!-- Tax Breakdown Detail Table -->
           <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-            <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin-bottom: 12px;">3. Annual Tax Breakdown & Government Deductions</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin: 0;">3. Annual Tax Breakdown & Government Deductions</h4>
+              <span style="font-size: 11px; color: #38bdf8;">Progressive Fed (IRS) + FICA + NJ-1040 Engine</span>
+            </div>
             <div class="table-container">
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
@@ -1093,22 +1199,122 @@
       }
     }
 
-    const CAREER_STORAGE_KEY = 'fire_dashboard_career_v1';
+    const CAREER_STORAGE_KEY = 'fire_dashboard_career_v2';
+
+    const PAYPAL_YEAR_DATA = {
+      2026: {
+        baseSalary: 186773,
+        bonus: 17449,
+        cashReward: 0,
+        rsuVesting: 38418,
+        rsuShares: 674,
+        bonusNote: '2026: $17,449 (93.4% modifier on $18,677 target)',
+        cashStatus: '$0 vesting in 2026',
+        cashNext: 'Vesting begins March 1, 2027',
+        rsuNote: '2026: 674 shares ($38.4k @ $57)'
+      },
+      2027: {
+        baseSalary: 186773,
+        bonus: 18500,
+        cashReward: 21875,
+        rsuVesting: 45885,
+        rsuShares: 805,
+        bonusNote: '2027: $18,500 target projection',
+        cashStatus: '$21,875 vesting in 2027',
+        cashNext: '$12,500 on Mar 1 + $3,125 Jun/Sep/Dec',
+        rsuNote: '2027: 805 shares ($45.9k @ $57)'
+      },
+      2028: {
+        baseSalary: 186773,
+        bonus: 18677,
+        cashReward: 12500,
+        rsuVesting: 19893,
+        rsuShares: 349,
+        bonusNote: '2028: $18,677 full 10% target projection',
+        cashStatus: '$12,500 vesting in 2028',
+        cashNext: '$3,125 quarterly × 4 quarters',
+        rsuNote: '2028: 349 shares ($19.9k @ $57)'
+      }
+    };
 
     let careerState = {
-      baseSalary: 165000,
-      bonus: 15000,
-      k401: 23500,
+      selectedYear: 2026,
+      bridgeTarget: 'cash',
+      includeRsu: false,
+      baseSalary: 186773,
+      bonus: 17449,
+      cashReward: 0,
+      rsuVesting: 38418,
       employerMatch: 6000,
+      k401: 23500,
       healthPreTax: 1000,
       hsaPreTax: 4300
     };
+
+    function toggleCashAwardSchedule() {
+      const body = document.getElementById('cash-award-schedule-body');
+      const arrow = document.getElementById('cash-schedule-toggle-arrow');
+      if (!body) return;
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      if (arrow) arrow.textContent = isHidden ? '▲' : '▼';
+    }
+
+    function setCareerYear(year) {
+      if (!state.isUnlocked) return;
+      careerState.selectedYear = year;
+      ['2026', '2027', '2028', 'custom'].forEach(y => {
+        const btn = document.getElementById('chip-year-' + y);
+        if (btn) btn.classList.toggle('active', String(y) === String(year));
+      });
+
+      if (PAYPAL_YEAR_DATA[year]) {
+        const data = PAYPAL_YEAR_DATA[year];
+        careerState.baseSalary = data.baseSalary;
+        careerState.bonus = data.bonus;
+        careerState.cashReward = data.cashReward;
+        careerState.rsuVesting = data.rsuVesting;
+
+        const elBase = document.getElementById('career-base-salary');
+        const elBonus = document.getElementById('career-bonus');
+        const elCash = document.getElementById('career-cash-reward');
+        const elRsu = document.getElementById('career-rsu');
+        if (elBase) elBase.value = data.baseSalary;
+        if (elBonus) elBonus.value = data.bonus;
+        if (elCash) elCash.value = data.cashReward;
+        if (elRsu) elRsu.value = data.rsuVesting;
+
+        const sub = document.getElementById('career-year-subtitle');
+        if (sub) sub.textContent = `Loaded PayPal CompView figures for ${year}`;
+      } else {
+        const sub = document.getElementById('career-year-subtitle');
+        if (sub) sub.textContent = 'Custom compensation figures';
+      }
+
+      saveCareerSettings();
+      recalculateCareer();
+    }
+
+    function setBridgeTarget(target) {
+      if (!state.isUnlocked) return;
+      careerState.bridgeTarget = target;
+      ['cash', 'base', 'total'].forEach(t => {
+        const chip = document.getElementById('chip-bridge-' + t);
+        if (chip) chip.classList.toggle('active', t === target);
+      });
+      saveCareerSettings();
+      recalculateCareer();
+    }
 
     function saveCareerSettings() {
       try {
         if (!state.isUnlocked) return;
         careerState.baseSalary = parseFloat(document.getElementById('career-base-salary').value) || 0;
         careerState.bonus = parseFloat(document.getElementById('career-bonus').value) || 0;
+        careerState.cashReward = parseFloat(document.getElementById('career-cash-reward').value) || 0;
+        careerState.rsuVesting = parseFloat(document.getElementById('career-rsu').value) || 0;
+        const incRsuEl = document.getElementById('career-include-rsu');
+        careerState.includeRsu = incRsuEl ? incRsuEl.checked : false;
         careerState.employerMatch = parseFloat(document.getElementById('career-match').value) || 0;
         careerState.k401 = parseFloat(document.getElementById('career-401k').value) || 0;
         careerState.healthPreTax = parseFloat(document.getElementById('career-health').value) || 0;
@@ -1129,7 +1335,7 @@
 
     function loadCareerSettings() {
       try {
-        const raw = localStorage.getItem(CAREER_STORAGE_KEY);
+        const raw = localStorage.getItem(CAREER_STORAGE_KEY) || localStorage.getItem('fire_dashboard_career_v1');
         if (raw) {
           const parsed = JSON.parse(raw);
           careerState = Object.assign(careerState, parsed);
@@ -1151,7 +1357,10 @@
       if (lockedBanner) lockedBanner.style.display = isLocked ? 'block' : 'none';
 
       // Toggle inputs enabled/disabled
-      const inputIds = ['career-base-salary', 'career-bonus', 'career-match', 'career-401k', 'career-health', 'career-hsa'];
+      const inputIds = [
+        'career-base-salary', 'career-bonus', 'career-cash-reward', 'career-rsu',
+        'career-match', 'career-401k', 'career-health', 'career-hsa'
+      ];
       inputIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1165,9 +1374,17 @@
         }
       });
 
+      const incRsuEl = document.getElementById('career-include-rsu');
+      if (incRsuEl) {
+        incRsuEl.disabled = isLocked;
+        if (!isLocked) incRsuEl.checked = !!careerState.includeRsu;
+      }
+
       if (isLocked) {
         document.getElementById('val-career-salary').textContent = '$---,---';
         document.getElementById('val-career-bonus').textContent = '$---,---';
+        document.getElementById('val-career-cash-reward').textContent = '$---,---';
+        document.getElementById('val-career-rsu').textContent = '$---,---';
         document.getElementById('val-career-match').textContent = '$---,---';
         document.getElementById('val-career-401k').textContent = '$---,---';
         document.getElementById('val-career-health').textContent = '$---,---';
@@ -1179,6 +1396,13 @@
         document.getElementById('kpi-career-taxes-sub').textContent = 'Effective Tax Rate: ---%';
         document.getElementById('kpi-career-net').textContent = '$---,---';
         document.getElementById('kpi-career-net-sub').textContent = '$--- / month in hand';
+        document.getElementById('kpi-career-total-comp').textContent = '$---,---';
+        document.getElementById('kpi-career-total-comp-sub').textContent = 'Includes $--- RSU vesting';
+
+        const cashAwardStatus = document.getElementById('lbl-cash-award-status');
+        if (cashAwardStatus) cashAwardStatus.textContent = '🔒 Locked';
+        const cashAwardNext = document.getElementById('lbl-cash-award-next');
+        if (cashAwardNext) cashAwardNext.textContent = 'Unlock to view vesting';
 
         document.getElementById('lbl-replace-pct').textContent = '---%';
         document.getElementById('bar-replace-pct').style.width = '0%';
@@ -1197,6 +1421,9 @@
       // Unlocked: read values from inputs or careerState
       const baseSalary = parseFloat(document.getElementById('career-base-salary').value) || careerState.baseSalary;
       const bonus = parseFloat(document.getElementById('career-bonus').value) || careerState.bonus;
+      const cashReward = parseFloat(document.getElementById('career-cash-reward').value) || careerState.cashReward;
+      const rsuVesting = parseFloat(document.getElementById('career-rsu').value) || careerState.rsuVesting;
+      const includeRsu = incRsuEl ? incRsuEl.checked : false;
       const match = parseFloat(document.getElementById('career-match').value) || careerState.employerMatch;
       const k401 = parseFloat(document.getElementById('career-401k').value) || careerState.k401;
       const health = parseFloat(document.getElementById('career-health').value) || careerState.healthPreTax;
@@ -1204,6 +1431,8 @@
 
       if (document.getElementById('career-base-salary').value !== String(baseSalary)) document.getElementById('career-base-salary').value = baseSalary;
       if (document.getElementById('career-bonus').value !== String(bonus)) document.getElementById('career-bonus').value = bonus;
+      if (document.getElementById('career-cash-reward').value !== String(cashReward)) document.getElementById('career-cash-reward').value = cashReward;
+      if (document.getElementById('career-rsu').value !== String(rsuVesting)) document.getElementById('career-rsu').value = rsuVesting;
       if (document.getElementById('career-match').value !== String(match)) document.getElementById('career-match').value = match;
       if (document.getElementById('career-401k').value !== String(k401)) document.getElementById('career-401k').value = k401;
       if (document.getElementById('career-health').value !== String(health)) document.getElementById('career-health').value = health;
@@ -1211,17 +1440,33 @@
 
       document.getElementById('val-career-salary').textContent = '$' + Math.round(baseSalary).toLocaleString();
       document.getElementById('val-career-bonus').textContent = '$' + Math.round(bonus).toLocaleString();
+      document.getElementById('val-career-cash-reward').textContent = '$' + Math.round(cashReward).toLocaleString();
+      document.getElementById('val-career-rsu').textContent = '$' + Math.round(rsuVesting).toLocaleString();
       document.getElementById('val-career-match').textContent = '$' + Math.round(match).toLocaleString();
       document.getElementById('val-career-401k').textContent = '$' + Math.round(k401).toLocaleString();
       document.getElementById('val-career-health').textContent = '$' + Math.round(health).toLocaleString();
       document.getElementById('val-career-hsa').textContent = '$' + Math.round(hsa).toLocaleString();
 
-      const grossEarnings = baseSalary + bonus;
+      // Update Cash Award status pill
+      const yrData = PAYPAL_YEAR_DATA[careerState.selectedYear];
+      const cashAwardStatus = document.getElementById('lbl-cash-award-status');
+      const cashAwardNext = document.getElementById('lbl-cash-award-next');
+      if (yrData) {
+        if (cashAwardStatus) cashAwardStatus.textContent = yrData.cashStatus;
+        if (cashAwardNext) cashAwardNext.textContent = yrData.cashNext;
+      } else {
+        if (cashAwardStatus) cashAwardStatus.textContent = `$${Math.round(cashReward).toLocaleString()} vesting this year`;
+        if (cashAwardNext) cashAwardNext.textContent = 'Paid via payroll in USD';
+      }
+
+      const grossCash = baseSalary + bonus + cashReward;
+      const totalComp = grossCash + rsuVesting;
+      const earnedGross = includeRsu ? totalComp : grossCash;
       const preTaxDeductions = k401 + health + hsa;
 
-      // 1. Federal Income Tax (2025 Standard Deduction: $15,750 Single)
+      // 1. Federal Income Tax (2025/2026 Single Standard Deduction: $15,750)
       const fedStdDeduction = 15750;
-      const fedTaxable = Math.max(0, grossEarnings - preTaxDeductions - fedStdDeduction);
+      const fedTaxable = Math.max(0, earnedGross - preTaxDeductions - fedStdDeduction);
       let fedTax = 0;
       if (fedTaxable > 626350) {
         fedTax = 186601 + (fedTaxable - 626350) * 0.37;
@@ -1240,15 +1485,17 @@
       }
 
       // 2. FICA (Social Security & Medicare)
-      const ficaWageBase = Math.max(0, grossEarnings - health - hsa);
+      // Health and HSA shields are exempt from FICA (Section 125 & Section 223)
+      const ficaWageBase = Math.max(0, earnedGross - health - hsa);
       const ssTax = Math.min(ficaWageBase, 176100) * 0.062;
       const medBaseTax = ficaWageBase * 0.0145;
       const medSurtax = ficaWageBase > 200000 ? (ficaWageBase - 200000) * 0.009 : 0;
       const totalFica = ssTax + medBaseTax + medSurtax;
 
       // 3. New Jersey State Income Tax (NJ-1040 Single)
-      const njGross = Math.max(0, grossEarnings - health);
-      const njTaxable = Math.max(0, njGross - 1000);
+      // NJ permits health insurance deduction (cafeteria plan), but does NOT permit 401(k) or HSA employee deductions
+      const njGross = Math.max(0, earnedGross - health);
+      const njTaxable = Math.max(0, njGross - 1000); // $1,000 NJ standard exemption
       let njTax = 0;
       if (njTaxable > 1000000) {
         njTax = 66250 + (njTaxable - 1000000) * 0.1075;
@@ -1267,33 +1514,115 @@
       }
 
       const totalTaxes = fedTax + totalFica + njTax;
-      const netTakeHomeAnnual = grossEarnings - totalTaxes - preTaxDeductions;
+      const netTakeHomeAnnual = earnedGross - totalTaxes - preTaxDeductions;
       const monthlyTakeHome = netTakeHomeAnnual / 12;
       const biWeeklyTakeHome = netTakeHomeAnnual / 26;
-      const effectiveTaxRate = grossEarnings > 0 ? (totalTaxes / grossEarnings) * 100 : 0;
+      const effectiveTaxRate = earnedGross > 0 ? (totalTaxes / earnedGross) * 100 : 0;
 
       // Update KPI Cards
-      document.getElementById('kpi-career-gross').textContent = '$' + Math.round(grossEarnings).toLocaleString();
+      document.getElementById('kpi-career-gross').textContent = '$' + Math.round(grossCash).toLocaleString();
+      document.getElementById('kpi-career-gross-sub').textContent = `Base ($${Math.round(baseSalary/1000)}k) + AIP + Cash Reward`;
       document.getElementById('kpi-career-pretax').textContent = '$' + Math.round(preTaxDeductions).toLocaleString();
       document.getElementById('kpi-career-taxes').textContent = '$' + Math.round(totalTaxes).toLocaleString();
       document.getElementById('kpi-career-taxes-sub').textContent = `Effective Tax Rate: ${effectiveTaxRate.toFixed(1)}%`;
       document.getElementById('kpi-career-net').textContent = '$' + Math.round(netTakeHomeAnnual).toLocaleString();
       document.getElementById('kpi-career-net-sub').textContent = `$${Math.round(monthlyTakeHome).toLocaleString()} / mo ($${Math.round(biWeeklyTakeHome).toLocaleString()} / pay)`;
+      document.getElementById('kpi-career-total-comp').textContent = '$' + Math.round(totalComp).toLocaleString();
+      document.getElementById('kpi-career-total-comp-sub').textContent = `Includes $${Math.round(rsuVesting).toLocaleString()} RSU vesting`;
 
       // Freedom Replacement Bridge
+      let bridgeTargetAnnual = netTakeHomeAnnual;
+      let bridgeDesc = 'Target Cash Take-Home:';
+
+      if (careerState.bridgeTarget === 'base') {
+        // Base salary take-home only
+        const bFedTaxable = Math.max(0, baseSalary - preTaxDeductions - fedStdDeduction);
+        let bFed = 0;
+        if (bFedTaxable > 626350) bFed = 186601 + (bFedTaxable - 626350) * 0.37;
+        else if (bFedTaxable > 250525) bFed = 55062.25 + (bFedTaxable - 250525) * 0.35;
+        else if (bFedTaxable > 197300) bFed = 38030.25 + (bFedTaxable - 197300) * 0.32;
+        else if (bFedTaxable > 103350) bFed = 15482.25 + (bFedTaxable - 103350) * 0.24;
+        else if (bFedTaxable > 48475) bFed = 5585.50 + (bFedTaxable - 48475) * 0.22;
+        else if (bFedTaxable > 11925) bFed = 1192.50 + (bFedTaxable - 11925) * 0.12;
+        else bFed = bFedTaxable * 0.10;
+
+        const bFicaWage = Math.max(0, baseSalary - health - hsa);
+        const bSsTax = Math.min(bFicaWage, 176100) * 0.062;
+        const bMedTax = bFicaWage * 0.0145;
+        const bNjTaxable = Math.max(0, baseSalary - health - 1000);
+        let bNjTax = 0;
+        if (bNjTaxable > 75000) bNjTax = 2777.50 + (bNjTaxable - 75000) * 0.0637;
+        else if (bNjTaxable > 40000) bNjTax = 843.75 + (bNjTaxable - 40000) * 0.05525;
+        else bNjTax = bNjTaxable * 0.014;
+
+        bridgeTargetAnnual = baseSalary - (bFed + bSsTax + bMedTax + bNjTax) - preTaxDeductions;
+        bridgeDesc = 'Base Salary Cash Take-Home:';
+      } else if (careerState.bridgeTarget === 'total') {
+        // Total Comp take-home (Cash + RSUs)
+        const tFedTaxable = Math.max(0, totalComp - preTaxDeductions - fedStdDeduction);
+        let tFed = 0;
+        if (tFedTaxable > 626350) tFed = 186601 + (tFedTaxable - 626350) * 0.37;
+        else if (tFedTaxable > 250525) tFed = 55062.25 + (tFedTaxable - 250525) * 0.35;
+        else if (tFedTaxable > 197300) tFed = 38030.25 + (tFedTaxable - 197300) * 0.32;
+        else if (tFedTaxable > 103350) tFed = 15482.25 + (tFedTaxable - 103350) * 0.24;
+        else if (tFedTaxable > 48475) tFed = 5585.50 + (tFedTaxable - 48475) * 0.22;
+        else if (tFedTaxable > 11925) tFed = 1192.50 + (tFedTaxable - 11925) * 0.12;
+        else tFed = tFedTaxable * 0.10;
+
+        const tFicaWage = Math.max(0, totalComp - health - hsa);
+        const tSsTax = Math.min(tFicaWage, 176100) * 0.062;
+        const tMedTax = tFicaWage * 0.0145;
+        const tMedSurtax = tFicaWage > 200000 ? (tFicaWage - 200000) * 0.009 : 0;
+        const tNjTaxable = Math.max(0, totalComp - health - 1000);
+        let tNjTax = 0;
+        if (tNjTaxable > 500000) tNjTax = 21400 + (tNjTaxable - 500000) * 0.0897;
+        else if (tNjTaxable > 75000) tNjTax = 2777.50 + (tNjTaxable - 75000) * 0.0637;
+        else tNjTax = tNjTaxable * 0.014;
+
+        bridgeTargetAnnual = totalComp - (tFed + tSsTax + tMedTax + tMedSurtax + tNjTax) - preTaxDeductions;
+        bridgeDesc = 'Total Comp Take-Home (Cash + RSUs):';
+      } else {
+        // Total cash take-home (Base + AIP + Cash Reward)
+        const cFedTaxable = Math.max(0, grossCash - preTaxDeductions - fedStdDeduction);
+        let cFed = 0;
+        if (cFedTaxable > 626350) cFed = 186601 + (cFedTaxable - 626350) * 0.37;
+        else if (cFedTaxable > 250525) cFed = 55062.25 + (cFedTaxable - 250525) * 0.35;
+        else if (cFedTaxable > 197300) cFed = 38030.25 + (cFedTaxable - 197300) * 0.32;
+        else if (cFedTaxable > 103350) cFed = 15482.25 + (cFedTaxable - 103350) * 0.24;
+        else if (cFedTaxable > 48475) cFed = 5585.50 + (cFedTaxable - 48475) * 0.22;
+        else if (cFedTaxable > 11925) cFed = 1192.50 + (cFedTaxable - 11925) * 0.12;
+        else cFed = cFedTaxable * 0.10;
+
+        const cFicaWage = Math.max(0, grossCash - health - hsa);
+        const cSsTax = Math.min(cFicaWage, 176100) * 0.062;
+        const cMedTax = cFicaWage * 0.0145;
+        const cMedSurtax = cFicaWage > 200000 ? (cFicaWage - 200000) * 0.009 : 0;
+        const cNjTaxable = Math.max(0, grossCash - health - 1000);
+        let cNjTax = 0;
+        if (cNjTaxable > 75000) cNjTax = 2777.50 + (cNjTaxable - 75000) * 0.0637;
+        else if (cNjTaxable > 40000) cNjTax = 843.75 + (cNjTaxable - 40000) * 0.05525;
+        else cNjTax = cNjTaxable * 0.014;
+
+        bridgeTargetAnnual = grossCash - (cFed + cSsTax + cMedTax + cMedSurtax + cNjTax) - preTaxDeductions;
+        bridgeDesc = 'Total Cash Take-Home (Base + AIP + Cash Reward):';
+      }
+
+      const monthlyJobTakeHome = bridgeTargetAnnual / 12;
       const monthlyPassive = (state.netWorth * state.swr) / 12;
-      const replacePct = monthlyTakeHome > 0 ? (monthlyPassive / monthlyTakeHome) * 100 : 0;
-      const monthlyGap = Math.max(0, monthlyTakeHome - monthlyPassive);
-      
+      const replacePct = monthlyJobTakeHome > 0 ? (monthlyPassive / monthlyJobTakeHome) * 100 : 0;
+      const monthlyGap = Math.max(0, monthlyJobTakeHome - monthlyPassive);
+
       const annualVelocity = state.annualSavings + (state.netWorth * state.nominalReturn);
-      const targetPortReq = netTakeHomeAnnual / state.swr;
+      const targetPortReq = bridgeTargetAnnual / state.swr;
       const portGap = Math.max(0, targetPortReq - state.netWorth);
       const yearsToReplace = portGap <= 0 ? 0 : Math.ceil(portGap / annualVelocity);
       const timelineText = portGap <= 0 ? '🎉 100% Replaced Today!' : `in ~${yearsToReplace} yrs (${2026 + yearsToReplace}, Age ${state.currentAge + yearsToReplace})`;
 
+      const lblDesc = document.getElementById('lbl-bridge-target-desc');
+      if (lblDesc) lblDesc.textContent = bridgeDesc;
       document.getElementById('lbl-replace-pct').textContent = replacePct.toFixed(1) + '%';
       document.getElementById('bar-replace-pct').style.width = Math.min(100, replacePct).toFixed(1) + '%';
-      document.getElementById('lbl-job-net-monthly').textContent = '$' + Math.round(monthlyTakeHome).toLocaleString() + ' / mo';
+      document.getElementById('lbl-job-net-monthly').textContent = '$' + Math.round(monthlyJobTakeHome).toLocaleString() + ' / mo';
       document.getElementById('lbl-passive-monthly').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
       document.getElementById('lbl-replace-gap').textContent = monthlyGap <= 0 ? '$0 / mo (Surplus!)' : '-$' + Math.round(monthlyGap).toLocaleString() + ' / mo';
       document.getElementById('lbl-replace-timeline').textContent = timelineText;
@@ -1302,21 +1631,27 @@
       const tbody = document.getElementById('career-tax-tbody');
       if (tbody) {
         const rows = [
-          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $15,750 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
-          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: `6.20% on earned income up to the $176,100 cap ($${Math.round(ficaWageBase).toLocaleString()} subject)` },
-          { name: '🏥 Medicare Tax (FICA)', annual: medBaseTax + medSurtax, notes: `1.45% base Medicare${medSurtax > 0 ? ' + 0.9% additional high-earner surtax' : ' (no wage cap)'}` },
-          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, notes: `NJ Gross: $${Math.round(njGross).toLocaleString()} (NJ does NOT exempt 401k/HSA; progressive rates 1.4% to 6.37%+)` },
+          { name: '💼 Base Annual Salary', annual: baseSalary, notes: 'Regular PayPal base pay ($15,564 / month)' },
+          { name: '🎯 AIP Annual Incentive Bonus', annual: bonus, notes: `PayPal AIP Cash Bonus (Target 10% = $18,677; modifier applied)` },
+          { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of $37,500 cash grant paid via payroll in USD` : `Vesting begins March 1, 2027 ($21,875 in 2027, $12,500 in 2028)` },
+          { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: includeRsu ? `Included in gross tax flow (${PAYPAL_YEAR_DATA[careerState.selectedYear]?.rsuShares || 'shares'} shares @ $57 stock price)` : `Tracked separately as equity wealth ($${Math.round(rsuVesting).toLocaleString()} / yr; not in cash paycheck)` },
+          { name: '💵 Gross Cash Earnings', annual: grossCash, notes: `Base ($${Math.round(baseSalary).toLocaleString()}) + AIP Bonus ($${Math.round(bonus).toLocaleString()}) + Cash Reward ($${Math.round(cashReward).toLocaleString()})` },
           { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, notes: `Diverted directly into your 401(k) retirement shield (Saves Federal tax now)` },
           { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, notes: `Exempt from Federal Income Tax, Social Security & Medicare taxes` },
-          { name: '💰 Net Take-Home Pay (In Hand)', annual: netTakeHomeAnnual, notes: `Pure disposable income ($${Math.round(monthlyTakeHome).toLocaleString()} / month, $${Math.round(biWeeklyTakeHome).toLocaleString()} / bi-weekly paycheck)` }
+          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $15,750 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
+          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: `6.20% up to $176,100 cap ($10,918 max). Zero tax on income above cap!` },
+          { name: '🏥 Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, notes: `1.45% base Medicare${medSurtax > 0 ? ` + $${Math.round(medSurtax).toLocaleString()} 0.9% additional Medicare surtax (> $200k)` : ' (no wage cap)'}` },
+          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, notes: `NJ Gross: $${Math.round(njGross).toLocaleString()} (NJ progressive rates 1.4% to 6.37%+)` },
+          { name: '💰 Net Take-Home Pay (In Your Pocket)', annual: netTakeHomeAnnual, notes: `Pure disposable income ($${Math.round(monthlyTakeHome).toLocaleString()} / month, $${Math.round(biWeeklyTakeHome).toLocaleString()} / bi-weekly paycheck)` },
+          { name: '🏢 Employer 401(k) Match (Non-Taxable)', annual: match, notes: `Deposited directly to your 401(k) by PayPal. Not taxed until retirement withdrawal` }
         ];
 
         tbody.innerHTML = rows.map(r => `
-          <tr style="${r.name.includes('Net Take-Home') ? 'background:rgba(16, 185, 129, 0.12); font-weight:700;' : ''}">
+          <tr style="${r.name.includes('Net Take-Home') ? 'background:rgba(16, 185, 129, 0.14); font-weight:700;' : r.name.includes('Gross Cash') ? 'background:rgba(59, 130, 246, 0.1); font-weight:700;' : ''}">
             <td><strong>${r.name}</strong></td>
             <td><strong>$${Math.round(r.annual).toLocaleString()}</strong></td>
             <td>$${Math.round(r.annual / 12).toLocaleString()} / mo</td>
-            <td>${grossEarnings > 0 ? ((r.annual / grossEarnings) * 100).toFixed(1) + '%' : '0%'}</td>
+            <td>${grossCash > 0 ? ((r.annual / grossCash) * 100).toFixed(1) + '%' : '0%'}</td>
             <td style="color:#94a3b8; font-size:12px;">${r.notes}</td>
           </tr>
         `).join('');
@@ -1988,6 +2323,7 @@
       if (keyBtn) keyBtn.textContent = '🔒 Lock Dashboard';
       document.getElementById('sync-text').textContent = '📁 Loaded from Local Excel: ' + file.name;
       recalculate(false);
+      recalculateCareer();
     }
   </script>
 </body>
