@@ -116,16 +116,51 @@
     /* Desktop Tab Switching (Zero Reloads) */
     @media (min-width: 769px) {
       .tab-section { display: none; }
-      .tab-section.active-tab { display: block; }
+      .tab-section.active-tab { display: block !important; }
+
+      /* In tab-forecast, show controls and chart side-by-side in main-grid */
+      body.tab-forecast .main-grid {
+        display: grid !important;
+        grid-template-columns: 360px 1fr !important;
+        gap: 24px !important;
+      }
       body.tab-forecast #section-controls,
       body.tab-forecast #section-chart {
         display: block !important;
       }
-      body:not(.tab-forecast) .main-grid {
+      body.tab-forecast .desktop-right-col {
         display: block !important;
       }
-      body:not(.tab-forecast) #section-controls {
+
+      /* In tab-controls, show section-controls as a dedicated centered panel */
+      body.tab-controls .main-grid {
+        display: block !important;
+      }
+      body.tab-controls #section-controls {
+        display: block !important;
+        max-width: 760px !important;
+        margin: 0 auto 24px !important;
+      }
+      body.tab-controls .desktop-right-col {
         display: none !important;
+      }
+
+      /* In career, tiers, strategy tabs: show full width right column, hide controls */
+      body.tab-career .main-grid,
+      body.tab-tiers .main-grid,
+      body.tab-strategy .main-grid {
+        display: block !important;
+      }
+      body.tab-career #section-controls,
+      body.tab-tiers #section-controls,
+      body.tab-strategy #section-controls {
+        display: none !important;
+      }
+      body.tab-career .desktop-right-col,
+      body.tab-tiers .desktop-right-col,
+      body.tab-strategy .desktop-right-col {
+        display: block !important;
+        width: 100% !important;
       }
     }
 
@@ -664,280 +699,666 @@
           </div>
         </div>
 
-        <!-- Career Compensation, Taxes & Freedom Replacement Panel -->
+        <!-- Career Compensation, Equity & Freedom Replacement Panel -->
         <div class="panel tab-section" id="section-career" style="margin-bottom: 24px;">
           <div class="panel-title">
-            <span>💼 Job Compensation, Taxes & Freedom Replacement</span>
+            <span>💼 PayPal Career Compensation, Equity & Freedom Bridge</span>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span id="career-saved-badge" style="font-size: 11px; color: #34d399; font-weight: 500; opacity: 0; transition: opacity 0.3s ease;">✓ Saved</span>
-              <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Federal & NJ Tax Engine</span>
+              <span class="badge" style="background: rgba(0, 112, 224, 0.2); color: #38bdf8;">PayPal CompView Model</span>
             </div>
           </div>
 
           <!-- Locked Banner (visible when dashboard is locked) -->
           <div id="career-locked-banner" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 22px; text-align: center; margin-bottom: 18px;">
             <div style="font-size: 26px; margin-bottom: 6px;">🔒</div>
-            <h3 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Salary & Tax Information Locked</h3>
+            <h3 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Salary, Equity & Tax Information Locked</h3>
             <p style="font-size: 13px; color: #94a3b8; max-width: 480px; margin: 0 auto 14px; line-height: 1.5;">
-              Compensation details, W-2 tax breakdowns, and job replacement metrics are kept private until unlocked. Enter your secret access key above to unlock and calculate.
+              PayPal compensation details, cash grant schedules, RSU vesting counts, and W-2 tax breakdowns are kept private until unlocked. Enter your secret access key above to unlock and calculate.
             </p>
             <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
           </div>
 
-          <!-- Plan Year Selector Pills -->
-          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">📅 PayPal Plan Year:</span>
-              <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded PayPal CompView figures for 2026</span>
-            </div>
-            <div class="chips-group" id="career-year-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button type="button" class="chip active" id="chip-year-2026" onclick="setCareerYear(2026)">2026 (Current)</button>
-              <button type="button" class="chip" id="chip-year-2027" onclick="setCareerYear(2027)">2027 (+Cash Reward)</button>
-              <button type="button" class="chip" id="chip-year-2028" onclick="setCareerYear(2028)">2028 (+Cash Reward)</button>
-              <button type="button" class="chip" id="chip-year-custom" onclick="setCareerYear('custom')">Custom</button>
-            </div>
+          <!-- Career Sub-Navigation (Switch between the sections from your screenshots) -->
+          <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
+            <button type="button" class="chip active" id="subtab-btn-compview" onclick="switchCareerSubTab('compview', this)">📋 Multi-Year CompView</button>
+            <button type="button" class="chip" id="subtab-btn-cashgrant" onclick="switchCareerSubTab('cashgrant', this)">🎁 2026 Grant: Cash Award & RSUs</button>
+            <button type="button" class="chip" id="subtab-btn-equity" onclick="switchCareerSubTab('equity', this)">📈 Equity Vesting Schedule</button>
+            <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ Taxes & Freedom Bridge</button>
+            <button type="button" class="chip" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 Show All Sections</button>
           </div>
 
-          <!-- Career KPI Summary Cards (5 Cards) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
-            <div class="kpi-card accent" style="padding: 14px 16px;">
-              <div class="kpi-label">Gross Cash Pay</div>
-              <div class="kpi-value" id="kpi-career-gross" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-gross-sub">Base + AIP + Cash Reward</div>
-            </div>
-            <div class="kpi-card purple" style="padding: 14px 16px;">
-              <div class="kpi-label">Pre-Tax Deductions</div>
-              <div class="kpi-value" id="kpi-career-pretax" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-pretax-sub">401(k), HSA & Health Shields</div>
-            </div>
-            <div class="kpi-card" style="padding: 14px 16px;">
-              <div class="kpi-label">Total Taxes (Fed+FICA+NJ)</div>
-              <div class="kpi-value" id="kpi-career-taxes" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-taxes-sub">Effective Tax Rate: ---%</div>
-            </div>
-            <div class="kpi-card success" style="padding: 14px 16px;">
-              <div class="kpi-label">Net Take-Home Cash</div>
-              <div class="kpi-value" id="kpi-career-net" style="font-size: 22px;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-net-sub">$--- / month in hand</div>
-            </div>
-            <div class="kpi-card" style="padding: 14px 16px; border-color: rgba(56, 189, 248, 0.4);">
-              <div class="kpi-label">Total Comp (w/ RSUs)</div>
-              <div class="kpi-value" id="kpi-career-total-comp" style="font-size: 22px; color: #38bdf8;">$---,---</div>
-              <div class="kpi-sub" id="kpi-career-total-comp-sub">Includes $--- RSU vesting</div>
-            </div>
-          </div>
-
-          <!-- Long Term Cash Award Detail & Schedule Card -->
-          <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; flex-wrap: wrap; gap: 8px;" onclick="toggleCashAwardSchedule()">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 22px;">🎁</span>
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: #fbbf24; margin-bottom: 2px;">PayPal Long Term Cash Award Schedule</h3>
-                  <div style="font-size: 12px; color: #94a3b8;">50% Cash / 50% RSU Award ($37,500 total cash grant) • Paid via payroll in USD</div>
+          <!-- SECTION 1: PayPal CompView Total Compensation Calculator (Recreation of IMG_4139) -->
+          <div class="career-subview" id="career-view-compview" style="margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(0, 48, 135, 0.3), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(0, 112, 224, 0.5); border-radius: 12px; padding: 18px; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 24px;">🅿️</span>
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: #38bdf8; margin: 0;">PayPal CompView — Total Compensation Calculator</h3>
+                    <div style="font-size: 11px; color: #94a3b8;">Recreation of your portal (IMG_4139) with interactive sliders & the missing Long Term Cash Award</div>
+                  </div>
                 </div>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
+                  ⚡ Solves Missing Cash Reward Discrepancy
+                </span>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="text-align: right;">
-                  <span style="font-size: 14px; font-weight: 700; color: #fbbf24;" id="lbl-cash-award-status">$0 vesting in 2026</span>
-                  <span style="display: block; font-size: 11px; color: #34d399;" id="lbl-cash-award-next">Vesting begins March 1, 2027</span>
-                </div>
-                <span id="cash-schedule-toggle-arrow" style="font-size: 14px; color: #94a3b8; background: #334155; padding: 4px 8px; border-radius: 4px;">▼</span>
-              </div>
-            </div>
-            
-            <div id="cash-award-schedule-body" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid #334155;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px;">
-                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
-                  <span style="color: #94a3b8; font-size: 11px; display: block;">March 1, 2027 (33.33%)</span>
-                  <strong style="color: #34d399; font-size: 15px;">$12,500.00</strong>
-                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">1st major installment</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
-                  <span style="color: #94a3b8; font-size: 11px; display: block;">Jun / Sep / Dec 2027</span>
-                  <strong style="color: #34d399; font-size: 15px;">$9,375.00</strong>
-                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">$3,125.00 per quarter</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
-                  <span style="color: #94a3b8; font-size: 11px; display: block;">2028 (4 Quarters)</span>
-                  <strong style="color: #34d399; font-size: 15px;">$12,500.00</strong>
-                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">$3,125.00 × 4 quarters</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
-                  <span style="color: #94a3b8; font-size: 11px; display: block;">March 1, 2029 (Final)</span>
-                  <strong style="color: #34d399; font-size: 15px;">$3,125.00</strong>
-                  <span style="color: #64748b; font-size: 10px; display: block; margin-top: 2px;">Full $37,500 completed</span>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: #94a3b8; line-height: 1.5; background: rgba(15, 23, 42, 0.5); padding: 8px 12px; border-radius: 6px;">
-                💡 <strong>Why this was missing from CompView:</strong> PayPal's CompView portal displays standard "Total Cash" (Base + AIP) and "Total Equity", omitting the Long Term Cash Award from standard cash tables. Our dashboard bridges this gap, showing your true $227,148 cash income for 2027 and $217,950 for 2028!
-              </div>
-            </div>
-          </div>
-
-          <!-- Freedom Bridge: Replace Job Compensation -->
-          <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 12px; padding: 20px; margin-bottom: 22px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 22px;">🚀</span>
-                <div>
-                  <h3 style="font-size: 16px; font-weight: 700; color: #34d399;">Job Compensation Replacement Bridge</h3>
-                  <div style="font-size: 12px; color: #94a3b8;">How much of your job take-home paycheck is replaced by your investment portfolio today</div>
-                </div>
-              </div>
-              <div style="font-size: 22px; font-weight: 800; color: #34d399;" id="lbl-replace-pct">---%</div>
-            </div>
-
-            <!-- Target Selection Chips -->
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-              <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Replace Target:</span>
-              <div class="chips-group" id="bridge-target-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" class="chip active" id="chip-bridge-cash" onclick="setBridgeTarget('cash')">💵 Total Cash Paycheck (Base + AIP + Cash Reward)</button>
-                <button type="button" class="chip" id="chip-bridge-base" onclick="setBridgeTarget('base')">💼 Base Paycheck Only</button>
-                <button type="button" class="chip" id="chip-bridge-total" onclick="setBridgeTarget('total')">📈 Total Comp (+ RSUs)</button>
+              <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 6px; border: 1px solid #334155;">
+                ℹ️ <em>CompView Modeling Notice:</em> CompView shows Base Pay + AIP Bonus under "Total Cash", but omits the <strong>Long Term Cash Award</strong>! Below, we show both the portal reported cash and your <strong>True Total Cash & Total Comp</strong>.
               </div>
             </div>
 
-            <!-- Progress Bar -->
-            <div style="background: #334155; border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: 14px; position: relative;">
-              <div id="bar-replace-pct" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.4s ease;"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
-              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;" id="lbl-bridge-target-desc">Target Job Take-Home:</span>
-                <strong style="color: #f8fafc; font-size: 16px;" id="lbl-job-net-monthly">$--- / mo</strong>
-              </div>
-              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Safe Monthly Passive Income:</span>
-                <strong style="color: #34d399; font-size: 16px;" id="lbl-passive-monthly">$--- / mo</strong>
-              </div>
-              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Remaining Monthly Paycheck Gap:</span>
-                <strong style="color: #fbbf24; font-size: 16px;" id="lbl-replace-gap">$--- / mo</strong>
-              </div>
-              <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Estimated 100% Replacement:</span>
-                <strong style="color: #38bdf8; font-size: 16px;" id="lbl-replace-timeline">---</strong>
-              </div>
-            </div>
-
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5;">
-              💡 <strong>Retirement Tax Reality:</strong> To retire comfortably, you do <em>not</em> need to replace $186,000+ gross salary! In retirement, you stop paying 7.65% FICA payroll taxes ($10,900+), stop saving into a 401(k) ($23,500), and qualified investment withdrawals are eligible for the 0% capital gains bracket.
-            </p>
-          </div>
-
-          <!-- Job Information & Deductions Inputs (2 Columns) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
-            <!-- Column 1: Compensation Inputs -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-              <h4 style="font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">1. Annual Job Compensation (PayPal)</h4>
-              
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Base Annual Salary:</span>
-                  <span class="control-val" id="val-career-salary">$186,773</span>
-                </div>
-                <input type="number" id="career-base-salary" value="186773" step="1000" min="0" oninput="onCareerInput()">
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>AIP Annual Bonus:</span>
-                  <span class="control-val" id="val-career-bonus">$17,449</span>
-                </div>
-                <input type="number" id="career-bonus" value="17449" step="500" min="0" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">2026: $17,449 (93.4% modifier) | 2027: $18,500 | 2028: $18,677</div>
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Long Term Cash Award (Cash Reward):</span>
-                  <span class="control-val" id="val-career-cash-reward">$0</span>
-                </div>
-                <input type="number" id="career-cash-reward" value="0" step="500" min="0" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: #fbbf24; margin-top: 4px;" id="note-career-cash-reward">$37.5k Grant: 2026: $0 | 2027: $21,875 | 2028: $12,500 | 2029: $3,125</div>
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Equity Award (RSUs Vesting):</span>
-                  <span class="control-val" id="val-career-rsu">$38,418</span>
-                </div>
-                <input type="number" id="career-rsu" value="38418" step="500" min="0" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">2026: 674 shares ($38.4k) | 2027: 805 sh ($45.9k) | 2028: 349 sh ($19.9k) @ $57</div>
-              </div>
-
-              <div style="margin-top: 10px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e2e8f0; cursor: pointer; user-select: none;">
-                  <input type="checkbox" id="career-include-rsu" onchange="onCareerInput()" style="accent-color: #38bdf8; width: 16px; height: 16px;">
-                  <span>Include RSU equity vesting in take-home cash flow & taxes</span>
-                </label>
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Employer 401(k) Match:</span>
-                  <span class="control-val" id="val-career-match">$6,000</span>
-                </div>
-                <input type="number" id="career-match" value="6000" step="500" min="0" oninput="onCareerInput()">
-              </div>
-            </div>
-
-            <!-- Column 2: Pre-Tax Deductions -->
-            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-              <h4 style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">2. Pre-Tax Deductions & Shields</h4>
-              
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Elective 401(k) Contribution:</span>
-                  <span class="control-val" id="val-career-401k">$23,500</span>
-                </div>
-                <input type="number" id="career-401k" value="23500" step="500" min="0" max="24500" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 IRS Limit: $23,500 ($24,500 in 2026). Shields Federal tax</div>
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>Pre-Tax Health / Dental (Net of Credit):</span>
-                  <span class="control-val" id="val-career-health">$1,000</span>
-                </div>
-                <input type="number" id="career-health" value="1000" step="100" min="0" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">$1,500 HDHP - $500 employer credit = $1,000 net pre-tax cafeteria</div>
-              </div>
-
-              <div class="control-group">
-                <div class="control-header">
-                  <span>HSA Annual Contribution:</span>
-                  <span class="control-val" id="val-career-hsa">$4,300</span>
-                </div>
-                <input type="number" id="career-hsa" value="4300" step="100" min="0" max="8550" oninput="onCareerInput()">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2025 Individual Limit: $4,300 ($8,550 family). Shields Fed + FICA</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tax Breakdown Detail Table -->
-          <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-              <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin: 0;">3. Annual Tax Breakdown & Government Deductions</h4>
-              <span style="font-size: 11px; color: #38bdf8;">Progressive Fed (IRS) + FICA + NJ-1040 Engine</span>
-            </div>
-            <div class="table-container">
+            <!-- CompView Multi-Year Table -->
+            <div class="table-container" style="border: 1px solid #334155; border-radius: 10px; overflow: hidden; margin-bottom: 16px;">
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Annual Amount</th>
-                    <th>Monthly Impact</th>
-                    <th>% of Gross</th>
-                    <th>Tax Mechanics & Notes</th>
+                  <tr style="background: #1e293b;">
+                    <th style="padding: 12px; text-align: left; width: 32%;">Component / Calculator</th>
+                    <th style="padding: 12px; text-align: left; width: 26%;">Inputs & Modifiers</th>
+                    <th style="padding: 12px; text-align: right; width: 14%; background: rgba(59, 130, 246, 0.15); border-left: 1px solid #334155; border-right: 1px solid #334155;">
+                      Current<br><strong style="font-size: 14px; color: #60a5fa;">2026</strong>
+                    </th>
+                    <th style="padding: 12px; text-align: right; width: 14%;">
+                      Projected<br><strong style="font-size: 14px; color: #38bdf8;">2027</strong>
+                    </th>
+                    <th style="padding: 12px; text-align: right; width: 14%;">
+                      Projected<br><strong style="font-size: 14px; color: #38bdf8;">2028</strong>
+                    </th>
                   </tr>
                 </thead>
-                <tbody id="career-tax-tbody">
-                  <!-- Dynamically populated -->
+                <tbody>
+                  <!-- Header: Total Cash Calculator -->
+                  <tr style="background: rgba(30, 41, 59, 0.8);">
+                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #fbbf24; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      💵 Total Cash Calculator
+                    </td>
+                  </tr>
+
+                  <!-- Row: Base Pay -->
+                  <tr>
+                    <td style="padding: 10px 12px;"><strong>Base Pay</strong></td>
+                    <td style="padding: 10px 12px;">
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Base Pay Inc (%):</span>
+                        <input type="number" id="cv-base-inc" value="0" min="0" max="25" step="0.5" style="width: 65px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                      </div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-base-2026">$186,773</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-base-2027">$186,773</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-base-2028">$186,773</td>
+                  </tr>
+
+                  <!-- Row: AIP Bonus -->
+                  <tr>
+                    <td style="padding: 10px 12px;">
+                      <strong>AIP Bonus</strong>
+                      <div style="font-size: 11px; color: #94a3b8;">Target: 10% ($18,677)</div>
+                    </td>
+                    <td style="padding: 10px 12px;">
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span style="font-size: 11px; color: #94a3b8;">Indiv Mod (%):</span>
+                          <input type="number" id="cv-indiv-mod" value="100" min="0" max="200" step="5" style="width: 65px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span style="font-size: 11px; color: #94a3b8;">Co. Perf (%):</span>
+                          <input type="number" id="cv-comp-perf" value="100" min="0" max="200" step="5" style="width: 65px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-bonus-2026">
+                      $17,449<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">93.4% actual</div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-bonus-2027">$18,500</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-bonus-2028">$18,677</td>
+                  </tr>
+
+                  <!-- Row: Long Term Cash Award ("Cash Reward") -->
+                  <tr style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <td style="padding: 10px 12px;">
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <strong style="color: #fbbf24;">Long Term Cash Award</strong>
+                        <span style="font-size: 10px; background: #fbbf24; color: #0f172a; font-weight: 800; padding: 1px 5px; border-radius: 3px;">CASH REWARD</span>
+                      </div>
+                      <div style="font-size: 11px; color: #94a3b8;">50% Cash Incentive ($37,500 grant)</div>
+                    </td>
+                    <td style="padding: 10px 12px; font-size: 11px; color: #fbbf24;">
+                      Paid via payroll in USD (IMG_4140)
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-cashreward-2026">$0</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #34d399;" id="cv-cashreward-2027">+$21,875</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #34d399;" id="cv-cashreward-2028">+$12,500</td>
+                  </tr>
+
+                  <!-- Row: Other Cash Compensation -->
+                  <tr>
+                    <td style="padding: 10px 12px; color: #94a3b8;">Other Cash Compensation</td>
+                    <td style="padding: 10px 12px; color: #64748b; font-size: 11px;">Standard CompView line</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;">$0</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;">$0</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;">$0</td>
+                  </tr>
+
+                  <!-- Row: CompView Reported Cash (omitting cash award) -->
+                  <tr style="border-top: 1px solid #334155; color: #94a3b8;">
+                    <td colspan="2" style="padding: 8px 12px; font-size: 12px;">Total Cash (Reported in PayPal Portal Table)</td>
+                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-cash-2026">$204,222</td>
+                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-cash-2027">$205,273</td>
+                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-cash-2028">$205,450</td>
+                  </tr>
+
+                  <!-- Row: True Total Cash -->
+                  <tr style="background: rgba(16, 185, 129, 0.15); border-top: 2px solid #10b981; border-bottom: 2px solid #334155;">
+                    <td colspan="2" style="padding: 12px; font-weight: 800; color: #34d399; font-size: 14px;">
+                      💵 True Total Cash (Base + AIP + Cash Reward)
+                    </td>
+                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-true-cash-2026">$204,222</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399;" id="cv-true-cash-2027">$227,148</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 800; font-size: 15px; color: #34d399;" id="cv-true-cash-2028">$217,950</td>
+                  </tr>
+
+                  <!-- Header: Total Equity Calculator -->
+                  <tr style="background: rgba(30, 41, 59, 0.8);">
+                    <td colspan="5" style="padding: 8px 12px; font-weight: 800; color: #38bdf8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      📈 Total Equity Calculator
+                    </td>
+                  </tr>
+
+                  <!-- Row: Stock Price -->
+                  <tr>
+                    <td style="padding: 10px 12px;"><strong>Stock Price ($)</strong></td>
+                    <td style="padding: 10px 12px;">
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 11px; color: #94a3b8;">PYPL Price: $</span>
+                        <input type="number" id="cv-stock-price" value="57" min="1" max="500" step="1" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                      </div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-price-lbl-2026">@ $57.00</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600;" id="cv-price-lbl-2027">@ $57.00</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600;" id="cv-price-lbl-2028">@ $57.00</td>
+                  </tr>
+
+                  <!-- Row: Equity Vesting -->
+                  <tr>
+                    <td style="padding: 10px 12px;">
+                      <strong>Equity Vesting (RSUs)</strong>
+                      <div style="font-size: 11px; color: #94a3b8;">Shares vesting per calendar year</div>
+                    </td>
+                    <td style="padding: 10px 12px; font-size: 11px; color: #94a3b8;">
+                      From existing grants & 2026 award
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-equity-2026">
+                      $38,418<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">674 shares</div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-equity-2027">
+                      $45,885<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">805 shares</div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700;" id="cv-equity-2028">
+                      $19,893<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">349 shares</div>
+                    </td>
+                  </tr>
+
+                  <!-- Row: Future Annual Equity Awards -->
+                  <tr>
+                    <td style="padding: 10px 12px;"><strong>Future Annual Equity Awards</strong></td>
+                    <td style="padding: 10px 12px;">
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span style="font-size: 11px; color: #94a3b8;">2027 Award ($):</span>
+                          <input type="number" id="cv-future-2027" value="0" min="0" step="5000" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span style="font-size: 11px; color: #94a3b8;">2028 Award ($):</span>
+                          <input type="number" id="cv-future-2028" value="0" min="0" step="5000" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onCompViewInput()">
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8; background: rgba(59, 130, 246, 0.05); border-left: 1px solid #334155; border-right: 1px solid #334155;">—</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;" id="cv-future-val-2027">$0</td>
+                    <td style="padding: 10px 12px; text-align: right; color: #94a3b8;" id="cv-future-val-2028">$0</td>
+                  </tr>
+
+                  <!-- Row: Total Equity -->
+                  <tr style="background: rgba(56, 189, 248, 0.1); border-top: 1px solid #334155; border-bottom: 2px solid #334155;">
+                    <td colspan="2" style="padding: 10px 12px; font-weight: 700; color: #38bdf8;">Total Equity (USD)</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-tot-equity-2026">$38,418</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8;" id="cv-tot-equity-2027">$45,885</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #38bdf8;" id="cv-tot-equity-2028">$19,893</td>
+                  </tr>
+
+                  <!-- Row: PayPal Reported Total Comp -->
+                  <tr style="color: #94a3b8; font-size: 12px;">
+                    <td colspan="2" style="padding: 8px 12px;">Total Comp (Reported in PayPal Portal Table)</td>
+                    <td style="padding: 8px 12px; text-align: right; border-left: 1px solid #334155; border-right: 1px solid #334155;" id="cv-rep-comp-2026">$242,640</td>
+                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-comp-2027">$251,158</td>
+                    <td style="padding: 8px 12px; text-align: right;" id="cv-rep-comp-2028">$225,343</td>
+                  </tr>
+
+                  <!-- Row: True Total Compensation (Golden Highlight Row matching IMG_4139) -->
+                  <tr style="background: #eab308; color: #0f172a; font-weight: 900; font-size: 15px; border-top: 2px solid #ca8a04;">
+                    <td colspan="2" style="padding: 14px 12px;">
+                      🏆 True Total Compensation (Cash + RSUs + Cash Reward)
+                    </td>
+                    <td style="padding: 14px 12px; text-align: right; font-weight: 900; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15);" id="cv-true-comp-2026">$242,640</td>
+                    <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2027">$273,033</td>
+                    <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2028">$237,843</td>
+                  </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Award Distribution & Long Term Cash Award Timing (Recreation of IMG_4140) -->
+          <div class="career-subview" id="career-view-cashgrant" style="margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 12px; padding: 20px; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 12px; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Employee: Deep Patel (00340098)</div>
+                  <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 4px 0;">Award Distribution (2026 Grant)</h3>
+                  <p style="font-size: 13px; color: #94a3b8; margin: 0; line-height: 1.5;">
+                    For 2026, your annual grant is delivered in a combination of <strong>50% RSUs and 50% long term cash</strong> ($75,000 total incentive value).
+                  </p>
+                </div>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 12px; padding: 6px 12px;">
+                  ✓ Exact IMG_4140 Statement
+                </span>
+              </div>
+
+              <!-- Two Grant Distribution Cards -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 18px;">
+                <div style="background: rgba(245, 158, 11, 0.1); border: 2px solid #fbbf24; border-radius: 10px; padding: 16px;">
+                  <span style="font-size: 12px; color: #fbbf24; font-weight: 700; display: block; margin-bottom: 4px;">🎁 Long Term Cash Award</span>
+                  <div style="font-size: 28px; font-weight: 900; color: #fbbf24;">$37,500</div>
+                  <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">Paid via payroll in USD across 9 installments</div>
+                </div>
+                <div style="background: rgba(56, 189, 248, 0.1); border: 2px solid #38bdf8; border-radius: 10px; padding: 16px;">
+                  <span style="font-size: 12px; color: #38bdf8; font-weight: 700; display: block; margin-bottom: 4px;">📈 Equity Award (RSUs)</span>
+                  <div style="font-size: 28px; font-weight: 900; color: #38bdf8;">$37,500 RSU</div>
+                  <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">Effective March 1; visible in E*Trade by end of March</div>
+                </div>
+              </div>
+
+              <h4 style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Long Term Cash Award Timing & Schedule</h4>
+              <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+                Each portion of your award is earned over time through continued employment, in good standing, with PayPal through the applicable vesting dates. Below is an illustrative view of how your Long Term Cash Award vests over time:
+              </p>
+
+              <!-- Vesting Dates Table -->
+              <div class="table-container" style="border: 1px solid #334155; border-radius: 8px; overflow: hidden; margin-bottom: 14px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <thead>
+                    <tr style="background: #1e293b;">
+                      <th style="padding: 10px 12px; text-align: left;">Vesting Dates</th>
+                      <th style="padding: 10px 12px; text-align: right;">Local Currency (USD)</th>
+                      <th style="padding: 10px 12px; text-align: center;">Calendar Tax Year</th>
+                      <th style="padding: 10px 12px; text-align: left;">Installment Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="padding: 9px 12px; font-weight: 600;">March 1, 2027</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$12,500.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2027</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Initial 33.33% major payout installment</td>
+                    </tr>
+                    <tr style="background: rgba(15, 23, 42, 0.4);">
+                      <td style="padding: 9px 12px; font-weight: 600;">June 1, 2027</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2027</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 9px 12px; font-weight: 600;">September 1, 2027</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2027</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr style="background: rgba(15, 23, 42, 0.4);">
+                      <td style="padding: 9px 12px; font-weight: 600;">December 1, 2027</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2027</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 9px 12px; font-weight: 600;">March 1, 2028</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2028</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr style="background: rgba(15, 23, 42, 0.4);">
+                      <td style="padding: 9px 12px; font-weight: 600;">June 1, 2028</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2028</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 9px 12px; font-weight: 600;">September 1, 2028</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2028</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr style="background: rgba(15, 23, 42, 0.4);">
+                      <td style="padding: 9px 12px; font-weight: 600;">December 1, 2028</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2028</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Quarterly installment</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 9px 12px; font-weight: 600;">March 1, 2029</td>
+                      <td style="padding: 9px 12px; text-align: right; font-weight: 700; color: #34d399;">$3,125.00</td>
+                      <td style="padding: 9px 12px; text-align: center;"><span class="badge" style="background: #334155;">2029</span></td>
+                      <td style="padding: 9px 12px; color: #94a3b8; font-size: 12px;">Final payout installment</td>
+                    </tr>
+                    <tr style="background: #1e293b; font-weight: 800; border-top: 2px solid #fbbf24;">
+                      <td style="padding: 12px;">Total Long Term Cash Award</td>
+                      <td style="padding: 12px; text-align: right; color: #fbbf24; font-size: 15px;">$37,500.00</td>
+                      <td colspan="2" style="padding: 12px; color: #94a3b8; font-size: 12px;">Full $37,500.00 completed by March 2029</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Annual Grouping Summary -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="font-size: 11px; color: #94a3b8; display: block;">2026 Cash Vesting:</span>
+                  <strong style="font-size: 16px; color: #94a3b8;">$0.00</strong>
+                  <span style="font-size: 10px; color: #64748b; display: block; margin-top: 2px;">Vesting begins March 2027</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="font-size: 11px; color: #94a3b8; display: block;">2027 Cash Vesting:</span>
+                  <strong style="font-size: 16px; color: #34d399;">+$21,875.00</strong>
+                  <span style="font-size: 10px; color: #64748b; display: block; margin-top: 2px;">$12.5k upfront + $9,375</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="font-size: 11px; color: #94a3b8; display: block;">2028 Cash Vesting:</span>
+                  <strong style="font-size: 16px; color: #34d399;">+$12,500.00</strong>
+                  <span style="font-size: 10px; color: #64748b; display: block; margin-top: 2px;">$3,125.00 × 4 quarters</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="font-size: 11px; color: #94a3b8; display: block;">2029 Cash Vesting:</span>
+                  <strong style="font-size: 16px; color: #34d399;">+$3,125.00</strong>
+                  <span style="font-size: 10px; color: #64748b; display: block; margin-top: 2px;">Final payout installment</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Equity Awards and Vesting Schedule (Recreation of IMG_4141) -->
+          <div class="career-subview" id="career-view-equity" style="margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(56, 189, 248, 0.5); border-radius: 12px; padding: 20px; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                <div>
+                  <h3 style="font-size: 17px; font-weight: 800; color: #38bdf8; margin: 0;">PayPal CompView — Equity Awards & Vesting Schedule</h3>
+                  <div style="font-size: 12px; color: #94a3b8;">Detailed share counts including AIP Performance Shares (Exact recreation of IMG_4141)</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 12px; color: #94a3b8;">Stock Price:</span>
+                  <strong style="color: #38bdf8; font-size: 14px;" id="lbl-eq-stock-price">$57.00</strong>
+                </div>
+              </div>
+
+              <!-- 4 Annual Share Summary Cards -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px;">
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
+                  <div style="color: #94a3b8; font-size: 11px;">2026 Shares Vesting</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">674 shares</div>
+                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2026">$38,418 @ $57</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 318 | Q2: 119 | Q3: 119 | Q4: 118</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
+                  <div style="color: #94a3b8; font-size: 11px;">2027 Shares Vesting</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">805 shares</div>
+                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2027">$45,885 @ $57</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 412 | Q2: 131 | Q3: 131 | Q4: 131</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
+                  <div style="color: #94a3b8; font-size: 11px;">2028 Shares Vesting</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">349 shares</div>
+                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2028">$19,893 @ $57</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 130 | Q2: 73 | Q3: 73 | Q4: 73</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 12px;">
+                  <div style="color: #94a3b8; font-size: 11px;">2029 Shares Vesting</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #38bdf8;">73 shares</div>
+                  <div style="font-size: 12px; color: #34d399; font-weight: 600;" id="eq-val-2029">$4,161 @ $57</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Q1: 73 shares (Final)</div>
+                </div>
+              </div>
+
+              <!-- Detailed Monthly/Quarterly Share Countdown Table -->
+              <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Vesting Details (Number of Shares including AIP Performance Shares)</h4>
+              <div class="table-container" style="border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <thead>
+                    <tr style="background: #1e293b;">
+                      <th style="padding: 9px 12px; text-align: left;">Date</th>
+                      <th style="padding: 9px 12px; text-align: right;">Vesting During the Month</th>
+                      <th style="padding: 9px 12px; text-align: right;">Estimated Value</th>
+                      <th style="padding: 9px 12px; text-align: right;">Unvested as of End of this Month</th>
+                    </tr>
+                  </thead>
+                  <tbody id="equity-schedule-tbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: W-2 Taxes, Pre-Tax Deductions & Freedom Bridge -->
+          <div class="career-subview" id="career-view-taxes" style="margin-bottom: 24px;">
+            <!-- Plan Year Selector Pills -->
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">📅 Select Plan Year for Taxes & Freedom Bridge:</span>
+                <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded PayPal CompView figures for 2026</span>
+              </div>
+              <div class="chips-group" id="career-year-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="chip active" id="chip-year-2026" onclick="setCareerYear(2026)">2026 (Current)</button>
+                <button type="button" class="chip" id="chip-year-2027" onclick="setCareerYear(2027)">2027 (+Cash Reward)</button>
+                <button type="button" class="chip" id="chip-year-2028" onclick="setCareerYear(2028)">2028 (+Cash Reward)</button>
+                <button type="button" class="chip" id="chip-year-custom" onclick="setCareerYear('custom')">Custom</button>
+              </div>
+            </div>
+
+            <!-- Career KPI Summary Cards (5 Cards) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+              <div class="kpi-card accent" style="padding: 14px 16px;">
+                <div class="kpi-label">Gross Cash Pay</div>
+                <div class="kpi-value" id="kpi-career-gross" style="font-size: 22px;">$---,---</div>
+                <div class="kpi-sub" id="kpi-career-gross-sub">Base + AIP + Cash Reward</div>
+              </div>
+              <div class="kpi-card purple" style="padding: 14px 16px;">
+                <div class="kpi-label">Pre-Tax Deductions</div>
+                <div class="kpi-value" id="kpi-career-pretax" style="font-size: 22px;">$---,---</div>
+                <div class="kpi-sub" id="kpi-career-pretax-sub">401(k), HSA & Health Shields</div>
+              </div>
+              <div class="kpi-card" style="padding: 14px 16px;">
+                <div class="kpi-label">Total Taxes (Fed+FICA+NJ)</div>
+                <div class="kpi-value" id="kpi-career-taxes" style="font-size: 22px;">$---,---</div>
+                <div class="kpi-sub" id="kpi-career-taxes-sub">Effective Tax Rate: ---%</div>
+              </div>
+              <div class="kpi-card success" style="padding: 14px 16px;">
+                <div class="kpi-label">Net Take-Home Cash</div>
+                <div class="kpi-value" id="kpi-career-net" style="font-size: 22px;">$---,---</div>
+                <div class="kpi-sub" id="kpi-career-net-sub">$--- / month in hand</div>
+              </div>
+              <div class="kpi-card" style="padding: 14px 16px; border-color: rgba(56, 189, 248, 0.4);">
+                <div class="kpi-label">Total Comp (w/ RSUs)</div>
+                <div class="kpi-value" id="kpi-career-total-comp" style="font-size: 22px; color: #38bdf8;">$---,---</div>
+                <div class="kpi-sub" id="kpi-career-total-comp-sub">Includes $--- RSU vesting</div>
+              </div>
+            </div>
+
+            <!-- Freedom Bridge: Replace Job Compensation -->
+            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 12px; padding: 20px; margin-bottom: 22px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 22px;">🚀</span>
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: #34d399;">Job Compensation Replacement Bridge</h3>
+                    <div style="font-size: 12px; color: #94a3b8;">How much of your job take-home paycheck is replaced by your investment portfolio today</div>
+                  </div>
+                </div>
+                <div style="font-size: 22px; font-weight: 800; color: #34d399;" id="lbl-replace-pct">---%</div>
+              </div>
+
+              <!-- Target Selection Chips -->
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Replace Target:</span>
+                <div class="chips-group" id="bridge-target-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="chip active" id="chip-bridge-cash" onclick="setBridgeTarget('cash')">💵 Total Cash Paycheck (Base + AIP + Cash Reward)</button>
+                  <button type="button" class="chip" id="chip-bridge-base" onclick="setBridgeTarget('base')">💼 Base Paycheck Only</button>
+                  <button type="button" class="chip" id="chip-bridge-total" onclick="setBridgeTarget('total')">📈 Total Comp (+ RSUs)</button>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div style="background: #334155; border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: 14px; position: relative;">
+                <div id="bar-replace-pct" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.4s ease;"></div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;" id="lbl-bridge-target-desc">Target Job Take-Home:</span>
+                  <strong style="color: #f8fafc; font-size: 16px;" id="lbl-job-net-monthly">$--- / mo</strong>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Safe Monthly Passive Income:</span>
+                  <strong style="color: #34d399; font-size: 16px;" id="lbl-passive-monthly">$--- / mo</strong>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Remaining Monthly Paycheck Gap:</span>
+                  <strong style="color: #fbbf24; font-size: 16px;" id="lbl-replace-gap">$--- / mo</strong>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid #334155;">
+                  <span style="color: #94a3b8; display: block; font-size: 11px; margin-bottom: 2px;">Estimated 100% Replacement:</span>
+                  <strong style="color: #38bdf8; font-size: 16px;" id="lbl-replace-timeline">---</strong>
+                </div>
+              </div>
+
+              <p style="font-size: 12px; color: #94a3b8; margin-top: 14px; line-height: 1.5;">
+                💡 <strong>Retirement Tax Reality:</strong> To retire comfortably, you do <em>not</em> need to replace $186,000+ gross salary! In retirement, you stop paying 7.65% FICA payroll taxes ($11,000+), stop saving into a 401(k) ($24,500 in 2026), and qualified investment withdrawals are eligible for the 0% capital gains bracket.
+              </p>
+            </div>
+
+            <!-- Job Information & Deductions Inputs (2 Columns) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <!-- Column 1: Compensation Inputs -->
+              <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+                <h4 style="font-size: 14px; font-weight: 700; color: #60a5fa; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">1. Annual Job Compensation (PayPal)</h4>
+                
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Base Annual Salary:</span>
+                    <span class="control-val" id="val-career-salary">$186,773</span>
+                  </div>
+                  <input type="number" id="career-base-salary" value="186773" step="1000" min="0" oninput="onCareerInput()">
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>AIP Annual Bonus:</span>
+                    <span class="control-val" id="val-career-bonus">$17,449</span>
+                  </div>
+                  <input type="number" id="career-bonus" value="17449" step="500" min="0" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">2026: $17,449 (93.4% modifier on $18,677 target)</div>
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Long Term Cash Award (Cash Reward):</span>
+                    <span class="control-val" id="val-career-cash-reward">$0</span>
+                  </div>
+                  <input type="number" id="career-cash-reward" value="0" step="500" min="0" oninput="onCareerInput()">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                    <div style="font-size: 11px; color: #fbbf24;" id="lbl-cash-award-status">$0 vesting in 2026</div>
+                    <div style="font-size: 11px; color: #94a3b8;" id="lbl-cash-award-next">Vesting begins March 1, 2027</div>
+                  </div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;" id="note-career-cash-reward">$37.5k Grant: 2026: $0 | 2027: $21,875 | 2028: $12,500 | 2029: $3,125</div>
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Equity Award (RSUs Vesting):</span>
+                    <span class="control-val" id="val-career-rsu">$38,418</span>
+                  </div>
+                  <input type="number" id="career-rsu" value="38418" step="500" min="0" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">2026: 674 shares ($38.4k) | 2027: 805 sh ($45.9k) | 2028: 349 sh ($19.9k) @ $57</div>
+                </div>
+
+                <div style="margin-top: 10px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border: 1px solid #334155;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e2e8f0; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="career-include-rsu" onchange="onCareerInput()" style="accent-color: #38bdf8; width: 16px; height: 16px;">
+                    <span>Include RSU equity vesting in take-home cash flow & taxes</span>
+                  </label>
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Employer 401(k) Match:</span>
+                    <span class="control-val" id="val-career-match">$6,000</span>
+                  </div>
+                  <input type="number" id="career-match" value="6000" step="500" min="0" oninput="onCareerInput()">
+                </div>
+              </div>
+
+              <!-- Column 2: Pre-Tax Deductions (2026 Limits) -->
+              <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+                <h4 style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">2. Pre-Tax Deductions & Shields (2026)</h4>
+                
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Elective 401(k) Contribution:</span>
+                    <span class="control-val" id="val-career-401k">$24,500</span>
+                  </div>
+                  <input type="number" id="career-401k" value="24500" step="500" min="0" max="30000" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2026 IRS Elective Limit: $24,500. Shields income from Federal tax</div>
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>Pre-Tax Health / Dental (Net of Credit):</span>
+                    <span class="control-val" id="val-career-health">$1,000</span>
+                  </div>
+                  <input type="number" id="career-health" value="1000" step="100" min="0" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">$1,500 HDHP - $500 employer credit = $1,000 net pre-tax cafeteria</div>
+                </div>
+
+                <div class="control-group">
+                  <div class="control-header">
+                    <span>HSA Annual Contribution:</span>
+                    <span class="control-val" id="val-career-hsa">$4,550</span>
+                  </div>
+                  <input type="number" id="career-hsa" value="4550" step="100" min="0" max="9500" oninput="onCareerInput()">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2026 Individual Limit: $4,550 ($9,100 family). Shields Fed + FICA</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tax Breakdown Detail Table -->
+            <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin: 0;">3. Annual Tax Breakdown & Government Deductions (2026 Tax Engine)</h4>
+                <span style="font-size: 11px; color: #38bdf8;">Progressive Fed ($16.1k Std Ded) + FICA ($181.8k Cap) + NJ-1040</span>
+              </div>
+              <div class="table-container">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Annual Amount</th>
+                      <th>Monthly Impact</th>
+                      <th>% of Gross</th>
+                      <th>Tax Mechanics & Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="career-tax-tbody">
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -979,35 +1400,35 @@
           </div>
 
           <div class="strategy-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 14px;">
-            <!-- Card 1: Federal Contribution Limits (2025/2026) -->
+            <!-- Card 1: Federal Contribution Limits (2026) -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
               <div style="font-weight: 700; font-size: 14px; color: #60a5fa; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>1. IRS Federal Retirement & HSA Limits</span>
-                <span style="font-size: 11px; background: rgba(96, 165, 250, 0.15); padding: 2px 8px; border-radius: 4px;">2025 / 2026 Adjustments</span>
+                <span>1. IRS Federal Retirement & HSA Limits (2026)</span>
+                <span style="font-size: 11px; background: rgba(96, 165, 250, 0.15); padding: 2px 8px; border-radius: 4px;">2026 Official Limits</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-                Official IRS annual inflation adjustments for retirement vehicles and tax shields:
+                Official IRS annual limits for retirement vehicles and pre-tax shields for 2026:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>401(k) / 403(b) / TSP:</strong> <strong>$23,500</strong> (2025) &rarr; <strong>$24,500</strong> (2026) elective limit. Catch-up (age 50+) is <strong>$7,500</strong> / <strong>$8,000</strong> (higher SECURE 2.0 catch-up of <strong>$11,250</strong> for ages 60–63).</li>
-                <li><strong>IRA (Traditional & Roth):</strong> <strong>$7,000</strong> (2025) &rarr; <strong>$7,500</strong> (2026). Single phase-out begins at $150k (use <em>Backdoor Roth IRA</em> above limit).</li>
-                <li><strong>Health Savings Account (HSA):</strong> <strong>$4,300 single / $8,550 family</strong> (2025) &rarr; <strong>$4,400 / $8,750</strong> (2026). Federally triple tax-advantaged.</li>
-                <li><strong>Standard Deduction:</strong> <strong>$15,750 Single / $31,500 MFJ</strong> (2025) &rarr; <strong>$16,100 / $32,200</strong> (2026).</li>
+                <li><strong>401(k) / 403(b) / TSP:</strong> <strong>$24,500</strong> elective limit in 2026. Catch-up (age 50+) is <strong>$8,000</strong> (higher SECURE 2.0 catch-up of <strong>$11,250</strong> for ages 60–63).</li>
+                <li><strong>IRA (Traditional & Roth):</strong> <strong>$7,500</strong> annual contribution limit. Single phase-out begins at $150k (use <em>Backdoor Roth IRA</em> above limit).</li>
+                <li><strong>Health Savings Account (HSA):</strong> <strong>$4,550 single / $9,100 family</strong> in 2026. Federally triple tax-advantaged (tax-free contribution, growth, and medical withdrawal).</li>
+                <li><strong>Standard Deduction:</strong> <strong>$16,100 Single / $32,200 MFJ</strong> in 2026.</li>
               </ul>
             </div>
 
             <!-- Card 2: Federal 0% LTCG Superpower -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
               <div style="font-weight: 700; font-size: 14px; color: #34d399; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>2. Federal 0% Capital Gains Bracket</span>
+                <span>2. Federal 0% Capital Gains Bracket (2026)</span>
                 <span style="font-size: 11px; background: rgba(52, 211, 153, 0.15); padding: 2px 8px; border-radius: 4px;">$0 Federal Tax</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
                 The single biggest tax superpower for early retirees living on investments:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>0% Federal Bracket:</strong> Long-term capital gains and qualified dividends are taxed at <strong>0% up to $48,350 (2025) / $49,450 (2026)</strong> of taxable income for single filers ($96,700 / $98,900 MFJ).</li>
-                <li><strong>Stacked with Standard Deduction:</strong> Combined with the standard deduction ($15,750 / $16,100), you can realize up to <strong>~$64,100 to $65,550/year in pure gains/dividends and owe $0.00 IN FEDERAL TAX!</strong></li>
+                <li><strong>0% Federal Bracket:</strong> Long-term capital gains and qualified dividends are taxed at <strong>0% up to $49,450</strong> of taxable income for single filers ($98,900 MFJ) in 2026.</li>
+                <li><strong>Stacked with Standard Deduction:</strong> Combined with the $16,100 standard deduction, you can realize up to <strong>$65,550/year in pure capital gains & dividends and owe $0.00 IN FEDERAL TAX!</strong></li>
                 <li><strong>Tax-Gain Harvesting:</strong> If income is below this threshold, you can sell and instantly repurchase appreciated funds to permanently step up cost-basis tax-free (no wash-sale rule on gains).</li>
               </ul>
             </div>
@@ -1237,6 +1658,22 @@
       }
     };
 
+    // Full 12-milestone quarterly RSU vesting countdown from PayPal CompView (IMG_4141)
+    const EQUITY_SCHEDULE_DATA = [
+      { date: 'Jun 2026', shares: 119, unvestedShares: 1464, note: 'Quarterly Vest (Existing Grant)' },
+      { date: 'Sep 2026', shares: 119, unvestedShares: 1345, note: 'Quarterly Vest (Existing Grant)' },
+      { date: 'Dec 2026', shares: 118, unvestedShares: 1227, note: 'Quarterly Vest (Existing Grant)' },
+      { date: 'Mar 2027', shares: 412, unvestedShares: 815, note: 'Major Annual Vest (incl. AIP performance shares)' },
+      { date: 'Jun 2027', shares: 131, unvestedShares: 684, note: 'Quarterly Vest (2026 Award + Prior)' },
+      { date: 'Sep 2027', shares: 131, unvestedShares: 553, note: 'Quarterly Vest (2026 Award + Prior)' },
+      { date: 'Dec 2027', shares: 131, unvestedShares: 422, note: 'Quarterly Vest (2026 Award + Prior)' },
+      { date: 'Mar 2028', shares: 130, unvestedShares: 292, note: 'Quarterly Vest (2026 Award + Prior)' },
+      { date: 'Jun 2028', shares: 73, unvestedShares: 219, note: 'Quarterly Vest (2026 Award)' },
+      { date: 'Sep 2028', shares: 73, unvestedShares: 146, note: 'Quarterly Vest (2026 Award)' },
+      { date: 'Dec 2028', shares: 73, unvestedShares: 73, note: 'Quarterly Vest (2026 Award)' },
+      { date: 'Mar 2029', shares: 73, unvestedShares: 0, note: 'Final Award Vest (100% Unlocked)' }
+    ];
+
     let careerState = {
       selectedYear: 2026,
       bridgeTarget: 'cash',
@@ -1246,18 +1683,247 @@
       cashReward: 0,
       rsuVesting: 38418,
       employerMatch: 6000,
-      k401: 23500,
+      k401: 24500, // 2026 IRS Elective Limit
       healthPreTax: 1000,
-      hsaPreTax: 4300
+      hsaPreTax: 4550 // 2026 IRS HSA Limit
     };
 
-    function toggleCashAwardSchedule() {
-      const body = document.getElementById('cash-award-schedule-body');
-      const arrow = document.getElementById('cash-schedule-toggle-arrow');
-      if (!body) return;
-      const isHidden = body.style.display === 'none';
-      body.style.display = isHidden ? 'block' : 'none';
-      if (arrow) arrow.textContent = isHidden ? '▲' : '▼';
+    function switchCareerSubTab(subTabId, btn) {
+      document.querySelectorAll('.career-subnav .chip').forEach(c => c.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const b = document.getElementById('subtab-btn-' + subTabId);
+        if (b) b.classList.add('active');
+      }
+
+      const views = ['compview', 'cashgrant', 'equity', 'taxes'];
+      views.forEach(v => {
+        const el = document.getElementById('career-view-' + v);
+        if (!el) return;
+        if (subTabId === 'all' || subTabId === v) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    function renderEquitySchedule(stockPrice, isLocked) {
+      const tbody = document.getElementById('equity-schedule-tbody');
+      if (!tbody) return;
+      if (isLocked) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">🔒 Locked — Enter secret access key above to view exact shares countdown and vesting values</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = EQUITY_SCHEDULE_DATA.map(item => {
+        const val = Math.round(item.shares * stockPrice);
+        const unvestedVal = Math.round(item.unvestedShares * stockPrice);
+        const isMajor = item.shares >= 400;
+        return `
+          <tr style="${isMajor ? 'background:rgba(56, 189, 248, 0.12); font-weight:700;' : ''}">
+            <td style="padding: 9px 12px; font-weight:600; color:#f8fafc;">
+              ${item.date}
+              <div style="font-size:10px; color:#94a3b8; font-weight:normal;">${item.note}</div>
+            </td>
+            <td style="padding: 9px 12px; text-align:right; font-weight:700; color:#38bdf8;">
+              ${item.shares.toLocaleString()} shares
+            </td>
+            <td style="padding: 9px 12px; text-align:right; font-weight:700; color:#34d399;">
+              $${val.toLocaleString()}
+            </td>
+            <td style="padding: 9px 12px; text-align:right; color:#cbd5e1;">
+              ${item.unvestedShares.toLocaleString()} shares
+              <span style="font-size:11px; color:#94a3b8; margin-left:4px;">($${unvestedVal.toLocaleString()})</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function onCompViewInput() {
+      const isLocked = !state.isUnlocked;
+      const baseInc = parseFloat(document.getElementById('cv-base-inc')?.value) || 0;
+      const indivMod = parseFloat(document.getElementById('cv-indiv-mod')?.value) || 100;
+      const compPerf = parseFloat(document.getElementById('cv-comp-perf')?.value) || 100;
+      const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57;
+      const future2027 = parseFloat(document.getElementById('cv-future-2027')?.value) || 0;
+      const future2028 = parseFloat(document.getElementById('cv-future-2028')?.value) || 0;
+
+      ['cv-base-inc', 'cv-indiv-mod', 'cv-comp-perf', 'cv-stock-price', 'cv-future-2027', 'cv-future-2028'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = isLocked;
+      });
+
+      if (isLocked) {
+        const maskIds = [
+          'cv-base-2026', 'cv-base-2027', 'cv-base-2028',
+          'cv-bonus-2026', 'cv-bonus-2027', 'cv-bonus-2028',
+          'cv-cashreward-2026', 'cv-cashreward-2027', 'cv-cashreward-2028',
+          'cv-rep-cash-2026', 'cv-rep-cash-2027', 'cv-rep-cash-2028',
+          'cv-true-cash-2026', 'cv-true-cash-2027', 'cv-true-cash-2028',
+          'cv-price-lbl-2026', 'cv-price-lbl-2027', 'cv-price-lbl-2028',
+          'cv-equity-2026', 'cv-equity-2027', 'cv-equity-2028',
+          'cv-future-val-2027', 'cv-future-val-2028',
+          'cv-tot-equity-2026', 'cv-tot-equity-2027', 'cv-tot-equity-2028',
+          'cv-rep-comp-2026', 'cv-rep-comp-2027', 'cv-rep-comp-2028',
+          'cv-true-comp-2026', 'cv-true-comp-2027', 'cv-true-comp-2028',
+          'eq-val-2026', 'eq-val-2027', 'eq-val-2028', 'eq-val-2029'
+        ];
+        maskIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '$---,---';
+        });
+        const lblPrice = document.getElementById('lbl-eq-stock-price');
+        if (lblPrice) lblPrice.textContent = '$--.--';
+        renderEquitySchedule(stockPrice, true);
+        return;
+      }
+
+      // 1. Base Pay Calculation
+      const base2026 = 186773;
+      const base2027 = Math.round(base2026 * (1 + baseInc / 100));
+      const base2028 = Math.round(base2027 * (1 + baseInc / 100));
+
+      // 2. AIP Bonus Calculation (10% Target with Indiv/Company modifiers)
+      const bonus2026 = 17449;
+      const bonusFactor = (indivMod / 100) * (compPerf / 100);
+      const bonus2027 = Math.round(18500 * bonusFactor * (1 + baseInc / 100));
+      const bonus2028 = Math.round(18677 * bonusFactor * Math.pow(1 + baseInc / 100, 2));
+
+      // 3. Long Term Cash Award ("Cash Reward") from 2026 grant schedule
+      const cashReward2026 = 0;
+      const cashReward2027 = 21875;
+      const cashReward2028 = 12500;
+
+      // 4. Reported Cash vs True Total Cash
+      const repCash2026 = base2026 + bonus2026;
+      const repCash2027 = base2027 + bonus2027;
+      const repCash2028 = base2028 + bonus2028;
+
+      const trueCash2026 = repCash2026 + cashReward2026;
+      const trueCash2027 = repCash2027 + cashReward2027;
+      const trueCash2028 = repCash2028 + cashReward2028;
+
+      // 5. Equity Vesting
+      const eq2026 = Math.round(674 * stockPrice);
+      const eq2027 = Math.round(805 * stockPrice);
+      const eq2028 = Math.round(349 * stockPrice);
+      const eq2029 = Math.round(73 * stockPrice);
+
+      const totEq2026 = eq2026;
+      const totEq2027 = eq2027 + future2027;
+      const totEq2028 = eq2028 + future2028;
+
+      // 6. Total Compensation
+      const repComp2026 = repCash2026 + totEq2026;
+      const repComp2027 = repCash2027 + totEq2027;
+      const repComp2028 = repCash2028 + totEq2028;
+
+      const trueComp2026 = trueCash2026 + totEq2026;
+      const trueComp2027 = trueCash2027 + totEq2027;
+      const trueComp2028 = trueCash2028 + totEq2028;
+
+      // Update CompView DOM elements
+      const setHTML = (id, html) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+      };
+
+      setHTML('cv-base-2026', '$' + base2026.toLocaleString());
+      setHTML('cv-base-2027', '$' + base2027.toLocaleString());
+      setHTML('cv-base-2028', '$' + base2028.toLocaleString());
+
+      setHTML('cv-bonus-2026', '$' + bonus2026.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">93.4% actual</div>');
+      setHTML('cv-bonus-2027', '$' + bonus2027.toLocaleString());
+      setHTML('cv-bonus-2028', '$' + bonus2028.toLocaleString());
+
+      setHTML('cv-cashreward-2026', '$0');
+      setHTML('cv-cashreward-2027', '+$' + cashReward2027.toLocaleString());
+      setHTML('cv-cashreward-2028', '+$' + cashReward2028.toLocaleString());
+
+      setHTML('cv-rep-cash-2026', '$' + repCash2026.toLocaleString());
+      setHTML('cv-rep-cash-2027', '$' + repCash2027.toLocaleString());
+      setHTML('cv-rep-cash-2028', '$' + repCash2028.toLocaleString());
+
+      setHTML('cv-true-cash-2026', '$' + trueCash2026.toLocaleString());
+      setHTML('cv-true-cash-2027', '$' + trueCash2027.toLocaleString());
+      setHTML('cv-true-cash-2028', '$' + trueCash2028.toLocaleString());
+
+      setHTML('cv-price-lbl-2026', `@ $${stockPrice.toFixed(2)}`);
+      setHTML('cv-price-lbl-2027', `@ $${stockPrice.toFixed(2)}`);
+      setHTML('cv-price-lbl-2028', `@ $${stockPrice.toFixed(2)}`);
+
+      setHTML('cv-equity-2026', '$' + eq2026.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">674 shares</div>');
+      setHTML('cv-equity-2027', '$' + eq2027.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">805 shares</div>');
+      setHTML('cv-equity-2028', '$' + eq2028.toLocaleString() + '<div style="font-size: 10px; color: #94a3b8; font-weight: 400;">349 shares</div>');
+
+      setHTML('cv-future-val-2027', '$' + Math.round(future2027).toLocaleString());
+      setHTML('cv-future-val-2028', '$' + Math.round(future2028).toLocaleString());
+
+      setHTML('cv-tot-equity-2026', '$' + totEq2026.toLocaleString());
+      setHTML('cv-tot-equity-2027', '$' + totEq2027.toLocaleString());
+      setHTML('cv-tot-equity-2028', '$' + totEq2028.toLocaleString());
+
+      setHTML('cv-rep-comp-2026', '$' + repComp2026.toLocaleString());
+      setHTML('cv-rep-comp-2027', '$' + repComp2027.toLocaleString());
+      setHTML('cv-rep-comp-2028', '$' + repComp2028.toLocaleString());
+
+      setHTML('cv-true-comp-2026', '$' + trueComp2026.toLocaleString());
+      setHTML('cv-true-comp-2027', '$' + trueComp2027.toLocaleString());
+      setHTML('cv-true-comp-2028', '$' + trueComp2028.toLocaleString());
+
+      // Update Section 3 Equity View
+      const lblPrice = document.getElementById('lbl-eq-stock-price');
+      if (lblPrice) lblPrice.textContent = `$${stockPrice.toFixed(2)}`;
+      setHTML('eq-val-2026', `$${eq2026.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
+      setHTML('eq-val-2027', `$${eq2027.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
+      setHTML('eq-val-2028', `$${eq2028.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
+      setHTML('eq-val-2029', `$${eq2029.toLocaleString()} @ $${stockPrice.toFixed(0)}`);
+
+      renderEquitySchedule(stockPrice, false);
+
+      // Keep PAYPAL_YEAR_DATA updated dynamically with calculated base, bonus, and stock price
+      PAYPAL_YEAR_DATA[2026].rsuVesting = eq2026;
+      PAYPAL_YEAR_DATA[2027].baseSalary = base2027;
+      PAYPAL_YEAR_DATA[2027].bonus = bonus2027;
+      PAYPAL_YEAR_DATA[2027].rsuVesting = eq2027;
+      PAYPAL_YEAR_DATA[2028].baseSalary = base2028;
+      PAYPAL_YEAR_DATA[2028].bonus = bonus2028;
+      PAYPAL_YEAR_DATA[2028].rsuVesting = eq2028;
+    }
+
+    // 2026 Federal Progressive Income Tax Engine (Single Standard Deduction: $16,100)
+    function computeFedTax2026(taxable) {
+      if (taxable <= 0) return 0;
+      if (taxable > 638875) return 192544 + (taxable - 638875) * 0.37;
+      if (taxable > 255525) return 58371.50 + (taxable - 255525) * 0.35;
+      if (taxable > 201250) return 41003.50 + (taxable - 201250) * 0.32;
+      if (taxable > 105425) return 18005.50 + (taxable - 105425) * 0.24;
+      if (taxable > 49450) return 5691 + (taxable - 49450) * 0.22;
+      if (taxable > 12150) return 1215 + (taxable - 12150) * 0.12;
+      return taxable * 0.10;
+    }
+
+    // 2026 FICA Taxes (Social Security 6.2% up to $181,800 wage cap + Medicare 1.45% uncapped + 0.9% surtax > $200k)
+    function computeFica2026(wageBase) {
+      if (wageBase <= 0) return { ssTax: 0, medBaseTax: 0, medSurtax: 0, totalFica: 0 };
+      const ssTax = Math.min(wageBase, 181800) * 0.062;
+      const medBaseTax = wageBase * 0.0145;
+      const medSurtax = wageBase > 200000 ? (wageBase - 200000) * 0.009 : 0;
+      return { ssTax, medBaseTax, medSurtax, totalFica: ssTax + medBaseTax + medSurtax };
+    }
+
+    // 2026 New Jersey State Income Tax (NJ-1040 Single: progressive 1.4% to 6.37%+)
+    function computeNjTax2026(njTaxable) {
+      if (njTaxable <= 0) return 0;
+      if (njTaxable > 1000000) return 74700 + (njTaxable - 1000000) * 0.1075;
+      if (njTaxable > 500000) return 29850 + (njTaxable - 500000) * 0.0897;
+      if (njTaxable > 75000) return 2777.50 + (njTaxable - 75000) * 0.0637;
+      if (njTaxable > 40000) return 843.75 + (njTaxable - 40000) * 0.05525;
+      if (njTaxable > 35000) return 668.75 + (njTaxable - 35000) * 0.035;
+      if (njTaxable > 20000) return 280 + (njTaxable - 20000) * 0.0175;
+      return njTaxable * 0.014;
     }
 
     function setCareerYear(year) {
@@ -1355,6 +2021,9 @@
       const isLocked = !state.isUnlocked;
       const lockedBanner = document.getElementById('career-locked-banner');
       if (lockedBanner) lockedBanner.style.display = isLocked ? 'block' : 'none';
+
+      // Always update CompView and Equity schedules
+      onCompViewInput();
 
       // Toggle inputs enabled/disabled
       const inputIds = [
@@ -1464,54 +2133,23 @@
       const earnedGross = includeRsu ? totalComp : grossCash;
       const preTaxDeductions = k401 + health + hsa;
 
-      // 1. Federal Income Tax (2025/2026 Single Standard Deduction: $15,750)
-      const fedStdDeduction = 15750;
+      // 1. Federal Income Tax (2026 Single Standard Deduction: $16,100)
+      const fedStdDeduction = 16100;
       const fedTaxable = Math.max(0, earnedGross - preTaxDeductions - fedStdDeduction);
-      let fedTax = 0;
-      if (fedTaxable > 626350) {
-        fedTax = 186601 + (fedTaxable - 626350) * 0.37;
-      } else if (fedTaxable > 250525) {
-        fedTax = 55062.25 + (fedTaxable - 250525) * 0.35;
-      } else if (fedTaxable > 197300) {
-        fedTax = 38030.25 + (fedTaxable - 197300) * 0.32;
-      } else if (fedTaxable > 103350) {
-        fedTax = 15482.25 + (fedTaxable - 103350) * 0.24;
-      } else if (fedTaxable > 48475) {
-        fedTax = 5585.50 + (fedTaxable - 48475) * 0.22;
-      } else if (fedTaxable > 11925) {
-        fedTax = 1192.50 + (fedTaxable - 11925) * 0.12;
-      } else {
-        fedTax = fedTaxable * 0.10;
-      }
+      const fedTax = computeFedTax2026(fedTaxable);
 
-      // 2. FICA (Social Security & Medicare)
-      // Health and HSA shields are exempt from FICA (Section 125 & Section 223)
+      // 2. FICA (Social Security & Medicare - 2026 Cap: $181,800)
       const ficaWageBase = Math.max(0, earnedGross - health - hsa);
-      const ssTax = Math.min(ficaWageBase, 176100) * 0.062;
-      const medBaseTax = ficaWageBase * 0.0145;
-      const medSurtax = ficaWageBase > 200000 ? (ficaWageBase - 200000) * 0.009 : 0;
-      const totalFica = ssTax + medBaseTax + medSurtax;
+      const fica = computeFica2026(ficaWageBase);
+      const ssTax = fica.ssTax;
+      const medBaseTax = fica.medBaseTax;
+      const medSurtax = fica.medSurtax;
+      const totalFica = fica.totalFica;
 
       // 3. New Jersey State Income Tax (NJ-1040 Single)
-      // NJ permits health insurance deduction (cafeteria plan), but does NOT permit 401(k) or HSA employee deductions
       const njGross = Math.max(0, earnedGross - health);
       const njTaxable = Math.max(0, njGross - 1000); // $1,000 NJ standard exemption
-      let njTax = 0;
-      if (njTaxable > 1000000) {
-        njTax = 66250 + (njTaxable - 1000000) * 0.1075;
-      } else if (njTaxable > 500000) {
-        njTax = 21400 + (njTaxable - 500000) * 0.0897;
-      } else if (njTaxable > 75000) {
-        njTax = 2777.50 + (njTaxable - 75000) * 0.0637;
-      } else if (njTaxable > 40000) {
-        njTax = 843.75 + (njTaxable - 40000) * 0.05525;
-      } else if (njTaxable > 35000) {
-        njTax = 668.75 + (njTaxable - 35000) * 0.035;
-      } else if (njTaxable > 20000) {
-        njTax = 280 + (njTaxable - 20000) * 0.0175;
-      } else {
-        njTax = njTaxable * 0.014;
-      }
+      const njTax = computeNjTax2026(njTaxable);
 
       const totalTaxes = fedTax + totalFica + njTax;
       const netTakeHomeAnnual = earnedGross - totalTaxes - preTaxDeductions;
@@ -1535,75 +2173,25 @@
       let bridgeDesc = 'Target Cash Take-Home:';
 
       if (careerState.bridgeTarget === 'base') {
-        // Base salary take-home only
         const bFedTaxable = Math.max(0, baseSalary - preTaxDeductions - fedStdDeduction);
-        let bFed = 0;
-        if (bFedTaxable > 626350) bFed = 186601 + (bFedTaxable - 626350) * 0.37;
-        else if (bFedTaxable > 250525) bFed = 55062.25 + (bFedTaxable - 250525) * 0.35;
-        else if (bFedTaxable > 197300) bFed = 38030.25 + (bFedTaxable - 197300) * 0.32;
-        else if (bFedTaxable > 103350) bFed = 15482.25 + (bFedTaxable - 103350) * 0.24;
-        else if (bFedTaxable > 48475) bFed = 5585.50 + (bFedTaxable - 48475) * 0.22;
-        else if (bFedTaxable > 11925) bFed = 1192.50 + (bFedTaxable - 11925) * 0.12;
-        else bFed = bFedTaxable * 0.10;
-
-        const bFicaWage = Math.max(0, baseSalary - health - hsa);
-        const bSsTax = Math.min(bFicaWage, 176100) * 0.062;
-        const bMedTax = bFicaWage * 0.0145;
-        const bNjTaxable = Math.max(0, baseSalary - health - 1000);
-        let bNjTax = 0;
-        if (bNjTaxable > 75000) bNjTax = 2777.50 + (bNjTaxable - 75000) * 0.0637;
-        else if (bNjTaxable > 40000) bNjTax = 843.75 + (bNjTaxable - 40000) * 0.05525;
-        else bNjTax = bNjTaxable * 0.014;
-
-        bridgeTargetAnnual = baseSalary - (bFed + bSsTax + bMedTax + bNjTax) - preTaxDeductions;
+        const bFed = computeFedTax2026(bFedTaxable);
+        const bFica = computeFica2026(Math.max(0, baseSalary - health - hsa));
+        const bNj = computeNjTax2026(Math.max(0, baseSalary - health - 1000));
+        bridgeTargetAnnual = baseSalary - (bFed + bFica.totalFica + bNj) - preTaxDeductions;
         bridgeDesc = 'Base Salary Cash Take-Home:';
       } else if (careerState.bridgeTarget === 'total') {
-        // Total Comp take-home (Cash + RSUs)
         const tFedTaxable = Math.max(0, totalComp - preTaxDeductions - fedStdDeduction);
-        let tFed = 0;
-        if (tFedTaxable > 626350) tFed = 186601 + (tFedTaxable - 626350) * 0.37;
-        else if (tFedTaxable > 250525) tFed = 55062.25 + (tFedTaxable - 250525) * 0.35;
-        else if (tFedTaxable > 197300) tFed = 38030.25 + (tFedTaxable - 197300) * 0.32;
-        else if (tFedTaxable > 103350) tFed = 15482.25 + (tFedTaxable - 103350) * 0.24;
-        else if (tFedTaxable > 48475) tFed = 5585.50 + (tFedTaxable - 48475) * 0.22;
-        else if (tFedTaxable > 11925) tFed = 1192.50 + (tFedTaxable - 11925) * 0.12;
-        else tFed = tFedTaxable * 0.10;
-
-        const tFicaWage = Math.max(0, totalComp - health - hsa);
-        const tSsTax = Math.min(tFicaWage, 176100) * 0.062;
-        const tMedTax = tFicaWage * 0.0145;
-        const tMedSurtax = tFicaWage > 200000 ? (tFicaWage - 200000) * 0.009 : 0;
-        const tNjTaxable = Math.max(0, totalComp - health - 1000);
-        let tNjTax = 0;
-        if (tNjTaxable > 500000) tNjTax = 21400 + (tNjTaxable - 500000) * 0.0897;
-        else if (tNjTaxable > 75000) tNjTax = 2777.50 + (tNjTaxable - 75000) * 0.0637;
-        else tNjTax = tNjTaxable * 0.014;
-
-        bridgeTargetAnnual = totalComp - (tFed + tSsTax + tMedTax + tMedSurtax + tNjTax) - preTaxDeductions;
+        const tFed = computeFedTax2026(tFedTaxable);
+        const tFica = computeFica2026(Math.max(0, totalComp - health - hsa));
+        const tNj = computeNjTax2026(Math.max(0, totalComp - health - 1000));
+        bridgeTargetAnnual = totalComp - (tFed + tFica.totalFica + tNj) - preTaxDeductions;
         bridgeDesc = 'Total Comp Take-Home (Cash + RSUs):';
       } else {
-        // Total cash take-home (Base + AIP + Cash Reward)
         const cFedTaxable = Math.max(0, grossCash - preTaxDeductions - fedStdDeduction);
-        let cFed = 0;
-        if (cFedTaxable > 626350) cFed = 186601 + (cFedTaxable - 626350) * 0.37;
-        else if (cFedTaxable > 250525) cFed = 55062.25 + (cFedTaxable - 250525) * 0.35;
-        else if (cFedTaxable > 197300) cFed = 38030.25 + (cFedTaxable - 197300) * 0.32;
-        else if (cFedTaxable > 103350) cFed = 15482.25 + (cFedTaxable - 103350) * 0.24;
-        else if (cFedTaxable > 48475) cFed = 5585.50 + (cFedTaxable - 48475) * 0.22;
-        else if (cFedTaxable > 11925) cFed = 1192.50 + (cFedTaxable - 11925) * 0.12;
-        else cFed = cFedTaxable * 0.10;
-
-        const cFicaWage = Math.max(0, grossCash - health - hsa);
-        const cSsTax = Math.min(cFicaWage, 176100) * 0.062;
-        const cMedTax = cFicaWage * 0.0145;
-        const cMedSurtax = cFicaWage > 200000 ? (cFicaWage - 200000) * 0.009 : 0;
-        const cNjTaxable = Math.max(0, grossCash - health - 1000);
-        let cNjTax = 0;
-        if (cNjTaxable > 75000) cNjTax = 2777.50 + (cNjTaxable - 75000) * 0.0637;
-        else if (cNjTaxable > 40000) cNjTax = 843.75 + (cNjTaxable - 40000) * 0.05525;
-        else cNjTax = cNjTaxable * 0.014;
-
-        bridgeTargetAnnual = grossCash - (cFed + cSsTax + cMedTax + cMedSurtax + cNjTax) - preTaxDeductions;
+        const cFed = computeFedTax2026(cFedTaxable);
+        const cFica = computeFica2026(Math.max(0, grossCash - health - hsa));
+        const cNj = computeNjTax2026(Math.max(0, grossCash - health - 1000));
+        bridgeTargetAnnual = grossCash - (cFed + cFica.totalFica + cNj) - preTaxDeductions;
         bridgeDesc = 'Total Cash Take-Home (Base + AIP + Cash Reward):';
       }
 
@@ -1636,10 +2224,10 @@
           { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of $37,500 cash grant paid via payroll in USD` : `Vesting begins March 1, 2027 ($21,875 in 2027, $12,500 in 2028)` },
           { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: includeRsu ? `Included in gross tax flow (${PAYPAL_YEAR_DATA[careerState.selectedYear]?.rsuShares || 'shares'} shares @ $57 stock price)` : `Tracked separately as equity wealth ($${Math.round(rsuVesting).toLocaleString()} / yr; not in cash paycheck)` },
           { name: '💵 Gross Cash Earnings', annual: grossCash, notes: `Base ($${Math.round(baseSalary).toLocaleString()}) + AIP Bonus ($${Math.round(bonus).toLocaleString()}) + Cash Reward ($${Math.round(cashReward).toLocaleString()})` },
-          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, notes: `Diverted directly into your 401(k) retirement shield (Saves Federal tax now)` },
-          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, notes: `Exempt from Federal Income Tax, Social Security & Medicare taxes` },
-          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $15,750 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
-          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: `6.20% up to $176,100 cap ($10,918 max). Zero tax on income above cap!` },
+          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, notes: `2026 IRS Elective Limit: $24,500. Diverted directly into your 401(k) retirement shield (Saves Federal tax now)` },
+          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, notes: `2026 HSA limit $4,550 + health insurance. Exempt from Federal Income Tax, Social Security & Medicare taxes` },
+          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $16,100 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
+          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, notes: `6.20% up to $181,800 cap ($11,272 max). Zero tax on income above cap!` },
           { name: '🏥 Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, notes: `1.45% base Medicare${medSurtax > 0 ? ` + $${Math.round(medSurtax).toLocaleString()} 0.9% additional Medicare surtax (> $200k)` : ' (no wage cap)'}` },
           { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, notes: `NJ Gross: $${Math.round(njGross).toLocaleString()} (NJ progressive rates 1.4% to 6.37%+)` },
           { name: '💰 Net Take-Home Pay (In Your Pocket)', annual: netTakeHomeAnnual, notes: `Pure disposable income ($${Math.round(monthlyTakeHome).toLocaleString()} / month, $${Math.round(biWeeklyTakeHome).toLocaleString()} / bi-weekly paycheck)` },
