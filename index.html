@@ -225,10 +225,11 @@
             <span class="control-val" id="val-health-cost">+$3,840/yr</span>
           </div>
           <select id="select-health" onchange="recalculate()">
+            <option value="0">GetCoveredNJ Silver w/ 100% Subsidies (CSR @ &le;150% FPL) - $0/mo ($0/yr, $0 Ded)</option>
+            <option value="2580">GetCoveredNJ Silver Plan (Subsidized w/ CSR @ 200%-250% FPL) - $215/mo ($2,580/yr)</option>
             <option value="3840" selected>GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) - $320/mo ($3,840/yr)</option>
             <option value="6240">GetCoveredNJ Gold Plan (Moderate MAGI / Partial Subsidy) - $520/mo ($6,240/yr)</option>
             <option value="9360">GetCoveredNJ Gold Plan (Full Retail / Unsubsidized) - $780/mo ($9,360/yr)</option>
-            <option value="2580">GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &lt;250% FPL) - $215/mo ($2,580/yr)</option>
             <option value="6600">GetCoveredNJ Bronze Plan (Catastrophic / High Deductible) - $550/mo ($6,600/yr)</option>
           </select>
         </div>
@@ -399,19 +400,19 @@
               </ul>
             </div>
 
-            <!-- Card 4: GetCoveredNJ Gold Plan Retirement Strategy -->
+            <!-- Card 4: GetCoveredNJ Healthcare: $0 Silver vs Gold Strategy -->
             <div style="background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; padding: 16px;">
               <div style="font-weight: 700; font-size: 14px; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>4. GetCoveredNJ Gold Plan Retirement Strategy</span>
-                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px;">Top-Tier Coverage</span>
+                <span>4. $0 Silver vs. Subsidized Gold Strategy</span>
+                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px;">100% Covered Option</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-                Why high-net-worth early retirees often choose <strong>Gold plans</strong> over Silver or Bronze:
+                Understanding how federal & NJ subsidies eliminate healthcare costs in early retirement:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>Near-Zero Deductibles (80% Actuarial Value):</strong> Gold plans feature $0 to $1,000 deductibles with fixed $15–$30 copays, completely avoiding the $7,500+ out-of-pocket exposure of Bronze plans.</li>
-                <li><strong>Cash Subsidies Stack on Gold:</strong> Federal Premium Tax Credits (PTC) and NJ Health Plan Savings (NJHPS) are cash vouchers that apply to <em>any</em> metal tier. At an optimized low early-retirement MAGI (~$35k–$40k), monthly net premiums drop from $780/mo down to <strong>~$320/mo ($3,840/yr)</strong>!</li>
-                <li><strong>Freedom from the 250% FPL CSR Cliff:</strong> With Gold, you get rich doctor networks (Horizon OMNIA Gold / AmeriHealth Gold) with predictable low copays without strict Silver CSR income constraints.</li>
+                <li><strong>The 100% Subsidized $0 Silver Plan (&le;150% FPL):</strong> Yes! If your reportable MAGI is kept under <strong>150% FPL (~$23,500/yr for single)</strong>, the benchmark contribution is legally <strong>0.0% of income</strong>. Federal APTC + NJHPS state subsidies cover <strong>100% of the premium ($0.00 / month)</strong>, AND you receive the maximum <strong>94% CSR upgrade ($0 deductible, $0–$5 copays)</strong>!</li>
+                <li><strong>The Gold Plan Route ($320/mo):</strong> If you want to realize more investment income ($35k–$50k MAGI) or do larger Roth conversions, Gold plans provide 80% coverage and $0–$1,000 deductibles with fixed $15–$30 copays for <strong>~$320/mo ($3,840/yr)</strong> without strict CSR income ceilings.</li>
+                <li><strong>Cash Subsidies Apply to Any Metal:</strong> Federal Premium Tax Credits and NJHPS are cash vouchers. You can apply your credit to a $0 Silver plan or upgrade to a Gold plan.</li>
               </ul>
             </div>
 
@@ -788,7 +789,7 @@
 
       const healthSelect = document.getElementById('select-health');
       const selectedPlanText = healthSelect && healthSelect.selectedIndex >= 0 ? healthSelect.options[healthSelect.selectedIndex].text : '';
-      const planBadge = selectedPlanText.includes('Gold') ? 'Gold Plan' : selectedPlanText.includes('Silver') ? 'Silver Plan' : 'Bronze Plan';
+      const planBadge = selectedPlanText.includes('$0/mo') ? '$0/mo Subsidized Silver' : selectedPlanText.includes('Gold') ? 'Gold Plan' : selectedPlanText.includes('Silver') ? 'Silver Plan' : 'Bronze Plan';
 
       document.getElementById('kpi-nw').textContent = '$' + state.netWorth.toLocaleString();
       document.getElementById('kpi-fire-status').textContent = fundedStatus.toFixed(1) + '%';
