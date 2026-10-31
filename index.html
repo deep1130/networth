@@ -1059,7 +1059,7 @@
                 <div style="background: rgba(234, 179, 8, 0.1); border: 1.5px solid #eab308; border-radius: 10px; padding: 14px;">
                   <span style="font-size: 11px; color: #eab308; font-weight: 700; display: block; margin-bottom: 2px;">⚡ Upcoming Major Vest Day</span>
                   <div style="font-size: 24px; font-weight: 900; color: #eab308;" id="lbl-next-day-val">$---,---</div>
-                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;">March 1, 2027 ($12.5k + 412 sh)</div>
+                  <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;">March 1, 2027 ($12.5k + 412)</div>
                 </div>
               </div>
 
@@ -1789,6 +1789,13 @@
       k401: 24500, // Current IRS Elective Limit
       healthPreTax: 1000,
       hsaPreTax: 4550, // Current IRS HSA Limit
+      baseInc: 3,
+      indivMod: 100,
+      compPerf: 100,
+      stockPrice: 57.01,
+      future2027: 0,
+      future2028: 0,
+      simAward: 50000,
       severanceWeeks: 10,
       vestingBuffer: 35988,
       njUiWeekly: 854,
@@ -1848,6 +1855,11 @@
       setVal('sim-yr1-amt', '$' + yr1Total.toLocaleString() + ' Total');
       setVal('sim-yr2-amt', '$' + yr2Total.toLocaleString() + ' Total');
       setVal('sim-yr3-amt', '$' + yr3Total.toLocaleString() + ' Total');
+
+      if (state.isUnlocked) {
+        careerState.simAward = award;
+        saveCareerSettings();
+      }
     }
 
     function onSafetyNetInput() {
@@ -1909,7 +1921,7 @@
                 $${item.cash.toLocaleString()}.00
               </td>
               <td style="padding: 9px 12px; text-align:right; font-weight:700; color:#38bdf8;">
-                ${item.shares.toLocaleString()} sh <span style="font-size:11px; color:#94a3b8; font-weight:normal;">($${stockVal.toLocaleString()})</span>
+                ${item.shares.toLocaleString()} <span style="font-size:11px; color:#94a3b8; font-weight:normal;">($${stockVal.toLocaleString()})</span>
               </td>
               <td style="padding: 9px 12px; text-align:right; font-weight:800; color:#34d399; background:rgba(16, 185, 129, 0.08);">
                 $${dayTotal.toLocaleString()}
@@ -1929,27 +1941,40 @@
 
     function onMultiYearInput() {
       const isLocked = !state.isUnlocked;
-      const baseInc = parseFloat(document.getElementById('cv-base-inc')?.value) || 0;
-      const indivMod = parseFloat(document.getElementById('cv-indiv-mod')?.value) || 100;
-      const compPerf = parseFloat(document.getElementById('cv-comp-perf')?.value) || 100;
-      const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
-      const future2027 = parseFloat(document.getElementById('cv-future-2027')?.value) || 0;
-      const future2028 = parseFloat(document.getElementById('cv-future-2028')?.value) || 0;
 
       ['cv-base-inc', 'cv-indiv-mod', 'cv-comp-perf', 'cv-stock-price', 'cv-future-2027', 'cv-future-2028', 'sim-award-amount', 'safety-severance-weeks', 'safety-vesting-buffer', 'safety-nj-ui-weekly', 'safety-nj-ui-weeks'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.disabled = isLocked;
           if (isLocked && (id === 'cv-future-2027' || id === 'cv-future-2028' || id === 'sim-award-amount' || id === 'safety-vesting-buffer')) {
-            if (el.value && el.value !== '••••••') el._origVal = el.value;
             el.type = 'password';
             el.value = '••••••';
           } else if (!isLocked && el.type === 'password') {
             el.type = 'number';
-            if (el._origVal !== undefined) el.value = el._origVal;
+            if (id === 'cv-future-2027' && careerState.future2027 !== undefined) el.value = careerState.future2027;
+            else if (id === 'cv-future-2028' && careerState.future2028 !== undefined) el.value = careerState.future2028;
+            else if (id === 'sim-award-amount' && careerState.simAward !== undefined) el.value = careerState.simAward;
+            else if (id === 'safety-vesting-buffer' && careerState.vestingBuffer !== undefined) el.value = careerState.vestingBuffer;
           }
         }
       });
+
+      const baseInc = parseFloat(document.getElementById('cv-base-inc')?.value) ?? careerState.baseInc ?? 3;
+      const indivMod = parseFloat(document.getElementById('cv-indiv-mod')?.value) ?? careerState.indivMod ?? 100;
+      const compPerf = parseFloat(document.getElementById('cv-comp-perf')?.value) ?? careerState.compPerf ?? 100;
+      const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) ?? careerState.stockPrice ?? 57.01;
+      const future2027 = parseFloat(document.getElementById('cv-future-2027')?.value) ?? careerState.future2027 ?? 0;
+      const future2028 = parseFloat(document.getElementById('cv-future-2028')?.value) ?? careerState.future2028 ?? 0;
+
+      if (!isLocked) {
+        careerState.baseInc = baseInc;
+        careerState.indivMod = indivMod;
+        careerState.compPerf = compPerf;
+        careerState.stockPrice = stockPrice;
+        careerState.future2027 = future2027;
+        careerState.future2028 = future2028;
+        saveCareerSettings();
+      }
 
       if (isLocked) {
         const maskIds = [
@@ -2236,15 +2261,34 @@
     function saveCareerSettings() {
       try {
         if (!state.isUnlocked) return;
-        careerState.baseSalary = parseFloat(document.getElementById('career-base-salary').value) || 0;
-        careerState.bonus = parseFloat(document.getElementById('career-bonus').value) || 0;
-        careerState.cashReward = parseFloat(document.getElementById('career-cash-reward').value) || 0;
-        careerState.rsuVesting = parseFloat(document.getElementById('career-rsu').value) || 0;
-        careerState.employerMatch = parseFloat(document.getElementById('career-match').value) || 0;
-        careerState.k401 = parseFloat(document.getElementById('career-401k').value) || 0;
-        careerState.healthPreTax = parseFloat(document.getElementById('career-health').value) || 0;
-        careerState.hsaPreTax = parseFloat(document.getElementById('career-hsa').value) || 0;
+        careerState.baseSalary = parseFloat(document.getElementById('career-base-salary')?.value) || 0;
+        careerState.bonus = parseFloat(document.getElementById('career-bonus')?.value) || 0;
+        careerState.cashReward = parseFloat(document.getElementById('career-cash-reward')?.value) || 0;
+        careerState.rsuVesting = parseFloat(document.getElementById('career-rsu')?.value) || 0;
+        careerState.employerMatch = parseFloat(document.getElementById('career-match')?.value) || 0;
+        careerState.k401 = parseFloat(document.getElementById('career-401k')?.value) || 0;
+        careerState.healthPreTax = parseFloat(document.getElementById('career-health')?.value) || 0;
+        careerState.hsaPreTax = parseFloat(document.getElementById('career-hsa')?.value) || 0;
 
+        // Multi-Year & Future Awards inputs (persisted to localStorage)
+        const elBaseInc = document.getElementById('cv-base-inc');
+        if (elBaseInc && elBaseInc.type !== 'password') careerState.baseInc = parseFloat(elBaseInc.value) || 0;
+        const elIndivMod = document.getElementById('cv-indiv-mod');
+        if (elIndivMod && elIndivMod.type !== 'password') careerState.indivMod = parseFloat(elIndivMod.value) || 100;
+        const elCompPerf = document.getElementById('cv-comp-perf');
+        if (elCompPerf && elCompPerf.type !== 'password') careerState.compPerf = parseFloat(elCompPerf.value) || 100;
+        const elStockPrice = document.getElementById('cv-stock-price');
+        if (elStockPrice && elStockPrice.type !== 'password') careerState.stockPrice = parseFloat(elStockPrice.value) || 57.01;
+        const elFut2027 = document.getElementById('cv-future-2027');
+        if (elFut2027 && elFut2027.type !== 'password') careerState.future2027 = parseFloat(elFut2027.value) || 0;
+        const elFut2028 = document.getElementById('cv-future-2028');
+        if (elFut2028 && elFut2028.type !== 'password') careerState.future2028 = parseFloat(elFut2028.value) || 0;
+
+        // Future Award Simulator input (persisted to localStorage)
+        const elSim = document.getElementById('sim-award-amount');
+        if (elSim && elSim.type !== 'password') careerState.simAward = parseFloat(elSim.value) || 0;
+
+        // Safety Net inputs
         careerState.severanceWeeks = parseFloat(document.getElementById('safety-severance-weeks')?.value) || 10;
         careerState.vestingBuffer = parseFloat(document.getElementById('safety-vesting-buffer')?.value) || 35988;
         careerState.njUiWeekly = parseFloat(document.getElementById('safety-nj-ui-weekly')?.value) || 854;
@@ -2261,6 +2305,54 @@
         }
       } catch (e) {
         console.warn('Failed to save career settings:', e);
+      }
+    }
+
+    function restoreCareerInputsFromState() {
+      if (!state.isUnlocked) return;
+
+      const setInput = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val !== undefined && document.activeElement !== el) {
+          el.type = 'number';
+          el.value = val;
+        }
+      };
+
+      setInput('career-base-salary', careerState.baseSalary);
+      setInput('career-bonus', careerState.bonus);
+      setInput('career-cash-reward', careerState.cashReward);
+      setInput('career-rsu', careerState.rsuVesting);
+      setInput('career-match', careerState.employerMatch);
+      setInput('career-401k', careerState.k401);
+      setInput('career-health', careerState.healthPreTax);
+      setInput('career-hsa', careerState.hsaPreTax);
+
+      setInput('cv-base-inc', careerState.baseInc);
+      setInput('cv-indiv-mod', careerState.indivMod);
+      setInput('cv-comp-perf', careerState.compPerf);
+      setInput('cv-stock-price', careerState.stockPrice);
+      setInput('cv-future-2027', careerState.future2027);
+      setInput('cv-future-2028', careerState.future2028);
+
+      setInput('sim-award-amount', careerState.simAward);
+
+      setInput('safety-severance-weeks', careerState.severanceWeeks);
+      setInput('safety-vesting-buffer', careerState.vestingBuffer);
+      setInput('safety-nj-ui-weekly', careerState.njUiWeekly);
+      setInput('safety-nj-ui-weeks', careerState.njUiWeeks);
+
+      if (careerState.selectedYear) {
+        ['2027', '2028', '2029', 'custom'].forEach(y => {
+          const btn = document.getElementById('chip-year-' + y);
+          if (btn) btn.classList.toggle('active', String(y) === String(careerState.selectedYear));
+        });
+      }
+      if (careerState.bridgeTarget) {
+        ['cash', 'base', 'total'].forEach(t => {
+          const chip = document.getElementById('chip-bridge-' + t);
+          if (chip) chip.classList.toggle('active', t === careerState.bridgeTarget);
+        });
       }
     }
 
@@ -3177,6 +3269,7 @@
 
           if (syncText) syncText.textContent = '🟢 Live Google Sheet Connected (' + new Date().toLocaleTimeString() + ')';
           loadCareerSettings();
+          restoreCareerInputsFromState();
           recalculate(false);
           recalculateCareer();
         } else {
@@ -3304,6 +3397,8 @@
       const keyBtn = document.getElementById('btn-key-action');
       if (keyBtn) keyBtn.textContent = '🔒 Lock Dashboard';
       document.getElementById('sync-text').textContent = '📁 Loaded from Local Excel: ' + file.name;
+      loadCareerSettings();
+      restoreCareerInputsFromState();
       recalculate(false);
       recalculateCareer();
     }
