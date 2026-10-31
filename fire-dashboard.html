@@ -3205,7 +3205,7 @@
       const sorted = new Float64Array(NUM_PATHS);
       for (let i = 1; i <= YEARS; i++) {
         const year = 2026 + i;
-        const isWorking = year < retireYear;
+        const isWorking = year <= retireYear;
         const inflationFactor = Math.pow(1 + inflationRate, i);
         const nominalWithdrawal = totalAnnualSpend * inflationFactor;
         const cashFlow = isWorking ? annualSavings : -nominalWithdrawal;
@@ -3669,8 +3669,8 @@
             netChange: 0
           });
         } else {
-          // Accumulation phase before retirement year; Drawdown phase from retirement year onward
-          const isWorking = year < retireYear;
+          // Accumulation phase up to retirement milestone year; Drawdown phase after retirement milestone year
+          const isWorking = year <= retireYear;
           const prevNW = runningNW;
           const nominalWithdrawal = totalAnnualSpend * inflationFactor;
           const cashFlow = isWorking ? state.annualSavings : -nominalWithdrawal;
@@ -3731,6 +3731,7 @@
       if (el2037Real) el2037Real.textContent = `Real: $${Math.round(realRetire).toLocaleString()} in today's $`;
 
       // 3. Post-Retirement Annual Withdrawal & Year-1 Net Portfolio Adjustment
+      const yrPostRetire = allYears.find(y => y.year === Math.min(2093, clampedRetireYear + 1)) || yrRetire;
       const lblBudget = document.getElementById('lbl-2027-budget');
       if (lblBudget) {
         lblBudget.textContent = `Post-Age ${yrRetire.age} Withdrawal`;
@@ -3741,10 +3742,10 @@
       }
       const el2027Monthly = document.getElementById('val-2027-monthly');
       if (el2027Monthly) {
-        const netChg = yrRetire.netChange;
+        const netChg = yrPostRetire.netChange;
         const sign = netChg >= 0 ? '+$' : '-$';
         el2027Monthly.style.color = netChg >= 0 ? '#34d399' : '#f87171';
-        el2027Monthly.textContent = `${sign}${Math.round(Math.abs(netChg)).toLocaleString()}/yr net ${netChg >= 0 ? 'growth' : 'drawdown'} at Age ${yrRetire.age}`;
+        el2027Monthly.textContent = `${sign}${Math.round(Math.abs(netChg)).toLocaleString()}/yr net ${netChg >= 0 ? 'growth' : 'drawdown'} after Age ${yrRetire.age}`;
       }
 
       // 4. End of Horizon (Age 100 / Selected Max Age) Balance or Depletion Alert
