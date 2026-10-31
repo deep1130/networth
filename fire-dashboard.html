@@ -764,7 +764,7 @@
           <!-- Career Sub-Navigation (Switch between compensation sections) -->
           <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid #334155;">
             <button type="button" class="chip active" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">📋 Multi-Year Compensation</button>
-            <button type="button" class="chip" id="subtab-btn-combined" onclick="switchCareerSubTab('combined', this)">🎁 Awards & Equity Vesting Schedule</button>
+            <button type="button" class="chip" id="subtab-btn-combined" onclick="switchCareerSubTab('combined', this)">📈 RSUs & Awards Vesting Schedule</button>
             <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ Taxes & Freedom Bridge</button>
             <button type="button" class="chip" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 Show All Sections</button>
           </div>
@@ -1009,7 +1009,7 @@
           </div>
 
           <!-- SECTION 2: Unified Awards & Equity Vesting Schedule -->
-          <div class="career-subview" id="career-view-combined" style="margin-bottom: 24px;">
+          <div class="career-subview" id="career-view-combined" style="margin-bottom: 24px; display: none;">
             <!-- Locked Cover Banner (visible when locked) -->
             <div id="combined-locked-banner" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #334155; border-radius: 12px; padding: 32px 20px; text-align: center; margin-bottom: 18px;">
               <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
@@ -1140,7 +1140,7 @@
           </div>
 
           <!-- SECTION 4: W-2 Taxes, Pre-Tax Deductions & Freedom Bridge -->
-          <div class="career-subview" id="career-view-taxes" style="margin-bottom: 24px;">
+          <div class="career-subview" id="career-view-taxes" style="margin-bottom: 24px; display: none;">
             <!-- Plan Year Selector Pills -->
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -1363,7 +1363,10 @@
                     <span class="control-val" id="val-career-rsu">$---,---</span>
                   </div>
                   <input type="number" id="career-rsu" value="45893" step="500" min="0" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-rsu">🔒 Locked — Enter key to view RSU vesting</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 11px;">
+                    <span style="color: #38bdf8;" id="note-career-rsu">🔒 Locked — Enter key to view RSU vesting</span>
+                    <a href="javascript:void(0)" onclick="switchCareerSubTab('combined')" style="color: #94a3b8; text-decoration: underline; font-size: 11px; font-weight: 600;" title="Jump to full RSUs & Awards Schedule">View Full RSU Schedule ↗</a>
+                  </div>
                 </div>
 
 
@@ -1724,7 +1727,7 @@
       }
     }
 
-    const CAREER_STORAGE_KEY = 'fire_dashboard_career_v3';
+    const CAREER_STORAGE_KEY = 'fire_dashboard_career_v4';
 
     const CAREER_YEAR_DATA = {
       2027: {
@@ -2190,10 +2193,14 @@
 
       if (CAREER_YEAR_DATA[year]) {
         const data = CAREER_YEAR_DATA[year];
+        const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
+        const dynRsu = Math.round((data.rsuShares || 0) * stockPrice);
+        data.rsuVesting = dynRsu;
+
         careerState.baseSalary = data.baseSalary;
         careerState.bonus = data.bonus;
         careerState.cashReward = data.cashReward;
-        careerState.rsuVesting = data.rsuVesting;
+        careerState.rsuVesting = dynRsu;
 
         const elBase = document.getElementById('career-base-salary');
         const elBonus = document.getElementById('career-bonus');
@@ -2202,7 +2209,7 @@
         if (elBase) elBase.value = data.baseSalary;
         if (elBonus) elBonus.value = data.bonus;
         if (elCash) elCash.value = data.cashReward;
-        if (elRsu) elRsu.value = data.rsuVesting;
+        if (elRsu) elRsu.value = dynRsu;
 
         const sub = document.getElementById('career-year-subtitle');
         if (sub) sub.textContent = `Loaded compensation figures for ${year}`;
@@ -2374,12 +2381,22 @@
       const baseSalary = parseFloat(document.getElementById('career-base-salary').value) || careerState.baseSalary;
       const bonus = parseFloat(document.getElementById('career-bonus').value) || careerState.bonus;
       const cashReward = parseFloat(document.getElementById('career-cash-reward').value) || careerState.cashReward;
-      const rsuVesting = parseFloat(document.getElementById('career-rsu').value) || careerState.rsuVesting;
       const match = parseFloat(document.getElementById('career-match').value) || careerState.employerMatch;
       const k401 = parseFloat(document.getElementById('career-401k').value) || careerState.k401;
       const health = parseFloat(document.getElementById('career-health').value) || careerState.healthPreTax;
       const hsa = parseFloat(document.getElementById('career-hsa').value) || careerState.hsaPreTax;
       const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
+
+      // Automatically sync RSU value from active RSU schedule (shares × live stock price)
+      let rsuVesting = parseFloat(document.getElementById('career-rsu').value);
+      if (careerState.selectedYear && CAREER_YEAR_DATA[careerState.selectedYear]) {
+        const dynRsu = Math.round((CAREER_YEAR_DATA[careerState.selectedYear].rsuShares || 0) * stockPrice);
+        CAREER_YEAR_DATA[careerState.selectedYear].rsuVesting = dynRsu;
+        if (isNaN(rsuVesting) || document.activeElement !== document.getElementById('career-rsu')) {
+          rsuVesting = dynRsu;
+        }
+      }
+      if (isNaN(rsuVesting)) rsuVesting = careerState.rsuVesting;
 
       if (document.getElementById('career-base-salary').value !== String(baseSalary)) document.getElementById('career-base-salary').value = baseSalary;
       if (document.getElementById('career-bonus').value !== String(bonus)) document.getElementById('career-bonus').value = bonus;
@@ -2402,7 +2419,7 @@
       const noteRsu = document.getElementById('note-career-rsu');
       if (noteRsu) {
         const yrShares = CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares || 0;
-        noteRsu.textContent = `${yrShares.toLocaleString()} shares ($${Math.round(rsuVesting/1000)}k) always included in annual taxable gross @ $${stockPrice.toFixed(2)}`;
+        noteRsu.innerHTML = `⚡ Auto-computed: <strong>${yrShares.toLocaleString()} shares × $${stockPrice.toFixed(2)}</strong> live price`;
       }
       const noteBonus = document.getElementById('note-career-bonus');
       if (noteBonus) noteBonus.textContent = `${careerState.selectedYear}: $${Math.round(bonus).toLocaleString()} target projection (10% of base)`;
