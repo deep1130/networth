@@ -571,36 +571,39 @@
           </div>
         </div>
 
-        <!-- Healthcare Selection (Retirement Focus) -->
+        <!-- Healthcare Selection (Retirement Focus — 2027 GetCoveredNJ ACA Data) -->
         <div class="control-group">
           <div class="control-header">
-            <span>Healthcare (Early Retirement):</span>
+            <span>Healthcare (2027 GetCoveredNJ ACA):</span>
             <span class="control-val" id="val-health-cost">+$3,840/yr</span>
           </div>
           <select id="select-health" onchange="recalculate()">
-            <optgroup label="🌟 100% Fully Subsidized ($0/yr)">
-              <option value="0">GetCoveredNJ Silver w/ 100% Subsidies (CSR 94 @ &le;150% FPL) — $0/mo ($0/yr, $0 Ded)</option>
-              <option value="0">GetCoveredNJ Bronze HDHP (100% Subsidized @ &le;200% FPL) — $0/mo ($0/yr, HSA Eligible)</option>
+            <optgroup label="🌟 2027 100% Fully Subsidized ($0/yr)">
+              <option value="0">2027 GetCoveredNJ Silver w/ 100% Subsidies (CSR 94 @ &le;150% FPL / $23.9k) — $0/mo ($0/yr, $0 Ded)</option>
+              <option value="0">2027 GetCoveredNJ Bronze HDHP (100% Subsidized @ &le;200% FPL / $31.9k) — $0/mo ($0/yr, HSA Eligible)</option>
             </optgroup>
             
-            <optgroup label="💵 Deeply Subsidized ($600 – $2,580/yr)">
-              <option value="600">GetCoveredNJ Silver w/ Deep Subsidies (CSR 87 @ 150%-200% FPL) — $50/mo ($600/yr)</option>
-              <option value="1980">GetCoveredNJ Silver w/ Moderate Subsidies (CSR 73 @ 200%-250% FPL) — $165/mo ($1,980/yr)</option>
-              <option value="2160">GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
-              <option value="2580">GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &le;250% FPL) — $215/mo ($2,580/yr)</option>
+            <optgroup label="💵 2027 Deeply Subsidized ($600 – $2,580/yr)">
+              <option value="600">2027 GetCoveredNJ Silver w/ Deep Subsidies (CSR 87 @ 150%-200% FPL / $23.9k-$31.9k) — $50/mo ($600/yr)</option>
+              <option value="1980">2027 GetCoveredNJ Silver w/ Moderate Subsidies (CSR 73 @ 200%-250% FPL / $31.9k-$39.9k) — $165/mo ($1,980/yr)</option>
+              <option value="2160">2027 GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
+              <option value="2580">2027 GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &le;250% FPL / $39.9k) — $215/mo ($2,580/yr)</option>
             </optgroup>
 
-            <optgroup label="🥇 Mid-Tier & Subsidized Gold ($3,840 – $6,240/yr)">
-              <option value="3840" selected>GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) — $320/mo ($3,840/yr)</option>
-              <option value="5400">GetCoveredNJ Bronze Plan (Full Retail Unsubsidized) — $450/mo ($5,400/yr)</option>
-              <option value="6240">GetCoveredNJ Gold Plan (Partial Subsidy @ Moderate MAGI) — $520/mo ($6,240/yr)</option>
+            <optgroup label="🥇 2027 Mid-Tier & Subsidized Gold ($3,840 – $6,240/yr)">
+              <option value="3840" selected>2027 GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) — $320/mo ($3,840/yr)</option>
+              <option value="5400">2027 GetCoveredNJ Bronze Plan (Full Retail Unsubsidized) — $450/mo ($5,400/yr)</option>
+              <option value="6240">2027 GetCoveredNJ Gold Plan (Partial Subsidy w/ NJHPS @ Moderate MAGI) — $520/mo ($6,240/yr)</option>
             </optgroup>
 
-            <optgroup label="🏢 Full Retail / Unsubsidized ($7,200 – $9,360/yr)">
-              <option value="7200">GetCoveredNJ Silver Plan (Full Retail Unsubsidized) — $600/mo ($7,200/yr)</option>
-              <option value="9360">GetCoveredNJ Gold Plan (Full Retail Unsubsidized) — $780/mo ($9,360/yr)</option>
+            <optgroup label="🏢 2027 Full Retail / Unsubsidized ($7,200 – $9,360/yr)">
+              <option value="7200">2027 GetCoveredNJ Silver Plan (Full Retail Unsubsidized) — $600/mo ($7,200/yr)</option>
+              <option value="9360">2027 GetCoveredNJ Gold Plan (Full Retail Unsubsidized) — $780/mo ($9,360/yr)</option>
             </optgroup>
           </select>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+            2027 Single FPL: $15,960 (150% = $23,940 • 250% = $39,900 • 400% = $63,840 + NJHPS up to 600% FPL)
+          </div>
         </div>
 
         <!-- Safe Withdrawal Rate -->
@@ -1380,9 +1383,9 @@
                 </div>
               </div>
 
-              <!-- Column 2: Pre-Tax Deductions (2026 Limits) -->
+              <!-- Column 2: Pre-Tax Deductions (2027+ Limits) -->
               <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
-                <h4 style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">2. Pre-Tax Deductions & Retirement Shields</h4>
+                <h4 style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px;">2. Pre-Tax Deductions & Retirement Shields (2027+)</h4>
                 
                 <div class="control-group">
                   <div class="control-header">
@@ -1390,7 +1393,7 @@
                     <span class="control-val" id="val-career-401k">$---,---</span>
                   </div>
                   <input type="number" id="career-401k" value="24500" step="500" min="0" max="30000" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">IRS Elective Limit: $24,500. Shields income from Federal tax</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2027+ IRS Elective Baseline: $24,500. Shields income from Federal tax</div>
                 </div>
 
                 <div class="control-group">
@@ -1408,7 +1411,7 @@
                     <span class="control-val" id="val-career-hsa">$---,---</span>
                   </div>
                   <input type="number" id="career-hsa" value="4550" step="100" min="0" max="9500" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">HSA Limit: $4,550 single / $9,100 family. Shields Fed + FICA</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">2027+ HSA Baseline: $4,550 single / $9,100 family. Shields Fed + FICA</div>
                 </div>
               </div>
             </div>
@@ -1416,7 +1419,7 @@
             <!-- Tax Breakdown Detail Table -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 18px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin: 0;">3. Annual Tax Breakdown & Government Deductions (Progressive Tax Engine)</h4>
+                <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin: 0;">3. Annual Tax Breakdown & Government Deductions (2027+ Progressive Tax Engine)</h4>
                 <span style="font-size: 11px; color: #38bdf8;">Progressive Fed ($16.1k Std Ded) + FICA ($181.8k Cap) + NJ-1040</span>
               </div>
               <div class="table-container">
@@ -1442,25 +1445,25 @@
         <!-- Federal & New Jersey FIRE, Healthcare & Tax Intelligence Section -->
         <div class="panel tab-section" id="section-strategy">
           <div class="panel-title">
-            <span>🏛️ Federal & New Jersey FIRE, Healthcare & Tax Strategy</span>
-            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">IRS Inflation Adjustments + GetCoveredNJ Code</span>
+            <span>🏛️ Federal & New Jersey FIRE, Healthcare & Tax Strategy (2027+ Focus)</span>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">2027 IRS + GetCoveredNJ ACA Projections</span>
           </div>
 
           <div class="strategy-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 14px;">
-            <!-- Card 1: Federal Contribution Limits (2026) -->
+            <!-- Card 1: Federal Contribution Limits (2027+) -->
             <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
               <div style="font-weight: 700; font-size: 14px; color: #60a5fa; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span>1. IRS Federal Retirement & HSA Limits</span>
-                <span style="font-size: 11px; background: rgba(96, 165, 250, 0.15); padding: 2px 8px; border-radius: 4px;">Current IRS Limits</span>
+                <span style="font-size: 11px; background: rgba(96, 165, 250, 0.15); padding: 2px 8px; border-radius: 4px;">2027+ IRS Baseline</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-                Official IRS annual limits for retirement vehicles and pre-tax shields:
+                IRS annual baseline limits modeled across the 2027+ projection window:
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>401(k) / 403(b) / TSP:</strong> <strong>$24,500</strong> elective limit in 2026. Catch-up (age 50+) is <strong>$8,000</strong> (higher SECURE 2.0 catch-up of <strong>$11,250</strong> for ages 60–63).</li>
+                <li><strong>401(k) / 403(b) / TSP:</strong> <strong>$24,500</strong> elective limit baseline for 2027+. Catch-up (age 50+) is <strong>$8,000</strong> (higher SECURE 2.0 catch-up of <strong>$11,250</strong> for ages 60–63).</li>
                 <li><strong>IRA (Traditional & Roth):</strong> <strong>$7,500</strong> annual contribution limit. Single phase-out begins at $150k (use <em>Backdoor Roth IRA</em> above limit).</li>
-                <li><strong>Health Savings Account (HSA):</strong> <strong>$4,550 single / $9,100 family</strong> in 2026. Federally triple tax-advantaged (tax-free contribution, growth, and medical withdrawal).</li>
-                <li><strong>Standard Deduction:</strong> <strong>$16,100 Single / $32,200 MFJ</strong> in 2026.</li>
+                <li><strong>Health Savings Account (HSA):</strong> <strong>$4,550 single / $9,100 family</strong> baseline for 2027+. Federally triple tax-advantaged (tax-free contribution, growth, and medical withdrawal).</li>
+                <li><strong>Standard Deduction:</strong> <strong>$16,100 Single / $32,200 MFJ</strong> baseline for 2027+.</li>
               </ul>
             </div>
 
@@ -1496,19 +1499,19 @@
               </ul>
             </div>
 
-            <!-- Card 4: GetCoveredNJ Healthcare: $0 Silver vs Gold Strategy -->
+            <!-- Card 4: 2027 GetCoveredNJ Healthcare: $0 Silver vs Gold Strategy -->
             <div style="background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; padding: 16px;">
               <div style="font-weight: 700; font-size: 14px; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>4. $0 Silver vs. Subsidized Gold Strategy</span>
-                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px;">100% Covered Option</span>
+                <span>4. 2027 GetCoveredNJ ACA: $0 Silver vs. Gold</span>
+                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 2px 8px; border-radius: 4px;">2027 ACA + NJHPS</span>
               </div>
               <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 6px;">
-                Understanding how federal & NJ subsidies eliminate healthcare costs in early retirement:
+                2027 GetCoveredNJ ACA projections (Single 100% FPL = <strong>$15,960</strong>; NJ Medicaid = 138% FPL / $22,025):
               </p>
               <ul style="font-size: 12px; color: #94a3b8; padding-left: 18px; line-height: 1.5;">
-                <li><strong>The 100% Subsidized $0 Silver Plan (&le;150% FPL):</strong> Yes! If your reportable MAGI is kept under <strong>150% FPL (~$23,500/yr for single)</strong>, the benchmark contribution is legally <strong>0.0% of income</strong>. Federal APTC + NJHPS state subsidies cover <strong>100% of the premium ($0.00 / month)</strong>, AND you receive the maximum <strong>94% CSR upgrade ($0 deductible, $0–$5 copays)</strong>!</li>
-                <li><strong>The Gold Plan Route ($320/mo):</strong> If you want to realize more investment income ($35k–$50k MAGI) or do larger Roth conversions, Gold plans provide 80% coverage and $0–$1,000 deductibles with fixed $15–$30 copays for <strong>~$320/mo ($3,840/yr)</strong> without strict CSR income ceilings.</li>
-                <li><strong>Cash Subsidies Apply to Any Metal:</strong> Federal Premium Tax Credits and NJHPS are cash vouchers. You can apply your credit to a $0 Silver plan or upgrade to a Gold plan.</li>
+                <li><strong>100% Subsidized $0 Silver (&le;150% FPL / $23,940 MAGI):</strong> Keeping reportable MAGI between <strong>$22,025 and $23,940/yr</strong> qualifies for Federal APTC + <strong>New Jersey Health Plan Savings (NJHPS)</strong> covering up to <strong>100% of Silver premiums ($0/mo)</strong> plus the <strong>94% CSR upgrade ($0 deductible, $0–$5 copays)</strong>.</li>
+                <li><strong>200%–250% FPL ($31,920–$39,900 MAGI):</strong> Unlocks 87% / 73% CSR Silver plans ($50–$215/mo) or a $0/mo HSA-eligible Bronze HDHP.</li>
+                <li><strong>Subsidized Gold Route ($320/mo @ $35k–$63.8k MAGI):</strong> With Federal APTC (up to 400% FPL = <strong>$63,840</strong>) and NJHPS state subsidies (up to 600% FPL = <strong>$95,760</strong>), Gold plans offer 80% actuarial value and low deductibles for <strong>~$320/mo ($3,840/yr)</strong>.</li>
               </ul>
             </div>
 
@@ -1999,7 +2002,7 @@
         const yrShares = yrRows.reduce((s, r) => s + r.shares, 0);
         const yrTot = yrCash + yrStock;
         setHTML(`vest-yr-${yr}-tot`, '$' + yrTot.toLocaleString());
-        setHTML(`vest-yr-${yr}-sub`, `Cash: $${yrCash.toLocaleString()} | Stock: $${yrStock.toLocaleString()} (${yrShares.toLocaleString()} sh)`);
+        setHTML(`vest-yr-${yr}-sub`, `Cash: $${yrCash.toLocaleString()} | Stock: $${yrStock.toLocaleString()} (${yrShares.toLocaleString()} shares)`);
       });
 
       const hasFuture = (safeNum(future2027, 0) > 0 || safeNum(future2028, 0) > 0);
@@ -2336,10 +2339,9 @@
       });
 
       if (CAREER_YEAR_DATA[year]) {
+        onMultiYearInput(true);
         const data = CAREER_YEAR_DATA[year];
-        const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
-        const dynRsu = Math.round((data.rsuShares || 0) * stockPrice);
-        data.rsuVesting = dynRsu;
+        const dynRsu = data.rsuVesting;
 
         careerState.baseSalary = data.baseSalary;
         careerState.bonus = data.bonus;
@@ -2595,11 +2597,10 @@
       const hsa = parseFloat(document.getElementById('career-hsa').value) || careerState.hsaPreTax;
       const stockPrice = parseFloat(document.getElementById('cv-stock-price')?.value) || 57.01;
 
-      // Automatically sync RSU value from active RSU schedule (shares × live stock price)
+      // Automatically sync RSU value from active RSU schedule + future stock awards
       let rsuVesting = parseFloat(document.getElementById('career-rsu').value);
       if (careerState.selectedYear && CAREER_YEAR_DATA[careerState.selectedYear]) {
-        const dynRsu = Math.round((CAREER_YEAR_DATA[careerState.selectedYear].rsuShares || 0) * stockPrice);
-        CAREER_YEAR_DATA[careerState.selectedYear].rsuVesting = dynRsu;
+        const dynRsu = CAREER_YEAR_DATA[careerState.selectedYear].rsuVesting;
         if (isNaN(rsuVesting) || document.activeElement !== document.getElementById('career-rsu')) {
           rsuVesting = dynRsu;
         }
@@ -2782,7 +2783,7 @@
             <td><strong>${r.name}</strong></td>
             <td><strong>$${Math.round(r.annual).toLocaleString()}</strong></td>
             <td>$${Math.round(r.annual / 12).toLocaleString()} / mo</td>
-            <td>${grossCash > 0 ? ((r.annual / grossCash) * 100).toFixed(1) + '%' : '0%'}</td>
+            <td>${earnedGross > 0 ? ((r.annual / earnedGross) * 100).toFixed(1) + '%' : '0%'}</td>
             <td style="color:#94a3b8; font-size:12px;">${r.notes}</td>
           </tr>
         `).join('');
