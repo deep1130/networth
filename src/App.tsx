@@ -74,6 +74,15 @@ function loadSavedCareerSettings(): CareerSettings {
   return DEFAULT_CAREER_SETTINGS
 }
 
+function isInitialSampleUrl(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    window.location.search.includes('sample=true') ||
+    window.location.hash.includes('sample') ||
+    window.location.hash.includes('demo')
+  )
+}
+
 const TABS: {
   id: TabId
   shortLabel: string
@@ -87,18 +96,23 @@ const TABS: {
   { id: 'history', shortLabel: 'History', fullLabel: 'Financial History', icon: Database },
 ]
 
-function isInitialSampleUrl(): boolean {
-  if (typeof window === 'undefined') return false
-  return (
-    window.location.search.includes('sample=true') ||
-    window.location.hash.includes('sample') ||
-    window.location.hash.includes('demo')
-  )
+function getInitialTab(): TabId {
+  if (typeof window !== 'undefined') {
+    const fromQuery = new URLSearchParams(window.location.search).get('tab')
+    if (fromQuery && ['chart', 'controls', 'career', 'strategy', 'history'].includes(fromQuery)) {
+      return fromQuery as TabId
+    }
+    const fromHash = window.location.hash.replace(/^#\/?/, '').trim()
+    if (fromHash && ['chart', 'controls', 'career', 'strategy', 'history'].includes(fromHash)) {
+      return fromHash as TabId
+    }
+  }
+  return 'chart'
 }
 
 export function App() {
   const initSample = isInitialSampleUrl()
-  const [activeTab, setActiveTab] = useState<TabId>('chart')
+  const [activeTab, setActiveTab] = useState<TabId>(getInitialTab)
   const [isUnlocked, setIsUnlocked] = useState(initSample)
   const [demoMode, setDemoMode] = useState(initSample)
   const sessionKeyRef = useRef<string | null>(null)
@@ -139,7 +153,6 @@ export function App() {
   )
   const [isFetchingStock, setIsFetchingStock] = useState(false)
 
-  // Save simulation settings to localStorage when modified (outside demoMode)
   const updateSimSettings = useCallback(
     (partial: Partial<SimulationSettings>) => {
       setSimSettings((prev) => {
@@ -157,7 +170,6 @@ export function App() {
     [demoMode],
   )
 
-  // Save career settings to localStorage when modified (outside demoMode)
   const updateCareerSettings = useCallback(
     (partial: Partial<CareerSettings>) => {
       setCareerSettings((prev) => {
@@ -376,7 +388,6 @@ export function App() {
     }
   }, [updateCareerSettings])
 
-  // Purge any legacy stored key on mount & fetch live PayPal quote
   useEffect(() => {
     try {
       localStorage.removeItem('sheet_sync_key')
@@ -403,7 +414,7 @@ export function App() {
     : 'FIRE & COMP ENGINE'
 
   return (
-    <div className="page-shell">
+    <div className="app-shell">
       <HeaderBar
         isUnlocked={isUnlocked}
         demoMode={demoMode}
@@ -427,7 +438,7 @@ export function App() {
         summary={projectionSummary}
       />
 
-      {/* Responsive Mobile-First View Tabs (matches fantasy-expected-wins) */}
+      {/* Main View Tabs matching fantasy-expected-wins */}
       <nav className="view-tabs" aria-label="Dashboard sections">
         {TABS.map((t) => {
           const Icon = t.icon
@@ -436,10 +447,10 @@ export function App() {
             <button
               key={t.id}
               type="button"
-              className={`view-tab ${isActive ? 'active' : ''}`}
+              className={isActive ? 'selected' : ''}
               onClick={() => setActiveTab(t.id)}
             >
-              <Icon size={15} className="tab-icon" />
+              <Icon size={13} style={{ verticalAlign: 'middle', marginRight: 5 }} />
               <span className="tab-label-short">{t.shortLabel}</span>
               <span className="tab-label-full">{t.fullLabel}</span>
             </button>
@@ -447,48 +458,30 @@ export function App() {
         })}
       </nav>
 
-      {/* Main Content Area */}
-      <main className="main-workspace">
+      <main className="main-content">
         {activeTab === 'chart' && (
-          <div className="forecast-layout">
-            <aside className="desktop-sidebar-controls">
-              <ControlsPanel
-                isUnlocked={isUnlocked}
-                liveBaseSpend={liveBaseSpend}
-                settings={simSettings}
-                summary={projectionSummary}
-                onUpdateSettings={updateSimSettings}
-                onResetDefaults={handleResetDefaults}
-                onOpenKeyModal={() => setShowKeyModal(true)}
-              />
-            </aside>
-            <div className="forecast-main-col">
-              <TrajectoryView
-                isUnlocked={isUnlocked}
-                demoMode={demoMode}
-                netWorth={netWorth}
-                settings={simSettings}
-                summary={projectionSummary}
-                onUpdateSettings={updateSimSettings}
-                onOpenKeyModal={() => setShowKeyModal(true)}
-                onSwitchToControlsTab={() => setActiveTab('controls')}
-              />
-            </div>
-          </div>
+          <TrajectoryView
+            isUnlocked={isUnlocked}
+            demoMode={demoMode}
+            netWorth={netWorth}
+            settings={simSettings}
+            summary={projectionSummary}
+            onUpdateSettings={updateSimSettings}
+            onOpenKeyModal={() => setShowKeyModal(true)}
+            onSwitchToControlsTab={() => setActiveTab('controls')}
+          />
         )}
 
         {activeTab === 'controls' && (
-          <div className="single-col-wrap">
-            <ControlsPanel
-              isUnlocked={isUnlocked}
-              liveBaseSpend={liveBaseSpend}
-              settings={simSettings}
-              summary={projectionSummary}
-              onUpdateSettings={updateSimSettings}
-              onResetDefaults={handleResetDefaults}
-              onOpenKeyModal={() => setShowKeyModal(true)}
-            />
-          </div>
+          <ControlsPanel
+            isUnlocked={isUnlocked}
+            liveBaseSpend={liveBaseSpend}
+            settings={simSettings}
+            summary={projectionSummary}
+            onUpdateSettings={updateSimSettings}
+            onResetDefaults={handleResetDefaults}
+            onOpenKeyModal={() => setShowKeyModal(true)}
+          />
         )}
 
         {activeTab === 'career' && (

@@ -3,7 +3,6 @@ import {
   KeyRound,
   Lock,
   RefreshCw,
-  ShieldCheck,
   Sparkles,
   TrendingUp,
   Unlock,
@@ -45,7 +44,7 @@ export function HeaderBar({
   const [modalKey, setModalKey] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handlePrimaryKeyAction = () => {
+  const handleKeyAction = () => {
     if (demoMode) {
       onToggleSample()
       return
@@ -72,7 +71,7 @@ export function HeaderBar({
     }
   }
 
-  const badgeState = demoMode ? 'demo' : isUnlocked ? 'live' : 'locked'
+  const badgeClass = demoMode ? 'demo' : isUnlocked ? 'live' : 'locked'
   const badgeText = demoMode ? 'SAMPLE DATA' : isUnlocked ? 'LIVE SYNC' : 'LOCKED'
 
   return (
@@ -82,31 +81,36 @@ export function HeaderBar({
           <div className="brand-mark">
             <TrendingUp size={16} strokeWidth={2.4} />
           </div>
-          <span className="brand-name">WEALTHLEDGER</span>
-          <span className="brand-sep">//</span>
-          <span className="brand-sub">{horizonLabel}</span>
+          <span>
+            WEALTHLEDGER <span className="brand-light">// {horizonLabel}</span>
+          </span>
         </div>
-        <div className="topbar-meta">
-          <span className={`live-dot ${badgeState}`} />
-          <span className={`live-label ${badgeState}`}>{badgeText}</span>
+        <div className="topbar-right">
+          <span className={`live-dot ${badgeClass}`} />
+          <span className={`live-label ${badgeClass}`}>{badgeText}</span>
         </div>
       </header>
 
-      <section className="hero">
-        <div className="hero-intro">
-          <div className="eyebrow">PERSONAL WEALTH &amp; RETIREMENT ANALYTICS</div>
-          <h1>FIRE Trajectory &amp; Compensation Engine</h1>
-          <p className="hero-copy">
-            Real-time portfolio compounding, 500-path Monte Carlo stress testing, W-2 &amp; equity
-            vesting projections, and 2027 GetCoveredNJ tax-shield playbooks.
+      <section className="intro">
+        <div>
+          <p className="eyebrow">
+            FIRE TRAJECTORY <span>//</span> COMPENSATION ENGINE
+          </p>
+          <h1>
+            Wealth &amp; <em>Retirement</em> Ledger
+          </h1>
+          <p className="intro-copy">
+            Deterministic &amp; 500-path Monte Carlo compounding, W-2 rewards vesting, and
+            GetCoveredNJ ACA tax-shield playbooks.
           </p>
         </div>
 
         <div className="league-control">
-          <div className="input-row">
-            <label className="input-prefix" htmlFor="inline-key-input">
-              KEY
-            </label>
+          <div className="control-label-row">
+            <label htmlFor="inline-key-input">ACCESS KEY / SHEET SYNC</label>
+            <span className="sync-note">{syncStatusText}</span>
+          </div>
+          <div className="league-input-row">
             <input
               id="inline-key-input"
               type="password"
@@ -117,119 +121,80 @@ export function HeaderBar({
                 demoMode
                   ? 'Sample Profile Active'
                   : isUnlocked
-                    ? 'Connected to Sheet'
-                    : 'Secret Access Key'
+                    ? 'Connected to Google Sheet'
+                    : 'Enter access key...'
               }
               autoComplete="off"
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handlePrimaryKeyAction()
+                if (e.key === 'Enter') handleKeyAction()
               }}
             />
             <button
               type="button"
-              className={`action-btn ${!isUnlocked ? 'primary' : ''}`}
-              onClick={handlePrimaryKeyAction}
+              className={`action-btn-cell ${!isUnlocked ? 'primary' : ''}`}
+              onClick={handleKeyAction}
+              title={isUnlocked ? 'Lock session' : 'Unlock ledger'}
             >
-              {isUnlocked ? <Lock size={13} /> : <Unlock size={13} />}
+              {isUnlocked ? <Lock size={12} /> : <Unlock size={12} />}
               <span>{demoMode ? 'EXIT' : isUnlocked ? 'LOCK' : 'UNLOCK'}</span>
             </button>
-          </div>
-
-          <div className="hero-Secondary-actions">
             <button
               type="button"
-              className={`pill-btn ${demoMode ? 'active-sample' : ''}`}
+              className={`icon-tool-btn ${demoMode ? 'active' : ''}`}
               onClick={onToggleSample}
-              title="Load synthetic sample portfolio and compensation profile"
+              title={demoMode ? 'Exit sample mode' : 'Load sample profile'}
             >
               <Sparkles size={13} />
-              <span>{demoMode ? 'EXIT SAMPLE' : 'SAMPLE'}</span>
             </button>
             <button
               type="button"
-              className="pill-btn"
+              className="icon-tool-btn"
               onClick={() => fileInputRef.current?.click()}
-              title="Load local Excel (.xlsx) workbook"
+              title="Open Excel workbook"
             >
               <FileSpreadsheet size={13} />
-              <span>EXCEL</span>
             </button>
             <button
               type="button"
-              className="pill-btn"
+              className="icon-tool-btn"
               onClick={onManualRefresh}
               disabled={isSyncing}
-              title="Sync now from Google Sheet"
+              title="Refresh from Google Sheet"
             >
               <RefreshCw size={13} className={isSyncing ? 'spin' : ''} />
-              <span>{isSyncing ? 'SYNCING' : 'REFRESH'}</span>
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls"
-              style={{ display: 'none' }}
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  onSelectExcelFile(file)
-                  e.target.value = ''
-                }
-              }}
-            />
           </div>
-
-          <div className="sync-status-line">
-            <ShieldCheck size={12} />
-            <span>{syncStatusText}</span>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                onSelectExcelFile(file)
+                e.target.value = ''
+              }
+            }}
+          />
         </div>
       </section>
-
-      {!isUnlocked && (
-        <div className="unlock-banner">
-          <div className="unlock-banner-info">
-            <div className="unlock-banner-icon">
-              <Lock size={18} />
-            </div>
-            <div>
-              <div className="unlock-banner-title">
-                Portfolio &amp; Compensation Figures Protected
-              </div>
-              <div className="unlock-banner-sub">
-                Zero-knowledge privacy: your secret key stays strictly in active memory and is never
-                written to disk. Enter your key or tap <strong>SAMPLE</strong> to explore.
-              </div>
-            </div>
-          </div>
-          <div className="unlock-banner-actions">
-            <button type="button" className="btn btn-secondary" onClick={onToggleSample}>
-              <Sparkles size={14} />
-              <span>Load Sample Profile</span>
-            </button>
-            <button type="button" className="btn btn-primary" onClick={onOpenKeyModal}>
-              <KeyRound size={14} />
-              <span>Enter Access Key</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {showKeyModal && (
         <div className="modal-backdrop" onClick={onCloseKeyModal}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <KeyRound size={18} className="text-accent" />
+              <KeyRound size={17} className="text-accent" />
               <h3>Unlock Live Financial Ledger</h3>
             </div>
             <p className="modal-desc">
-              Enter your Google Apps Script secret key to sync live net worth, spending, and
-              historical sheets. Held strictly in RAM for this tab session only.
+              Enter your Google Apps Script secret key. Held strictly in memory for this session
+              only.
             </p>
             <input
               type="password"
               className="modal-input"
-              placeholder="Enter secret access key..."
+              placeholder="Secret access key..."
               value={modalKey}
               autoFocus
               onChange={(e) => setModalKey(e.target.value)}
@@ -239,10 +204,10 @@ export function HeaderBar({
               }}
             />
             <div className="modal-actions">
-              <button type="button" className="btn btn-secondary" onClick={onCloseKeyModal}>
+              <button type="button" className="pill-btn" onClick={onCloseKeyModal}>
                 Cancel
               </button>
-              <button type="button" className="btn btn-primary" onClick={handleModalSubmit}>
+              <button type="button" className="action-btn-cell primary" onClick={handleModalSubmit}>
                 Unlock &amp; Sync
               </button>
             </div>

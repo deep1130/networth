@@ -1,4 +1,3 @@
-import { Activity, DollarSign, Hourglass, Shield } from 'lucide-react'
 import { fmtDollar } from '../constants'
 import type { ProjectionSummary, SimulationSettings } from '../types'
 
@@ -12,67 +11,33 @@ interface SummaryStripProps {
 export function SummaryStrip({ isUnlocked, netWorth, settings, summary }: SummaryStripProps) {
   return (
     <section className="summary-strip">
-      <div className="summary-card">
-        <div className="summary-label-row">
-          <span className="summary-label">CURRENT NET WORTH</span>
-          <DollarSign size={14} className="summary-icon accent-blue" />
-        </div>
-        <div className="summary-value accent-blue">
-          {isUnlocked ? fmtDollar(netWorth) : '$---,---'}
-        </div>
-        <div className="summary-sub">Current Age: {summary.currentAge} · Baseline 2027</div>
+      <div className="summary-item">
+        <span className="summary-label">CURRENT NET WORTH</span>
+        <strong>{isUnlocked ? fmtDollar(netWorth) : '$---,---'}</strong>
+        <span className="summary-note">Age {summary.currentAge} · Baseline 2027</span>
       </div>
 
-      <div className="summary-card">
-        <div className="summary-label-row">
-          <span className="summary-label">FIRE FUNDED STATUS</span>
-          <Shield size={14} className="summary-icon accent-green" />
-        </div>
-        <div className="summary-value accent-green">
+      <div className="summary-item">
+        <span className="summary-label">FIRE FUNDED STATUS</span>
+        <strong className={isUnlocked && summary.fundedStatus >= 100 ? 'text-positive' : 'text-accent'}>
           {isUnlocked ? `${summary.fundedStatus.toFixed(1)}%` : '---%'}
-        </div>
-        <div className="summary-sub">
+        </strong>
+        <span className="summary-note">
           At {settings.swr.toFixed(2)}% SWR ({(100 / settings.swr).toFixed(1)}× Rule) w/{' '}
           {summary.planBadge}
-        </div>
+        </span>
       </div>
 
-      <div className="summary-card">
-        <div className="summary-label-row">
-          <span className="summary-label">LIQUID RUNWAY</span>
-          <Hourglass size={14} className="summary-icon accent-amber" />
-        </div>
-        <div className="summary-value accent-amber">
-          {isUnlocked ? `${summary.runway.toFixed(1)} Years` : '--- Years'}
-        </div>
-        <div className="summary-sub">
-          {isUnlocked
-            ? `${fmtDollar(summary.monthlySpend)} / month total budget`
-            : '$--- / month total budget'}
-        </div>
-      </div>
-
-      <div className="summary-card">
-        <div className="summary-label-row">
-          <span className="summary-label">SAFE PASSIVE INCOME</span>
-          <Activity size={14} className="summary-icon accent-purple" />
-        </div>
-        <div className="summary-value accent-purple">
+      <div className="summary-item">
+        <span className="summary-label">SAFE PASSIVE INCOME</span>
+        <strong className="text-accent">
           {isUnlocked ? `${fmtDollar(summary.monthlyPassive)} / mo` : '$--- / mo'}
-        </div>
-        <div
-          className={`summary-sub ${
-            !isUnlocked ? '' : summary.monthlySurplus >= 0 ? 'text-positive' : 'text-negative'
-          }`}
-        >
+        </strong>
+        <span className="summary-note">
           {isUnlocked
-            ? `${summary.monthlySurplus >= 0 ? '+' : '-'}$${Math.round(
-                Math.abs(summary.monthlySurplus),
-              ).toLocaleString()} / mo Cash Flow ${
-                summary.monthlySurplus >= 0 ? 'Surplus' : 'Deficit'
-              }`
-            : 'LOCKED — Enter key to unlock'}
-        </div>
+            ? `${summary.runway.toFixed(1)} Yrs Runway · Budget: ${fmtDollar(summary.monthlySpend)}/mo`
+            : '$--- / month total budget'}
+        </span>
       </div>
     </section>
   )
