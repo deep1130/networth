@@ -12,6 +12,8 @@
   <!-- SheetJS to read local Excel (.xlsx) files directly in the browser -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
     :root {
       color-scheme: dark;
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -37,10 +39,12 @@
       --primary-border: rgba(96, 165, 250, 0.26);
 
       --success: #22c55e;
+      --success-text: #4ade80;
       --success-soft: rgba(34, 197, 94, 0.10);
       --success-border: rgba(34, 197, 94, 0.26);
 
       --warning: #f59e0b;
+      --warning-text: #fbbf24;
       --warning-soft: rgba(245, 158, 11, 0.10);
       --warning-border: rgba(245, 158, 11, 0.26);
 
@@ -48,18 +52,18 @@
       --purple-soft: rgba(192, 132, 252, 0.10);
       --purple-border: rgba(192, 132, 252, 0.26);
 
-      --accent: #38bdf8;
       --control: #272b33;
       --control-hover: #323741;
       --live: #22c55e;
       --mono: 'DM Mono', monospace;
       --display: 'Space Grotesk', sans-serif;
 
-      /* Compatibility tokens */
+      /* Compatibility variables */
       --card-bg: var(--surface);
       --card-border: var(--line);
       --text: var(--ink);
       --text-muted: var(--muted);
+      --accent: #38bdf8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -86,7 +90,7 @@
     a { color: inherit; }
     ::selection { color: #0a0b0d; background: #93c5fd; }
 
-    .container {
+    .app-shell {
       width: min(1440px, 100%);
       min-height: 100vh;
       margin: 0 auto;
@@ -131,6 +135,7 @@
       gap: 9px;
       font: 11px var(--mono);
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .season-label {
       color: var(--muted);
@@ -168,17 +173,17 @@
       color: #93c5fd;
     }
 
-    /* Hero Section */
-    .hero-section {
-      padding: 36px 0 28px;
+    /* Hero / Intro Section */
+    .intro {
+      padding: 38px 0 28px;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 32px;
-      flex-wrap: wrap;
+      gap: 36px;
     }
-    .hero-copy-wrap {
+    .intro-main {
       flex: 1 1 500px;
+      min-width: 0;
     }
     .eyebrow {
       margin: 0;
@@ -194,142 +199,170 @@
     h1 {
       margin: 12px 0 8px;
       color: var(--ink);
-      font: 600 clamp(26px, 3.8vw, 42px)/1.08 var(--display);
+      font: 600 clamp(24px, 3.6vw, 40px)/1.08 var(--display);
       letter-spacing: -0.01em;
+      overflow-wrap: break-word;
     }
     h1 em {
       color: #93c5fd;
       font-style: normal;
     }
     .intro-copy {
-      max-width: 600px;
+      max-width: 560px;
       margin: 0;
       color: var(--muted);
       font-size: 13.5px;
       line-height: 1.5;
     }
-    .hero-actions-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-end;
-    }
-    .sync-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font: 11px var(--mono);
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 6px var(--success);
-    }
 
-    /* Buttons */
-    .btn {
-      height: 34px;
+    /* Integrated Hero Control (Matches Draft Ledger's .league-control) */
+    .league-control {
+      width: 440px;
+      flex: 0 0 440px;
+    }
+    .league-control label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .league-input-row {
+      height: 40px;
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .league-input-row:focus-within {
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+    .league-input-row input {
+      width: 100%;
+      min-width: 0;
+      padding: 0 11px;
+      color: var(--ink);
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font: 13px var(--mono);
+    }
+    .ctrl-button {
+      height: 100%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 0 13px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--ink);
-      background: var(--control);
+      padding: 0 11px;
+      border: 0;
+      border-left: 1px solid var(--line);
+      color: var(--ink-secondary);
+      background: var(--surface-raised);
       cursor: pointer;
-      font: 500 10.5px var(--mono);
+      font: 500 10px var(--mono);
       letter-spacing: 0.02em;
       text-transform: uppercase;
-      transition: background .15s ease, border-color .15s ease, color .15s ease;
+      transition: background .15s ease, color .15s ease;
       white-space: nowrap;
       user-select: none;
     }
-    .btn:hover:not(:disabled) {
-      background: var(--control-hover);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .btn-primary, .btn:not(.btn-secondary) {
-      background: var(--control);
-      color: var(--ink);
-    }
-    .btn-primary:hover:not(:disabled) {
-      background: var(--control-hover);
-    }
-    .btn-secondary {
-      background: var(--surface-raised);
-      color: var(--ink-secondary);
-    }
-    .btn-secondary:hover:not(:disabled) {
+    .ctrl-button:hover:not(:disabled) {
       color: var(--ink);
       background: var(--control);
     }
-
-    /* Unlock Banner */
-    .unlock-banner-card {
-      background: var(--surface);
-      border: 1px solid var(--primary-border);
-      border-radius: 8px;
-      padding: 18px 22px;
-      margin-bottom: 24px;
+    .ctrl-button.primary {
+      color: #93c5fd;
+      background: var(--primary-soft);
+      font-weight: 600;
+    }
+    .ctrl-button.primary:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.20);
+      color: #ffffff;
+    }
+    .ctrl-button.icon-only {
+      padding: 0 10px;
+    }
+    .refresh-meta {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .unlock-banner-info { max-width: 580px; }
-    .unlock-banner-info h2 {
-      font: 600 15px var(--display);
-      color: var(--ink);
-      margin-bottom: 4px;
-    }
-    .unlock-banner-info p {
-      font-size: 13px;
+      gap: 6px;
+      margin-top: 7px;
       color: var(--muted);
-      line-height: 1.5;
+      font: 9.5px var(--mono);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .unlock-banner-form {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    #inline-key-input {
-      min-width: 250px;
-    }
+    .refresh-meta svg { flex-shrink: 0; }
 
-    /* Key Modal */
-    #key-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
+    
+    .league-actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .ctrl-pill-btn {
+      height: 28px;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-    }
-    .key-modal-inner {
-      background: var(--surface);
+      gap: 6px;
+      padding: 0 10px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 24px;
-      max-width: 480px;
-      width: 100%;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      border-radius: 5px;
+      background: var(--surface-raised);
+      color: var(--ink-secondary);
+      font: 500 10px var(--mono);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .15s ease;
+      user-select: none;
+      white-space: nowrap;
+      flex: 1 1 0;
+    }
+    .ctrl-pill-btn:hover:not(:disabled) {
+      color: var(--ink);
+      background: var(--control);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .ctrl-pill-btn.active {
+      color: #93c5fd;
+      background: var(--primary-soft);
+      border-color: var(--primary-border);
+    }
+    .insight-badge {
+      display: inline-block;
+      font: 600 10px var(--mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      color: #93c5fd;
+      margin-right: 6px;
+    }
+    .kpi-micro-tag {
+      font: 600 9.5px var(--mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .empty-lock-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 12px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      color: var(--muted);
     }
 
     /* Summary Strip (The 4 KPIs) */
@@ -343,40 +376,50 @@
       overflow: hidden;
     }
     .summary-item {
-      min-height: 94px;
+      min-height: 90px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 16px 20px;
+      padding: 14px 20px;
       border-right: 1px solid var(--line);
+      min-width: 0;
     }
     .summary-item:last-child {
       border-right: 0;
     }
     .summary-label {
       color: var(--muted);
-      font: 500 10px var(--mono);
+      font: 500 9.5px var(--mono);
       letter-spacing: 0.04em;
       text-transform: uppercase;
       margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .summary-item strong {
       color: var(--ink);
-      font: 700 22px/1.1 var(--display);
+      font: 700 21px/1.1 var(--display);
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .summary-note {
-      margin-top: 4px;
+      margin-top: 3px;
       color: var(--muted);
-      font: 11px var(--mono);
+      font: 10.5px var(--mono);
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Universal Tab Navigation */
     .mobile-nav {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       padding: 3px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -388,13 +431,13 @@
     }
     .mobile-nav::-webkit-scrollbar { display: none; }
     .mobile-tab-btn {
-      height: 34px;
-      padding: 0 14px;
+      height: 33px;
+      padding: 0 13px;
       border: 1px solid transparent;
       border-radius: 6px;
       background: transparent;
       color: var(--muted);
-      font: 500 10.5px var(--mono);
+      font: 500 10px var(--mono);
       letter-spacing: 0.04em;
       text-transform: uppercase;
       cursor: pointer;
@@ -404,6 +447,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
     .mobile-tab-btn:hover:not(.active) {
       color: var(--ink);
@@ -420,13 +464,13 @@
     /* Main Dashboard Layout */
     .main-grid {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 350px 1fr;
       gap: 24px;
       align-items: start;
     }
-    .desktop-right-col { display: block; }
+    .desktop-right-col { display: block; min-width: 0; }
 
-    /* Desktop Tab Switching (Zero Reloads) */
+    /* Desktop Tab Switching */
     @media (min-width: 769px) {
       .tab-section { display: none; }
       .tab-section.active-tab { display: block !important; }
@@ -434,7 +478,7 @@
 
       body.tab-forecast .main-grid {
         display: grid !important;
-        grid-template-columns: 360px 1fr !important;
+        grid-template-columns: 350px 1fr !important;
         gap: 24px !important;
       }
       body.tab-forecast #section-controls,
@@ -480,54 +524,184 @@
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 22px 24px;
+      padding: 20px 22px;
     }
     .panel-title {
-      font: 600 16px/1.2 var(--display);
+      font: 600 15.5px/1.2 var(--display);
       color: var(--ink);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--line);
       padding-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 3px 8px;
+      padding: 3px 7px;
       border-radius: 4px;
-      font: 500 10px var(--mono);
+      font: 500 9.5px var(--mono);
       background: var(--primary-soft);
       color: #93c5fd;
       border: 1px solid var(--primary-border);
+      white-space: nowrap;
     }
 
-    /* Controls Group */
+    /* Section Heading & Board Tools */
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .section-heading h2 {
+      margin: 6px 0 0;
+      color: var(--ink);
+      font: 600 22px/1.1 var(--display);
+    }
+    .board-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .horizon-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-raised);
+      font: 10px var(--mono);
+    }
+    .horizon-box span { color: var(--muted); }
+    .horizon-box strong { color: #93c5fd; white-space: nowrap; }
+    .horizon-box input[type=range] { width: 100px; }
+
+    /* Telemetry Sub-Strip (Consolidates Focus Cards into Sleek Row) */
+    .telemetry-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-raised);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .telemetry-item {
+      padding: 10px 14px;
+      border-right: 1px solid var(--line);
+      min-width: 0;
+    }
+    .telemetry-item:last-child {
+      border-right: 0;
+    }
+    .telemetry-label {
+      display: block;
+      font: 500 8.5px var(--mono);
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .telemetry-val {
+      display: block;
+      font: 700 15px/1.2 var(--display);
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .telemetry-note {
+      display: block;
+      font: 9.5px var(--mono);
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Formula Pill Bar */
+    .formula-pill-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .formula-pill-item {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-width: 0;
+    }
+    .formula-pill-item .formula-tag {
+      display: block;
+      font: 500 8px var(--mono);
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .formula-pill-item strong {
+      display: block;
+      font: 600 13px var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .formula-pill-item .formula-sub {
+      display: block;
+      font: 8.5px var(--mono);
+      color: var(--muted);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Controls Panel */
     .control-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .control-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      font: 500 12px var(--body);
+      font: 500 11.5px var(--body);
       color: var(--ink-secondary);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .control-val {
-      font: 600 12px var(--mono);
+      font: 600 11.5px var(--mono);
       color: #93c5fd;
       font-variant-numeric: tabular-nums;
     }
     .sub-indicator {
       background: var(--surface-raised);
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font: 500 11.5px var(--mono);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font: 500 11px var(--mono);
       color: #93c5fd;
-      margin-top: 6px;
+      margin-top: 5px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -536,7 +710,7 @@
     /* Sliders */
     input[type=range] {
       width: 100%;
-      height: 6px;
+      height: 5px;
       border-radius: 3px;
       background: #272b33;
       outline: none;
@@ -548,8 +722,8 @@
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: var(--primary);
       border: 2px solid var(--bg);
@@ -557,11 +731,11 @@
       transition: transform .15s ease;
     }
     input[type=range]::-webkit-slider-thumb:hover {
-      transform: scale(1.15);
+      transform: scale(1.2);
     }
     input[type=range]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: var(--primary);
       border: 2px solid var(--bg);
@@ -574,9 +748,9 @@
       background: var(--surface-raised);
       border: 1px solid var(--line);
       color: var(--ink);
-      padding: 9px 12px;
-      border-radius: 6px;
-      font: 13px var(--mono);
+      padding: 8px 10px;
+      border-radius: 5px;
+      font: 12.5px var(--mono);
       outline: none;
       transition: border-color .15s ease;
     }
@@ -588,32 +762,32 @@
       color: #93c5fd;
       font-weight: 700;
       font-style: normal;
-      padding: 6px 0;
+      padding: 5px 0;
     }
     select option {
       background: var(--surface);
       color: var(--ink);
-      padding: 6px 10px;
+      padding: 5px 8px;
     }
 
     /* Chips */
     .chips-group {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       flex-wrap: wrap;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .chip {
-      height: 28px;
+      height: 26px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0 10px;
+      padding: 0 9px;
       background: var(--surface-raised);
       border: 1px solid var(--line);
       color: var(--muted);
-      border-radius: 5px;
-      font: 500 11px var(--mono);
+      border-radius: 4px;
+      font: 500 10.5px var(--mono);
       letter-spacing: 0.02em;
       cursor: pointer;
       transition: all .15s ease;
@@ -635,39 +809,17 @@
       position: relative;
       height: 380px;
       width: 100%;
-      margin: 18px 0 24px;
-    }
-
-    /* Focus Card & Formula Cards */
-    #card-2027-focus {
-      background: var(--surface-raised) !important;
-      border: 1px solid var(--line) !important;
-      border-radius: 8px !important;
-      padding: 14px 18px !important;
-      margin-bottom: 14px !important;
-      display: grid !important;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
-      gap: 14px !important;
-    }
-    #card-fire-formulas {
-      background: var(--surface-raised) !important;
-      border: 1px solid var(--line) !important;
-      border-radius: 8px !important;
-      padding: 14px 18px !important;
-      margin-bottom: 16px !important;
-      display: grid !important;
-      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)) !important;
-      gap: 14px !important;
+      margin: 14px 0 20px;
     }
 
     /* Tables */
     .table-container, .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 6px;
       background: var(--surface);
       -webkit-overflow-scrolling: touch;
-      margin-top: 14px;
+      margin-top: 12px;
     }
     table {
       width: 100%;
@@ -678,21 +830,21 @@
       background: var(--surface-raised);
     }
     th {
-      height: 38px;
+      height: 36px;
       padding: 0 12px;
       color: var(--muted);
       border-bottom: 1px solid var(--line);
       white-space: nowrap;
-      font: 500 9px var(--mono);
+      font: 500 8.5px var(--mono);
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
     td {
-      height: 52px;
+      height: 48px;
       padding: 6px 12px;
       border-bottom: 1px solid var(--line-subtle);
       color: var(--ink-secondary);
-      font: 12.5px var(--mono);
+      font: 12px var(--mono);
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
@@ -705,10 +857,10 @@
     .status-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 2px 7px;
+      gap: 4px;
+      padding: 2px 6px;
       border-radius: 4px;
-      font: 600 10px var(--mono);
+      font: 600 9.5px var(--mono);
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
@@ -727,79 +879,176 @@
     .strategy-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      gap: 14px;
       margin-top: 14px;
     }
-    .strategy-grid > div {
-      background: var(--surface-raised) !important;
-      border: 1px solid var(--line) !important;
-      border-radius: 8px !important;
-      padding: 16px 18px !important;
+    .model-card {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 16px 18px;
+    }
+    .model-card-header {
+      margin-bottom: 10px;
+    }
+    .model-card-tag {
+      display: inline-block;
+      font: 500 8.5px var(--mono);
+      color: #93c5fd;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary-border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .model-card h4 {
+      margin: 0;
+      font: 600 14px/1.3 var(--display);
+      color: var(--ink);
     }
 
     /* Career Subnav */
     .career-subnav {
       display: flex;
       gap: 6px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       overflow-x: auto;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
       border-bottom: 1px solid var(--line);
       -webkit-overflow-scrolling: touch;
+    }
+
+    /* Key Modal */
+    #key-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .key-modal-inner {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Buttons */
+    .btn {
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      color: var(--ink);
+      background: var(--control);
+      cursor: pointer;
+      font: 500 10px var(--mono);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--control-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-secondary {
+      background: var(--surface-raised);
+      color: var(--ink-secondary);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      color: var(--ink);
+      background: var(--control);
+    }
+    .btn-primary {
+      background: var(--primary-soft);
+      color: #93c5fd;
+      border-color: var(--primary-border);
+      font-weight: 600;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.22);
+      color: #ffffff;
     }
 
     /* Mobile Quick Jumps & Hints */
     .mobile-quick-jump { display: none; }
     .mobile-swipe-hint { display: none; }
-    .desktop-only { display: inline-flex; }
 
     /* Mobile Responsive (<= 768px) */
     @media (max-width: 768px) {
-      body {
-        padding: 0;
-      }
-      .container {
+      .app-shell {
         padding: 0 max(16px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
       }
       .topbar {
-        height: 58px;
+        height: 56px;
       }
-      .hero-section {
+      .season-label {
+        display: none !important;
+      }
+      .intro {
         padding: 22px 0 18px;
-        gap: 16px;
-      }
-      .hero-copy-wrap {
-        flex: 1 1 100%;
-      }
-      .hero-actions-wrap {
-        width: 100%;
+        flex-direction: column;
         align-items: stretch;
+        gap: 16px;
+        max-width: 100%;
+        overflow: hidden;
       }
-      .sync-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+      .intro-main {
+        flex: 1 1 auto;
+        min-width: 0;
         width: 100%;
-        gap: 8px;
       }
-      .sync-actions .btn {
-        width: 100%;
+      h1 {
+        font-size: clamp(20px, 5.2vw, 28px);
+        margin: 8px 0 6px;
+        line-height: 1.15;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+      .league-control {
+        width: 100% !important;
+        flex: 1 1 auto;
       }
       .summary-strip {
         grid-template-columns: 1fr 1fr;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
+      }
+      .summary-item:nth-child(1) {
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
       }
       .summary-item:nth-child(2) {
         border-right: 0;
-      }
-      .summary-item:nth-child(-n+2) {
         border-bottom: 1px solid var(--line);
       }
+      .summary-item:nth-child(3) {
+        border-right: 1px solid var(--line);
+        border-bottom: 0;
+      }
+      .summary-item:nth-child(4) {
+        border-right: 0;
+        border-bottom: 0;
+      }
       .summary-item {
-        min-height: 80px;
-        padding: 12px 14px;
+        min-height: 74px;
+        padding: 10px 12px;
       }
       .summary-item strong {
-        font-size: 18px;
+        font-size: 17px;
       }
       .mobile-nav {
         position: sticky;
@@ -808,14 +1057,13 @@
         background: rgba(10, 11, 13, 0.94);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        margin-bottom: 16px;
-        padding: 4px;
+        margin-bottom: 14px;
+        padding: 3px;
       }
       .mobile-tab-btn {
-        flex: 0 0 auto;
-        font-size: 10px;
-        padding: 0 12px;
-        height: 32px;
+        padding: 0 10px;
+        height: 30px;
+        font-size: 9.5px;
       }
       .main-grid {
         display: block !important;
@@ -828,45 +1076,61 @@
       }
       .tab-section.active-mobile-tab {
         display: block !important;
-        margin-bottom: 16px !important;
+        margin-bottom: 14px !important;
+      }
+      .telemetry-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+      .telemetry-item:nth-child(1) {
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .telemetry-item:nth-child(2) {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .telemetry-item:nth-child(3) {
+        border-right: 1px solid var(--line);
+        border-bottom: 0;
+      }
+      .telemetry-item:nth-child(4) {
+        border-right: 0;
+        border-bottom: 0;
+      }
+      .formula-pill-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .board-tools {
+        width: 100%;
+      }
+      .horizon-box {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .horizon-box input[type=range] {
+        flex: 1;
+        max-width: 140px;
       }
       .mobile-quick-jump {
         display: block !important;
       }
-      .mobile-swipe-hint {
-        display: block !important;
-      }
       .panel {
-        padding: 16px 14px !important;
-      }
-      .panel-title {
-        font-size: 15px !important;
-        margin-bottom: 14px !important;
-        padding-bottom: 10px !important;
+        padding: 14px 12px !important;
       }
       .chart-container {
-        height: 290px !important;
-        margin-bottom: 14px !important;
+        height: 270px !important;
+        margin-bottom: 12px !important;
       }
-      /* Prevent iOS Safari Auto-Zoom */
+      /* Prevent iOS Zoom */
       select, input[type=number], input[type=password], input[type=text] {
         font-size: 16px !important;
-        padding: 11px 12px !important;
-      }
-      .unlock-banner-card {
-        padding: 14px 16px !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-      .unlock-banner-form {
-        flex-direction: column !important;
-        width: 100% !important;
-      }
-      #inline-key-input {
-        width: 100% !important;
-      }
-      #btn-unlock-banner {
-        width: 100% !important;
+        padding: 9px 10px !important;
       }
       .strategy-grid {
         grid-template-columns: 1fr !important;
@@ -878,87 +1142,110 @@
   </style>
 </head>
 <body class="tab-forecast">
-  <div class="container">
+  <main class="app-shell">
     <!-- Topbar -->
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Wealth Ledger home">
         <span class="brand-mark">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
           </svg>
         </span>
         <span>WEALTH<span class="brand-light">LEDGER</span></span>
       </a>
       <div class="topbar-right">
-        <span class="season-label">RETIREMENT / 2027+</span>
+        <span class="season-label">LIFETIME / 2027+</span>
         <span class="live-dot" id="header-live-dot"></span>
-        <span class="live-label" id="header-live-label">LIVE DATA</span>
+        <span class="live-label" id="header-live-label">LIVE SYNC</span>
       </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero-section" id="top">
-      <div class="hero-copy-wrap">
-        <p class="eyebrow">WEALTH TRAJECTORY INTELLIGENCE <span>·</span> HORIZON 2027–AGE 100</p>
-        <h1>Financial independence, <em>in motion.</em></h1>
-        <p class="intro-copy">A live read on your lifetime wealth trajectory, modeled with multi-year career equity, GetCoveredNJ ACA healthcare subsidies, and Monte Carlo survival simulations.</p>
+    <!-- Intro & Hero Section -->
+    <section class="intro" id="top">
+      <div class="intro-main">
+        <p class="eyebrow">PORTFOLIO INTELLIGENCE <span>·</span> HORIZON 2027–AGE 100</p>
+        <h1>Financial freedom, <em>in motion.</em></h1>
+        <p class="intro-copy">A live read on your lifetime wealth trajectory, modeled with multi-year career equity, GetCoveredNJ healthcare subsidies, and Monte Carlo survival simulations.</p>
       </div>
-      <div class="hero-actions-wrap">
-        <div class="sync-actions">
-          <button class="btn btn-secondary" id="btn-fake-data" onclick="loadSampleData()" title="Load sample demo profile">
-            🧪 Sample Data
-          </button>
-          <button class="btn btn-secondary" id="btn-key-action" onclick="handleKeyButton()" title="Unlock with secret key">
-            🔑 Enter Key
-          </button>
-          <input type="file" id="fallback-excel-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleFallbackExcelSelect(event)">
-          <button class="btn btn-secondary" onclick="watchLocalExcelFile()" title="Watch local Excel file">
-            📁 Watch Excel
-          </button>
-          <button class="btn" id="btn-sync" onclick="syncLiveFromGoogleSheet(true)" title="Force refresh live spreadsheet">
-            🔄 Refresh
+      <div class="league-control">
+        <label for="inline-key-input">PORTFOLIO ACCESS &amp; SYNC</label>
+        <div class="league-input-row">
+          <input
+            type="password"
+            id="inline-key-input"
+            placeholder="Secret Access Key"
+            aria-label="Secret Access Key"
+            autoComplete="off"
+            onkeydown="if(event.key==='Enter') unlockWithKey(this.value)"
+          />
+          <button
+            type="button"
+            class="ctrl-button primary"
+            id="btn-key-action"
+            onclick="handleKeyButton()"
+            title="Unlock with secret key"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span id="btn-key-text">UNLOCK</span>
           </button>
         </div>
-        <div class="status-badge" id="sync-status">
-          <span class="status-dot"></span>
-          <span id="sync-text">🔒 Locked — Enter Secret Key to unlock your portfolio</span>
+        <div class="league-actions-bar">
+          <button
+            type="button"
+            class="ctrl-pill-btn"
+            id="btn-fake-data"
+            onclick="handleSampleToggle()"
+            title="Toggle sample demo profile"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><path d="M5.52 16h12.96"></path></svg>
+            <span id="btn-sample-text">SAMPLE</span>
+          </button>
+          <input type="file" id="fallback-excel-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleFallbackExcelSelect(event)">
+          <button
+            type="button"
+            class="ctrl-pill-btn"
+            onclick="watchLocalExcelFile()"
+            title="Watch local Excel file"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>EXCEL</span>
+          </button>
+          <button
+            type="button"
+            class="ctrl-pill-btn"
+            id="btn-sync"
+            onclick="syncLiveFromGoogleSheet(true)"
+            title="Force refresh live spreadsheet"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>REFRESH</span>
+          </button>
+        </div>
+        <div class="refresh-meta" id="sync-status">
+          <span class="live-dot" style="width:6px; height:6px;"></span>
+          <span id="sync-text">LOCKED · ENTER KEY OR CLICK SAMPLE</span>
         </div>
       </div>
     </section>
 
-    <!-- Unlock Banner (Visible when locked) -->
-    <div id="unlock-banner" class="unlock-banner-card">
-      <div class="unlock-banner-info">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-          <span style="font-size: 20px;">🔒</span>
-          <h2 style="font-size: 17px; font-weight: 700; color: #f8fafc;">Private Portfolio Locked</h2>
-        </div>
-        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-          All net worth balances and budget actuals remain hidden until unlocked. For maximum privacy, your key is stored <strong>only in active memory</strong> and is wiped whenever you refresh this page.
-        </p>
-      </div>
-      <div class="unlock-banner-form">
-        <input type="password" id="inline-key-input" placeholder="Enter Secret Access Key" onkeydown="if(event.key==='Enter') unlockWithKey(this.value)">
-        <button class="btn" id="btn-unlock-banner" onclick="unlockWithKey(document.getElementById('inline-key-input').value)">
-          🔓 Unlock Dashboard
-        </button>
-      </div>
-    </div>
+    <!-- Hidden unlock banner placeholder to preserve JS element references -->
+    <div id="unlock-banner" style="display:none;"><button id="btn-unlock-banner" style="display:none;"></button></div>
 
     <!-- Unlock Modal -->
-    <div id="key-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding: 16px;">
+    <div id="key-modal" role="dialog" aria-modal="true" aria-label="Unlock Your Google Sheet">
       <div class="key-modal-inner">
-        <h3 style="margin-bottom:12px; font-size:18px;">🔑 Unlock Your Google Sheet</h3>
-        <p style="font-size:13px; color:#94a3b8; margin-bottom:16px; line-height:1.5;">
-          For security, your key is held <strong>strictly in temporary browser memory</strong> and is wiped whenever you refresh the page.
+        <h3 style="margin-bottom:8px; font: 600 16px var(--display); color: var(--ink);">Unlock Your Google Sheet</h3>
+        <p style="font-size:12.5px; color: var(--muted); margin-bottom:14px; line-height:1.5;">
+          Your key is held <strong>strictly in temporary browser memory</strong> and is purged whenever you refresh the page.
         </p>
-        <div style="margin-bottom:18px;">
-          <label style="font-size:12px; font-weight:600; color:#cbd5e1; display:block; margin-bottom:4px;">Secret Access Key</label>
-          <input type="password" id="modal-script-key" placeholder="Enter your secret key" style="width:100%; font-size:16px; font-family:monospace; padding: 12px; background: #0f172a; border: 1px solid var(--line); border-radius: 8px; color: white;" onkeydown="if(event.key==='Enter') unlockWithKey(this.value)">
+        <div style="margin-bottom:16px;">
+          <label style="font: 500 10px var(--mono); color: var(--muted); display:block; margin-bottom:5px; text-transform: uppercase;">Secret Access Key</label>
+          <input type="password" id="modal-script-key" placeholder="Enter your secret key" onkeydown="if(event.key==='Enter') unlockWithKey(this.value)">
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
-          <button class="btn btn-secondary" style="flex: 1; justify-content: center;" onclick="closeKeyModal()">Cancel</button>
-          <button class="btn" style="flex: 1; justify-content: center;" onclick="unlockWithKey(document.getElementById('modal-script-key').value.trim())">🔓 Unlock</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap: 8px;">
+          <button class="btn btn-secondary" style="flex: 1;" onclick="closeKeyModal()">Cancel</button>
+          <button class="btn btn-primary" style="flex: 1;" onclick="unlockWithKey(document.getElementById('modal-script-key').value.trim())">Unlock</button>
         </div>
       </div>
     </div>
@@ -983,17 +1270,32 @@
       <div class="summary-item">
         <span class="summary-label">SAFE PASSIVE INCOME</span>
         <strong id="kpi-passive">$--- / mo</strong>
-        <span class="summary-note" id="kpi-surplus">🔒 Locked — Enter key to unlock</span>
+        <span class="summary-note" id="kpi-surplus">Locked — Enter key to unlock</span>
       </div>
     </section>
 
-    <!-- Universal Tab Navigation (Desktop & Mobile) -->
+    <!-- Universal Tab Navigation (Zero Emojis, Pure SVG Icons) -->
     <nav class="mobile-nav" id="mobile-nav" role="tablist" aria-label="Dashboard sections">
-      <button type="button" role="tab" class="mobile-tab-btn active" data-tab="section-chart" onclick="switchTab('section-chart', this)">📊 Forecast & Milestones</button>
-      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">💼 Career & Compensation</button>
-      <button type="button" role="tab" class="mobile-tab-btn mobile-only-tab" data-tab="section-controls" onclick="switchTab('section-controls', this)">⚙️ Controls</button>
-      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-strategy" onclick="switchTab('section-strategy', this)">🏛️ Strategy</button>
-      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-history" onclick="switchTab('section-history', this)">📚 History</button>
+      <button type="button" role="tab" class="mobile-tab-btn active" data-tab="section-chart" onclick="switchTab('section-chart', this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>TRAJECTORY &amp; TIERS</span>
+      </button>
+      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-career" onclick="switchTab('section-career', this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        <span>CAREER &amp; COMP</span>
+      </button>
+      <button type="button" role="tab" class="mobile-tab-btn mobile-only-tab" data-tab="section-controls" onclick="switchTab('section-controls', this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>CONTROLS</span>
+      </button>
+      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-strategy" onclick="switchTab('section-strategy', this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line></svg>
+        <span>TAX &amp; STRATEGY</span>
+      </button>
+      <button type="button" role="tab" class="mobile-tab-btn" data-tab="section-history" onclick="switchTab('section-history', this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>FINANCIAL HISTORY</span>
+      </button>
     </nav>
 
     <!-- Main Section: Controls + Live Projections Chart -->
@@ -1002,7 +1304,7 @@
       <div class="panel tab-section" id="section-controls">
         <div class="mobile-quick-jump" style="display: none; margin-bottom: 14px;">
           <button class="btn" style="width: 100%; justify-content: center; font-size: 13px; padding: 10px;" onclick="switchMobileTab('section-chart')">
-            📊 View 15-Year Wealth Trajectory Chart →
+            VIEW 15-YEAR WEALTH TRAJECTORY →
           </button>
         </div>
         <div class="panel-title">
@@ -1044,25 +1346,25 @@
             <span class="control-val" id="val-health-cost">+$3,840/yr</span>
           </div>
           <select id="select-health" onchange="recalculate()">
-            <optgroup label="🌟 2027 100% Fully Subsidized ($0/yr)">
+            <optgroup label="Tier 1: 100% Fully Subsidized ($0/yr)">
               <option value="0">2027 GetCoveredNJ Silver w/ 100% Subsidies (CSR 94 @ &le;150% FPL / $23.9k) — $0/mo ($0/yr, $0 Ded)</option>
               <option value="0">2027 GetCoveredNJ Bronze HDHP (100% Subsidized @ &le;200% FPL / $31.9k) — $0/mo ($0/yr, HSA Eligible)</option>
             </optgroup>
             
-            <optgroup label="💵 2027 Deeply Subsidized ($600 – $2,580/yr)">
+            <optgroup label="Tier 2: Deeply Subsidized ($600 – $2,580/yr)">
               <option value="600">2027 GetCoveredNJ Silver w/ Deep Subsidies (CSR 87 @ 150%-200% FPL / $23.9k-$31.9k) — $50/mo ($600/yr)</option>
               <option value="1980">2027 GetCoveredNJ Silver w/ Moderate Subsidies (CSR 73 @ 200%-250% FPL / $31.9k-$39.9k) — $165/mo ($1,980/yr)</option>
               <option value="2160">2027 GetCoveredNJ Bronze Plan (Partial Subsidy w/ NJHPS) — $180/mo ($2,160/yr)</option>
               <option value="2580">2027 GetCoveredNJ Silver Plan (Subsidized w/ CSR @ &le;250% FPL / $39.9k) — $215/mo ($2,580/yr)</option>
             </optgroup>
 
-            <optgroup label="🥇 2027 Mid-Tier & Subsidized Gold ($3,840 – $6,240/yr)">
+            <optgroup label="Tier 3: Mid-Tier Gold ($3,840 – $6,240/yr)">
               <option value="3840" selected>2027 GetCoveredNJ Gold Plan (Subsidized w/ NJHPS @ Low MAGI) — $320/mo ($3,840/yr)</option>
               <option value="5400">2027 GetCoveredNJ Bronze Plan (Full Retail Unsubsidized) — $450/mo ($5,400/yr)</option>
               <option value="6240">2027 GetCoveredNJ Gold Plan (Partial Subsidy w/ NJHPS @ Moderate MAGI) — $520/mo ($6,240/yr)</option>
             </optgroup>
 
-            <optgroup label="🏢 2027 Full Retail / Unsubsidized ($7,200 – $9,360/yr)">
+            <optgroup label="Tier 4: Full Retail ($7,200 – $9,360/yr)">
               <option value="7200">2027 GetCoveredNJ Silver Plan (Full Retail Unsubsidized) — $600/mo ($7,200/yr)</option>
               <option value="9360">2027 GetCoveredNJ Gold Plan (Full Retail Unsubsidized) — $780/mo ($9,360/yr)</option>
             </optgroup>
@@ -1166,7 +1468,7 @@
           <input type="range" id="input-house" min="0" max="500000" step="10000" value="0" oninput="onHouseSliderInput(this.value)">
           <div id="house-age-subcontrol" style="margin-top: 10px; padding: 10px 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid var(--line); border-radius: 8px;">
             <div class="control-header" style="margin-bottom: 6px;">
-              <span style="font-size: 12px; color: #94a3b8;">🏠 Down Payment Age (Year):</span>
+              <span style="font-size: 12px; color: #94a3b8;">Down Payment Age (Year):</span>
               <span class="control-val" style="font-size: 12px;" id="val-house-age">Age 36 (2029)</span>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;" id="house-age-chips">
@@ -1189,7 +1491,7 @@
 
         <div class="mobile-quick-jump" style="display: none; margin-top: 18px;">
           <button class="btn" style="width: 100%; justify-content: center; font-size: 13px; padding: 10px;" onclick="switchMobileTab('section-chart')">
-            📊 View Lifetime Wealth Trajectory (To Age 100) →
+            VIEW LIFETIME WEALTH TRAJECTORY →
           </button>
         </div>
       </div>
@@ -1198,69 +1500,67 @@
       <div class="desktop-right-col">
         <!-- Lifetime Trajectory Panel (2027 to Age 100) -->
         <div class="panel tab-section active-mobile-tab" id="section-chart" style="margin-bottom: 24px;">
-          <div class="panel-title">
-            <span>Wealth Trajectory & Retirement Drawdown (2027 – Age 100)</span>
-            <span style="font-size: 13px; color: var(--text-muted);" id="crossover-label">🎯 2027 – 2093 (Age 100)</span>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-            <div style="font-size: 12px; color: #38bdf8; font-weight: 600;" id="chart-horizon-desc">
-              📈 Lifetime Horizon (2027 – Age 100): Saving until retirement age, then modeling annual withdrawals & portfolio growth through Age 100
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">LIFETIME PROJECTION <span>·</span> 2027 TO AGE 100</p>
+              <h2>Wealth trajectory &amp; drawdown</h2>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 5px; min-width: 260px; flex: 1; max-width: 420px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px;">
-                <label for="input-chart-max-age" style="color: var(--text-muted);">2027 starting forecast through</label>
-                <strong id="chart-horizon-value" style="color: #38bdf8; white-space: nowrap;">Age 100 (2093)</strong>
+            <div class="board-tools">
+              <span id="crossover-label" class="badge" style="display:none;"></span>
+              <div class="horizon-box">
+                <span>HORIZON:</span>
+                <strong id="chart-horizon-value">AGE 100 (2093)</strong>
+                <input type="range" id="input-chart-max-age" min="35" max="100" step="1" value="100" aria-label="Chart ending age" oninput="onChartMaxAgeInput(this.value)" onchange="savePersistedSettings()">
               </div>
-              <input type="range" id="input-chart-max-age" min="35" max="100" step="1" value="100" aria-label="Chart ending age" oninput="onChartMaxAgeInput(this.value)" onchange="savePersistedSettings()">
             </div>
           </div>
+          <div id="chart-horizon-desc" style="display:none;"></div>
 
           <!-- 2027 Start, Retirement Transition, Post-Retirement Withdrawal & Age 100 KPI Card -->
-          <div id="card-2027-focus">
-            <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-2027-start">2027 Starting Forecast</span>
-              <strong style="font-size: 16px; color: #38bdf8;" id="val-2027-nw">$---,---</strong>
-              <div style="font-size: 10px; color: #cbd5e1;" id="val-2027-real">Year 2027 (Age 34) · Real: $---</div>
+          <div class="telemetry-strip" id="card-2027-focus">
+            <div class="telemetry-item">
+              <span class="telemetry-label" id="lbl-2027-start">2027 STARTING</span>
+              <strong class="telemetry-val" id="val-2027-nw">$---,---</strong>
+              <span class="telemetry-note" id="val-2027-real">Year 2027 · Real: $---</span>
             </div>
-            <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-target-milestone">At Retirement (Age 37, 2030)</span>
-              <strong style="font-size: 16px; color: #f8fafc;" id="val-2037-nw">$---,---</strong>
-              <div style="font-size: 10px; color: #cbd5e1;" id="val-2037-real">Real: $--- in today's $</div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" id="lbl-target-milestone">AT RETIREMENT</span>
+              <strong class="telemetry-val" id="val-2037-nw">$---,---</strong>
+              <span class="telemetry-note" id="val-2037-real">Real: $--- in today's $</span>
             </div>
-            <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-2027-budget">Post-Retirement Withdrawal</span>
-              <strong style="font-size: 16px; color: #fbbf24;" id="val-2027-passive">-$--- / yr</strong>
-              <div style="font-size: 10px; color: #34d399;" id="val-2027-monthly">Net change after withdrawal</div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" id="lbl-2027-budget">POST-RETIRE WITHDRAWAL</span>
+              <strong class="telemetry-val" id="val-2027-passive">-$--- / yr</strong>
+              <span class="telemetry-note" id="val-2027-monthly">Net change after withdrawal</span>
             </div>
-            <div>
-              <span style="font-size: 11px; color: #94a3b8; display: block; text-transform: uppercase;" id="lbl-target-surplus">Age 100 Balance (2093)</span>
-              <strong style="font-size: 16px; color: #34d399;" id="val-2037-status">$---,---</strong>
-              <div style="font-size: 10px; color: #cbd5e1;" id="val-2037-surplus">Real: $--- in today's $</div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" id="lbl-target-surplus">AGE 100 BALANCE</span>
+              <strong class="telemetry-val" id="val-2037-status">$---,---</strong>
+              <span class="telemetry-note" id="val-2037-surplus">Real: $--- in today's $</span>
             </div>
           </div>
 
           <!-- Official FIRE Formulas & Monte Carlo (Median P50 / 10th Percentile P10) Card -->
-          <div id="card-fire-formulas">
-            <div>
-              <span style="font-size: 10px; color: #94a3b8; display: block; text-transform: uppercase;">📐 Official FIRE Number (Spend ÷ SWR)</span>
-              <strong style="font-size: 15px; color: #f59e0b;" id="val-formula-fire">$---,---</strong>
-              <div style="font-size: 10px; color: #94a3b8;" id="sub-formula-fire">25× (4% Rule): $--- · 28.6× (3.5%): $---</div>
+          <div class="formula-pill-bar" id="card-fire-formulas">
+            <div class="formula-pill-item">
+              <span class="formula-tag">OFFICIAL FIRE NUMBER</span>
+              <strong id="val-formula-fire" style="color:#f59e0b;">$---,---</strong>
+              <span class="formula-sub" id="sub-formula-fire">25× (4% Rule): $---</span>
             </div>
-            <div>
-              <span style="font-size: 10px; color: #94a3b8; display: block; text-transform: uppercase;">⛵ Official Coast FIRE (FIRE ÷ (1+r)ᵗ)</span>
-              <strong style="font-size: 15px; color: #38bdf8;" id="val-formula-coast">$---,---</strong>
-              <div style="font-size: 10px; color: #34d399;" id="sub-formula-coast">Needed today w/ $0 future savings</div>
+            <div class="formula-pill-item">
+              <span class="formula-tag">COAST FIRE TARGET</span>
+              <strong id="val-formula-coast" style="color:#38bdf8;">$---,---</strong>
+              <span class="formula-sub" id="sub-formula-coast">Needed today w/ $0 savings</span>
             </div>
-            <div>
-              <span style="font-size: 10px; color: #94a3b8; display: block; text-transform: uppercase;">📊 Median (50th %ile) Projection</span>
-              <strong style="font-size: 15px; color: #c084fc;" id="val-formula-p50">$---,---</strong>
-              <div style="font-size: 10px; color: #cbd5e1;" id="sub-formula-p50">Retire: $--- · Age 100: $---</div>
+            <div class="formula-pill-item">
+              <span class="formula-tag">MEDIAN (P50) PROJECTION</span>
+              <strong id="val-formula-p50" style="color:#c084fc;">$---,---</strong>
+              <span class="formula-sub" id="sub-formula-p50">Retire: $--- · Age 100: $---</span>
             </div>
-            <div>
-              <span style="font-size: 10px; color: #94a3b8; display: block; text-transform: uppercase;">🛡️ 10th Percentile (P10 Stress Test)</span>
-              <strong style="font-size: 15px; color: #fb7185;" id="val-formula-p10">$---,---</strong>
-              <div style="font-size: 10px; color: #cbd5e1;" id="sub-formula-p10">Monte Carlo Survival Rate: ---%</div>
+            <div class="formula-pill-item">
+              <span class="formula-tag">10TH %ILE (P10 STRESS)</span>
+              <strong id="val-formula-p10" style="color:#fb7185;">$---,---</strong>
+              <span class="formula-sub" id="sub-formula-p10">Survival Rate: ---%</span>
             </div>
           </div>
 
@@ -1271,11 +1571,11 @@
           <!-- Milestones & Income Tiers Table (Unified directly with Net Worth Chart) -->
           <div style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px;" id="embedded-tiers-container">
             <div class="panel-title" style="border-bottom: none; margin-bottom: 10px; padding-bottom: 0;">
-              <span>🏆 Retirement Income Tiers & Milestones ($65k to $200k)</span>
-              <span style="font-size: 12px; color: var(--text-muted);" id="table-subtitle">🔒 Locked</span>
+              <span>RETIREMENT INCOME TIERS &amp; MILESTONES ($65K – $200K)</span>
+              <span style="font-size: 12px; color: var(--text-muted);" id="table-subtitle">LOCKED</span>
             </div>
             <div class="mobile-swipe-hint" style="display: none; font-size: 11px; color: #38bdf8; margin-bottom: 8px; text-align: center;">
-              👈 Swipe table horizontally to view full columns 👉
+              Swipe table horizontally to view all tiers →
             </div>
             <div class="table-container" style="margin-top: 8px;">
               <table id="tiers-table">
@@ -1299,7 +1599,7 @@
 
           <div class="mobile-quick-jump" style="display: none; margin-top: 14px;">
             <button class="btn btn-secondary" style="width: 100%; justify-content: center; font-size: 13px; padding: 10px;" onclick="switchMobileTab('section-controls')">
-              ⚙️ Tune Assumptions, Spending & Sliders →
+              TUNE ASSUMPTIONS &amp; SLIDERS →
             </button>
           </div>
         </div>
@@ -1307,7 +1607,7 @@
         <!-- Career Compensation, Equity & Freedom Replacement Panel -->
         <div class="panel tab-section" id="section-career" style="margin-bottom: 24px;">
           <div class="panel-title">
-            <span>💼 Career Compensation, Equity & Freedom Bridge</span>
+            <span>CAREER COMPENSATION &amp; EQUITY BRIDGE</span>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span id="career-saved-badge" style="font-size: 11px; color: #34d399; font-weight: 500; opacity: 0; transition: opacity 0.3s ease;">✓ Saved</span>
               <span class="badge" style="background: rgba(0, 112, 224, 0.2); color: #38bdf8;">Multi-Year Compensation Model</span>
@@ -1316,19 +1616,19 @@
 
           <!-- Locked Banner (visible when dashboard is locked) -->
           <div id="career-locked-banner" class="panel" style="text-align: center; margin-bottom: 18px;">
-            <div style="font-size: 26px; margin-bottom: 6px;">🔒</div>
+            <div class="empty-lock-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
             <h3 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Salary, Equity & Tax Information Locked</h3>
             <p style="font-size: 13px; color: #94a3b8; max-width: 480px; margin: 0 auto 14px; line-height: 1.5;">
               Career compensation details, cash grant schedules, RSU vesting counts, and W-2 tax breakdowns are kept private until unlocked. Enter your secret access key above to unlock and calculate.
             </p>
-            <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
+            <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">Unlock With Secret Key</button>
           </div>
 
           <!-- Career Sub-Navigation (Simplified Filter Pills — All Sections Shown by Default) -->
           <div class="career-subnav" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid var(--line);">
-            <button type="button" class="chip active" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">📄 All Career Sections</button>
-            <button type="button" class="chip" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">💼 Total Comp & Vesting Schedule</button>
-            <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">🏛️ W-2 Taxes & Safety Net</button>
+            <button type="button" class="chip active" id="subtab-btn-all" onclick="switchCareerSubTab('all', this)">ALL SECTIONS</button>
+            <button type="button" class="chip" id="subtab-btn-multiyear" onclick="switchCareerSubTab('multiyear', this)">TOTAL COMP &amp; VESTING</button>
+            <button type="button" class="chip" id="subtab-btn-taxes" onclick="switchCareerSubTab('taxes', this)">W-2 TAXES &amp; SAFETY NET</button>
           </div>
 
           <!-- SECTION 1: Total Compensation -->
@@ -1336,14 +1636,14 @@
             <div style="background: linear-gradient(135deg, rgba(0, 48, 135, 0.3), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(0, 112, 224, 0.5); border-radius: 12px; padding: 18px; margin-bottom: 18px;">
               <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 24px;">💼</span>
+                  
                   <div>
                     <h3 style="font-size: 16px; font-weight: 800; color: #38bdf8; margin: 0;">Total Compensation</h3>
                     <div style="font-size: 11px; color: #94a3b8;">Unified multi-year compensation projection: Base Pay, AIP Bonus, Cash & Stock Awards, and RSUs</div>
                   </div>
                 </div>
                 <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
-                  ⚡ Includes Cash Reward
+                  INCLUDES CASH REWARD
                 </span>
               </div>
             </div>
@@ -1452,7 +1752,7 @@
                       <div style="display: flex; align-items: center; gap: 6px;">
                         <span style="font-size: 11px; color: #94a3b8;">Assumed vest price: $</span>
                         <input type="number" id="cv-stock-price" value="57.01" min="1" max="500" step="1" style="width: 75px; padding: 4px 6px; font-size: 12px;" oninput="onMultiYearInput()">
-                        <button type="button" class="btn btn-secondary" style="padding: 2px 7px; font-size: 11px; line-height: 1;" onclick="loadCurrentPayPalPrice()" title="Refresh current PayPal market price">🔄</button>
+                        <button type="button" class="btn btn-secondary" style="padding: 2px 7px; font-size: 11px; line-height: 1;" onclick="loadCurrentPayPalPrice()" title="Refresh current PayPal market price"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg></button>
                       </div>
                     </td>
                     <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 600; background: rgba(59, 130, 246, 0.05); border-left: 1px solid var(--line); border-right: 1px solid var(--line);" id="cv-price-lbl-2027">@ $--.--</td>
@@ -1521,7 +1821,7 @@
                   <!-- Row: Total Cash -->
                   <tr style="background: rgba(16, 185, 129, 0.12); border-top: 1.5px solid #10b981;">
                     <td colspan="2" style="padding: 11px 12px; font-weight: 800; color: #34d399; font-size: 13px;">
-                      💵 Total Cash (Base + Bonus + Cash Awards)
+                      Total Cash (Base + Bonus + Cash Awards)
                     </td>
                     <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #34d399; border-left: 1px solid var(--line); border-right: 1px solid var(--line);" id="cv-true-cash-2027">$---,---</td>
                     <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #34d399;" id="cv-true-cash-2028">$---,---</td>
@@ -1532,7 +1832,7 @@
                   <!-- Row: Total Equity -->
                   <tr style="background: rgba(56, 189, 248, 0.12); border-top: 1px solid var(--line);">
                     <td colspan="2" style="padding: 11px 12px; font-weight: 800; color: #38bdf8; font-size: 13px;">
-                      📈 Total Equity (RSUs + Stock Awards)
+                      Total Equity (RSUs + Stock Awards)
                     </td>
                     <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #38bdf8; border-left: 1px solid var(--line); border-right: 1px solid var(--line);" id="cv-tot-equity-2027">$---,---</td>
                     <td style="padding: 11px 12px; text-align: right; font-weight: 800; font-size: 14px; color: #38bdf8;" id="cv-tot-equity-2028">$---,---</td>
@@ -1543,7 +1843,7 @@
                   <!-- Row: Total Compensation (Golden Highlight Row) -->
                   <tr style="background: #eab308; color: #0f172a; font-weight: 900; font-size: 15px; border-top: 2px solid #ca8a04;">
                     <td colspan="2" style="padding: 14px 12px;">
-                      🏆 Total Compensation (Cash + Equity)
+                      Total Compensation (Cash + Equity)
                     </td>
                     <td style="padding: 14px 12px; text-align: right; font-weight: 900; border-left: 1px solid rgba(0,0,0,0.15); border-right: 1px solid rgba(0,0,0,0.15);" id="cv-true-comp-2027">$---,---</td>
                     <td style="padding: 14px 12px; text-align: right; font-weight: 900;" id="cv-true-comp-2028">$---,---</td>
@@ -1561,7 +1861,7 @@
               <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 24px;">🎁</span>
+                    
                     <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0;">Unified Active & Future Vesting Schedule (2027 – 2030)</h3>
                   </div>
                   <p style="font-size: 13px; color: #94a3b8; margin: 6px 0 0; line-height: 1.5;">
@@ -1577,22 +1877,22 @@
               <!-- Top KPI Summary Cards (4 Cards) -->
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px;">
                 <div style="background: rgba(245, 158, 11, 0.1); border: 1.5px solid #fbbf24; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700; display: block; margin-bottom: 2px;">💵 Total Unvested Cash Awards</span>
+                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700; display: block; margin-bottom: 2px;">Total Unvested Cash Awards</span>
                   <div style="font-size: 24px; font-weight: 900; color: #fbbf24;" id="lbl-cash-comb-val">$---,---</div>
                   <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;" id="lbl-cash-comb-sub">2027–2030 scheduled payroll cash</div>
                 </div>
                 <div style="background: rgba(56, 189, 248, 0.1); border: 1.5px solid #38bdf8; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700; display: block; margin-bottom: 2px;">📈 Total Unvested Equity (RSUs)</span>
+                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700; display: block; margin-bottom: 2px;">Total Unvested Equity (RSUs)</span>
                   <div style="font-size: 24px; font-weight: 900; color: #38bdf8;" id="lbl-eq-comb-shares">---- shares</div>
                   <div style="font-size: 10px; color: #34d399; margin-top: 4px;" id="lbl-eq-comb-val">$---,---</div>
                 </div>
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10b981; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #34d399; font-weight: 700; display: block; margin-bottom: 2px;">🏆 Total Combined Unvested</span>
+                  <span style="font-size: 11px; color: #34d399; font-weight: 700; display: block; margin-bottom: 2px;">Total Combined Unvested</span>
                   <div style="font-size: 24px; font-weight: 900; color: #34d399;" id="lbl-comb-total-val">$---,---</div>
                   <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;" id="lbl-comb-total-sub">Active + Future 2027–2030 Grants</div>
                 </div>
                 <div style="background: rgba(234, 179, 8, 0.1); border: 1.5px solid #eab308; border-radius: 10px; padding: 14px;">
-                  <span style="font-size: 11px; color: #eab308; font-weight: 700; display: block; margin-bottom: 2px;">⚡ Upcoming Major Vest Day</span>
+                  <span style="font-size: 11px; color: #eab308; font-weight: 700; display: block; margin-bottom: 2px;">Upcoming Major Vest Day</span>
                   <div style="font-size: 24px; font-weight: 900; color: #eab308;" id="lbl-next-day-val">$---,---</div>
                   <div style="font-size: 10px; color: #cbd5e1; margin-top: 4px;">March 1, 2027 ($12.5k + 412)</div>
                 </div>
@@ -1602,28 +1902,28 @@
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; margin-bottom: 18px;">
                 <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--line); border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2027 Annual Vesting</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">2027 Annual Vesting</span>
                     <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2027-tot">$---,---</strong>
                   </div>
                   <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2027-sub">Cash: $---,--- | Stock: $---,---</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--line); border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2028 Annual Vesting</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">2028 Annual Vesting</span>
                     <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2028-tot">$---,---</strong>
                   </div>
                   <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2028-sub">Cash: $---,--- | Stock: $---,---</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--line); border-left: 3px solid #38bdf8; border-radius: 8px; padding: 10px 12px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">📅 2029 Annual Vesting</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">2029 Annual Vesting</span>
                     <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2029-tot">$---,---</strong>
                   </div>
                   <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2029-sub">Cash: $---,--- | Stock: $---,---</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--line); border-left: 3px solid #c084fc; border-radius: 8px; padding: 10px 12px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 11px; font-weight: 700; color: #c084fc;">📅 2030 Annual Vesting</span>
+                    <span style="font-size: 11px; font-weight: 700; color: #c084fc;">2030 Annual Vesting</span>
                     <strong style="font-size: 13px; color: #34d399;" id="vest-yr-2030-tot">$---,---</strong>
                   </div>
                   <div style="font-size: 11px; color: #cbd5e1;" id="vest-yr-2030-sub">Cash: $---,--- | Stock: $---,---</div>
@@ -1634,7 +1934,7 @@
               <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 18px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
                   <div>
-                    <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0;">🔮 2027–2029 Award Formula Breakdown (50% Cash & 50% Stock — Synced Above)</h4>
+                    <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0;">2027–2029 Award Formula Breakdown (50% Cash &amp; 50% Stock — Synced Above)</h4>
                     <div style="font-size: 11px; color: #94a3b8;">Formula: 1/3 cliff the year after (58.33% Yr N+1), 4 × 1/12 in Yr N+2 (33.33%), final 1/12 in Yr N+3 (8.33%)</div>
                   </div>
                   <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1680,7 +1980,7 @@
 
               <!-- Unified Vesting Schedule Table (Cash & Stock Together) -->
               <h4 style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">
-                📅 Unified Active Vesting Schedule (Cash & Stock Vesting on the Same Day)
+                Unified Active Vesting Schedule (Cash &amp; Stock Vesting on Same Day)
               </h4>
               <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
                 Populated directly from your 2027–2030 active and future grants. Every calendar quarter delivers both your cash award installment and RSU shares simultaneously:
@@ -1708,7 +2008,7 @@
                       <td style="padding: 12px; text-align: right; color: #38bdf8; font-size: 14px;" id="tbl-total-shares-val">---- shares</td>
                       <td style="padding: 12px; text-align: right; color: #34d399; font-size: 15px; background: rgba(16, 185, 129, 0.15);" id="tbl-total-comb-val">$---,---</td>
                       <td style="padding: 12px; text-align: right; color: #94a3b8; font-size: 13px;" id="tbl-total-rem-val">$0.00</td>
-                      <td style="padding: 12px; color: #94a3b8; font-size: 12px;" id="tbl-total-notes">🔒 Locked</td>
+                      <td style="padding: 12px; color: #94a3b8; font-size: 12px;" id="tbl-total-notes">LOCKED</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -1721,7 +2021,7 @@
             <!-- Plan Year Selector Pills -->
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">📅 Select Plan Year for Taxes & Freedom Bridge:</span>
+                <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">Select Plan Year for Taxes &amp; Freedom Bridge:</span>
                 <span style="font-size: 11px; color: #94a3b8;" id="career-year-subtitle">Loaded compensation figures for 2027 (+Cash Reward)</span>
               </div>
               <div class="chips-group" id="career-year-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -1769,7 +2069,7 @@
                 <div>
                   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                      <span style="font-size: 22px;">🚀</span>
+                      
                       <div>
                         <h3 style="font-size: 16px; font-weight: 700; color: #34d399; margin: 0;">Job Compensation Replacement Bridge</h3>
                         <div style="font-size: 11px; color: #94a3b8;">Portfolio passive income vs monthly take-home paycheck</div>
@@ -1782,9 +2082,9 @@
                   <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
                     <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Target:</span>
                     <div class="chips-group" id="bridge-target-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                      <button type="button" class="chip active" id="chip-bridge-cash" onclick="setBridgeTarget('cash')">💵 Total Cash Paycheck</button>
-                      <button type="button" class="chip" id="chip-bridge-base" onclick="setBridgeTarget('base')">💼 Base Pay Only</button>
-                      <button type="button" class="chip" id="chip-bridge-total" onclick="setBridgeTarget('total')">📈 Total Comp (+ RSUs)</button>
+                      <button type="button" class="chip active" id="chip-bridge-cash" onclick="setBridgeTarget('cash')">Total Cash Paycheck</button>
+                      <button type="button" class="chip" id="chip-bridge-base" onclick="setBridgeTarget('base')">Base Pay Only</button>
+                      <button type="button" class="chip" id="chip-bridge-total" onclick="setBridgeTarget('total')">Total Comp (+ RSUs)</button>
                     </div>
                   </div>
 
@@ -1813,7 +2113,7 @@
                   </div>
                 </div>
                 <p style="font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.4;">
-                  💡 <strong>Tax Reality:</strong> You do <em>not</em> need to replace $192k+ gross salary! Retirement eliminates 7.65% FICA payroll taxes and 401(k) contributions, while investment withdrawals access the 0% capital gains bracket.
+                  <span class="insight-badge">Tax Reality</span> You do <em>not</em> need to replace $192k+ gross salary! Retirement eliminates 7.65% FICA payroll taxes and 401(k) contributions, while investment withdrawals access the 0% capital gains bracket.
                 </p>
               </div>
 
@@ -1822,7 +2122,7 @@
                 <div>
                   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                      <span style="font-size: 22px;">🛡️</span>
+                      
                       <div>
                         <h3 style="font-size: 16px; font-weight: 700; color: #fbbf24; margin: 0;">Severance, Layoff & NJ UI Safety Net</h3>
                         <div style="font-size: 11px; color: #94a3b8;">Total package cushion and expense runway during a workforce transition</div>
@@ -1894,7 +2194,7 @@
                   </div>
                 </div>
                 <p style="font-size: 11px; color: #cbd5e1; margin: 0; line-height: 1.4;" id="lbl-safety-runway-desc">
-                  💡 <strong>Zero Asset Drawdown:</strong> This package covers over <strong>6.5 months</strong> of living expenses ($11,700/mo) with zero investment liquidation.
+                  <span class="insight-badge">Zero Asset Drawdown</span> This package covers over <strong>6.5 months</strong> of living expenses ($11,700/mo) with zero investment liquidation.
                 </p>
               </div>
             </div>
@@ -1919,7 +2219,7 @@
                     <span class="control-val" id="val-career-bonus">$---,---</span>
                   </div>
                   <input type="number" id="career-bonus" value="19238" step="500" min="0" oninput="onCareerInput()">
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">🔒 Locked — Enter key to view target bonus</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="note-career-bonus">LOCKED — Enter key to view target bonus</div>
                 </div>
 
                 <div class="control-group">
@@ -1929,10 +2229,10 @@
                   </div>
                   <input type="number" id="career-cash-reward" value="21875" step="500" min="0" oninput="onCareerInput()">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <div style="font-size: 11px; color: #fbbf24;" id="lbl-cash-award-status">🔒 Locked</div>
+                    <div style="font-size: 11px; color: #fbbf24;" id="lbl-cash-award-status">LOCKED</div>
                     <div style="font-size: 11px; color: #94a3b8;" id="lbl-cash-award-next">Unlock to view vesting</div>
                   </div>
-                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;" id="note-career-cash-reward">🔒 Locked — Enter key to view cash grants</div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;" id="note-career-cash-reward">LOCKED — Enter key to view cash grants</div>
                 </div>
 
                 <div class="control-group">
@@ -1942,7 +2242,7 @@
                   </div>
                   <input type="number" id="career-rsu" value="45893" step="500" min="0" oninput="onCareerInput()">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 11px;">
-                    <span style="color: #38bdf8;" id="note-career-rsu">🔒 Locked — Enter key to view RSU vesting</span>
+                    <span style="color: #38bdf8;" id="note-career-rsu">LOCKED — Enter key to view RSU vesting</span>
                     <a href="javascript:void(0)" onclick="switchCareerSubTab('combined')" style="color: #94a3b8; text-decoration: underline; font-size: 11px; font-weight: 600;" title="Jump to full RSUs & Awards Schedule">View Full RSU Schedule ↗</a>
                   </div>
                 </div>
@@ -2020,7 +2320,7 @@
         <!-- Federal & New Jersey FIRE, Healthcare & Tax Intelligence Section -->
         <div class="panel tab-section" id="section-strategy">
           <div class="panel-title">
-            <span>🏛️ Federal & New Jersey FIRE, Healthcare & Tax Strategy (2027+ Focus)</span>
+            <span>FEDERAL &amp; NEW JERSEY TAX &amp; HEALTHCARE STRATEGY</span>
             <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">2027 IRS + GetCoveredNJ ACA Projections</span>
           </div>
 
@@ -2126,17 +2426,17 @@
 
         <div class="panel tab-section" id="section-history" style="margin-bottom: 24px;">
           <div class="panel-title">
-            <span>📚 Financial History</span>
-            <span id="history-sync-status" style="font-size: 12px; color: var(--text-muted);">🔒 Locked</span>
+            <span>FINANCIAL HISTORY</span>
+            <span id="history-sync-status" style="font-size: 12px; color: var(--text-muted);">LOCKED</span>
           </div>
 
           <div id="history-locked" class="panel" style="text-align: center; padding: 32px 20px;">
-            <div style="font-size: 26px; margin-bottom: 8px;">🔒</div>
+            <div class="empty-lock-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
             <h3 style="font-size: 16px; margin-bottom: 6px;">Financial history is locked</h3>
             <p style="font-size: 13px; color: var(--text-muted); margin: 0 auto 14px; max-width: 500px; line-height: 1.5;">
               Enter your secret key to load annual income, taxes, investments, housing, and spending from your spreadsheet.
             </p>
-            <button class="btn btn-secondary" onclick="openKeyModal()">🔑 Unlock to view history</button>
+            <button class="btn btn-secondary" onclick="openKeyModal()">Unlock Financial History</button>
           </div>
 
           <div id="history-content" style="display: none;">
@@ -2162,8 +2462,7 @@
         </div>
       </div>
     </div>
-  </div>
-
+  </main>
   <script>
     const BIRTH_DATE = new Date(1993, 10, 30); // Nov 30, 1993
 
@@ -2515,7 +2814,7 @@
       if (!state.isUnlocked) {
         setVal('sim-cash-amt', '$---,--- Cash (50%)');
         setVal('sim-stock-amt', '$---,--- Stock (50%)');
-        setVal('sim-split-sub', '🔒 Locked — Enter key to view');
+        setVal('sim-split-sub', 'LOCKED — Enter key to view');
         setVal('sim-yr1-amt', '$---,--- Total');
         setVal('sim-yr1-sub', '2027 Award: 1/3 cliff + 3 quarterly vests');
         setVal('sim-yr2-amt', '$---,--- Total');
@@ -2723,7 +3022,7 @@
 
       if (isLocked) {
         if (tbody) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">🔒 Locked — Enter secret access key above to view exact cash and share vesting values</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px; letter-spacing:0.03em;">LOCKED · ENTER ACCESS KEY TO VIEW VESTING SCHEDULE</td></tr>';
         }
         setHTML('lbl-cash-comb-val', '$---,---');
         setHTML('lbl-eq-comb-shares', '---- shares');
@@ -2741,7 +3040,7 @@
         setHTML('tbl-total-cash-val', '$---,---');
         setHTML('tbl-total-shares-val', '---- shares');
         setHTML('tbl-total-comb-val', '$---,---');
-        setHTML('tbl-total-notes', '🔒 Locked');
+        setHTML('tbl-total-notes', 'LOCKED');
         return;
       }
 
@@ -3076,7 +3375,7 @@
 
     async function loadCurrentPayPalPrice() {
       const statusEl = document.getElementById('lbl-stock-fetch-status');
-      if (statusEl) statusEl.textContent = '⏳ Fetching latest PYPL quote...';
+      if (statusEl) statusEl.textContent = 'Fetching latest PYPL quote...';
       let foundPrice = null;
 
       try {
@@ -3390,11 +3689,11 @@
         document.getElementById('val-career-hsa').textContent = '$---,---';
 
         const noteRsu = document.getElementById('note-career-rsu');
-        if (noteRsu) noteRsu.textContent = '🔒 Locked — Enter key to view RSU vesting';
+        if (noteRsu) noteRsu.textContent = 'LOCKED — Enter key to view RSU vesting';
         const noteBonus = document.getElementById('note-career-bonus');
-        if (noteBonus) noteBonus.textContent = '🔒 Locked — Enter key to view target bonus';
+        if (noteBonus) noteBonus.textContent = 'LOCKED — Enter key to view target bonus';
         const noteCashReward = document.getElementById('note-career-cash-reward');
-        if (noteCashReward) noteCashReward.textContent = '🔒 Locked — Enter key to view cash grants';
+        if (noteCashReward) noteCashReward.textContent = 'LOCKED — Enter key to view cash grants';
 
         document.getElementById('kpi-career-gross').textContent = '$---,---';
         document.getElementById('kpi-career-gross-sub').textContent = 'Base + AIP + Cash Reward + RSUs';
@@ -3407,7 +3706,7 @@
         document.getElementById('kpi-career-total-comp-sub').textContent = 'Net + 401(k) + HSA + Match';
 
         const cashAwardStatus = document.getElementById('lbl-cash-award-status');
-        if (cashAwardStatus) cashAwardStatus.textContent = '🔒 Locked';
+        if (cashAwardStatus) cashAwardStatus.textContent = 'LOCKED';
         const cashAwardNext = document.getElementById('lbl-cash-award-next');
         if (cashAwardNext) cashAwardNext.textContent = 'Unlock to view vesting';
 
@@ -3427,12 +3726,12 @@
         document.getElementById('lbl-safety-nj-ui').textContent = '$---,---';
         const runwayDescLocked = document.getElementById('lbl-safety-runway-desc');
         if (runwayDescLocked) {
-          runwayDescLocked.innerHTML = '🔒 <strong>Locked:</strong> Enter secret access key above to calculate your severance and NJ unemployment runway.';
+          runwayDescLocked.innerHTML = '<span class="insight-badge">Locked</span> Enter secret access key above to calculate severance and NJ unemployment runway.';
         }
 
         const tbody = document.getElementById('career-tax-tbody');
         if (tbody) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">🔒 Locked — Enter secret access key above to calculate taxes & deductions</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px; letter-spacing:0.03em;">LOCKED · ENTER ACCESS KEY TO CALCULATE TAXES &amp; DEDUCTIONS</td></tr>';
         }
         return;
       }
@@ -3484,7 +3783,7 @@
       const yrShares = CAREER_YEAR_DATA[careerState.selectedYear]?.rsuShares ?? Math.round(rsuVesting / stockPrice);
       const noteRsu = document.getElementById('note-career-rsu');
       if (noteRsu) {
-        noteRsu.innerHTML = `⚡ Auto-computed: <strong>${yrShares.toLocaleString()} shares × $${stockPrice.toFixed(2)}</strong> live price`;
+        noteRsu.innerHTML = `Auto-computed: <strong>${yrShares.toLocaleString()} shares × $${stockPrice.toFixed(2)}</strong> live price`;
       }
       const noteBonus = document.getElementById('note-career-bonus');
       if (noteBonus) {
@@ -3582,7 +3881,7 @@
       const targetPortReq = bridgeTargetAnnual / state.swr;
       const portGap = Math.max(0, targetPortReq - state.netWorth);
       const yearsToReplace = computeOfficialYearsToFire(state.netWorth, targetPortReq, state.annualSavings, state.nominalReturn);
-      const timelineText = portGap <= 0 ? '🎉 100% Replaced Today!' : `in ~${yearsToReplace} yrs (${2027 + yearsToReplace}, Age ${2027 + yearsToReplace - 1993})`;
+      const timelineText = portGap <= 0 ? '100% Replaced Today' : `in ~${yearsToReplace} yrs (${2027 + yearsToReplace}, Age ${2027 + yearsToReplace - 1993})`;
 
       const lblDesc = document.getElementById('lbl-bridge-target-desc');
       if (lblDesc) lblDesc.textContent = bridgeDesc;
@@ -3616,7 +3915,7 @@
       document.getElementById('bar-safety-runway').style.width = Math.min(100, (runwayMonths / 12) * 100).toFixed(1) + '%';
       const runwayDesc = document.getElementById('lbl-safety-runway-desc');
       if (runwayDesc) {
-        runwayDesc.innerHTML = `💡 <strong>Zero Asset Drawdown:</strong> This package covers over <strong>${runwayMonths.toFixed(1)} months</strong> of total living + healthcare expenses ($${monthlySpend.toLocaleString()}/mo) with zero investment liquidation.`;
+        runwayDesc.innerHTML = `<span class="insight-badge">Zero Asset Drawdown</span> This package covers over <strong>${runwayMonths.toFixed(1)} months</strong> of total living + healthcare expenses ($${monthlySpend.toLocaleString()}/mo) with zero investment liquidation.`;
       }
 
       // Breakdown Table
@@ -3631,21 +3930,21 @@
         const netRsuOnly = netTakeHomeAnnual - netCashOnly;
 
         const rows = [
-          { name: '💼 Base Annual Salary', annual: baseSalary, notes: 'Regular base pay ($' + Math.round(baseSalary / 12).toLocaleString() + ' / month)' },
-          { name: '🎯 AIP Annual Incentive Bonus', annual: bonus, notes: `AIP Cash Bonus (Target 10% = $${Math.round(baseSalary * 0.1).toLocaleString()}; modifier applied)` },
-          { name: '🎁 Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of active/future cash grants paid via payroll in USD` : `Active grant completed in 2029 ($21,875 in 2027, $12,500 in 2028, $3,125 in 2029)` },
-          { name: '📈 Equity Award (RSUs Vesting)', annual: rsuVesting, notes: `Always included in W-2 gross taxable earnings (${yrShares.toLocaleString()} shares @ $${stockPrice.toFixed(2)}) per IRS & NJ tax law` },
-          { name: '💵 Gross Taxable Earnings (W-2)', annual: earnedGross, rowStyle: 'background:rgba(59, 130, 246, 0.12); font-weight:700;', notes: `100.0% W-2 Gross = Base ($${Math.round(baseSalary).toLocaleString()}) + AIP ($${Math.round(bonus).toLocaleString()}) + Cash Award ($${Math.round(cashReward).toLocaleString()}) + RSUs ($${Math.round(rsuVesting).toLocaleString()})` },
-          { name: '💼 Pre-Tax 401(k) Employee Contribution', annual: k401, isDeduction: true, notes: 'IRS Elective Limit: $24,500. Diverted into your 401(k) shield (Exempt from Federal & NJ income tax)' },
-          { name: '🩺 Pre-Tax HSA & Health Insurance', annual: health + hsa, isDeduction: true, notes: `HSA ($${Math.round(hsa).toLocaleString()}) + Health Insurance ($${Math.round(health).toLocaleString()}). Exempt from Federal & FICA taxes` },
-          { name: '🏛️ Federal Income Tax (IRS)', annual: fedTax, isDeduction: true, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $16,100 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
-          { name: '🛡️ Social Security Tax (FICA)', annual: ssTax, isDeduction: true, notes: '6.20% up to $181,800 cap ($11,272 max). Zero tax on income above cap!' },
-          { name: '🏥 Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, isDeduction: true, notes: `1.45% base Medicare${medSurtax > 0 ? ' + $' + Math.round(medSurtax).toLocaleString() + ' 0.9% additional Medicare surtax (> $200k)' : ' (no wage cap)'}` },
-          { name: '🌲 New Jersey State Tax (NJ-1040)', annual: njTax, isDeduction: true, notes: `NJ Taxable: $${Math.round(njTaxable).toLocaleString()} after $${Math.round(k401 + health).toLocaleString()} 401(k)/health deduction & $1k exemption` },
-          { name: '📊 Total Taxes + Pre-Tax Deductions', annual: totalTaxes + preTaxDeductions, isDeduction: true, rowStyle: 'background:rgba(239, 68, 68, 0.08); font-weight:700;', notes: `Taxes: $${Math.round(totalTaxes).toLocaleString()} (${((totalTaxes / earnedGross) * 100).toFixed(1)}%) + Pre-Tax 401k/HSA/Health: $${Math.round(preTaxDeductions).toLocaleString()} (${((preTaxDeductions / earnedGross) * 100).toFixed(1)}%)` },
-          { name: '💰 Net Take-Home (Cash + Net Vested RSUs)', annual: netTakeHomeAnnual, rowStyle: 'background:rgba(16, 185, 129, 0.14); font-weight:700;', notes: `100% Gross − ${((preTaxDeductions / earnedGross) * 100).toFixed(1)}% Pre-Tax − ${((totalTaxes / earnedGross) * 100).toFixed(1)}% Taxes = ${((netTakeHomeAnnual / earnedGross) * 100).toFixed(1)}% Net ($${Math.round(netCashOnly).toLocaleString()} net cash + $${Math.round(netRsuOnly).toLocaleString()} net RSUs)` },
-          { name: '🏢 Employer 401(k) Match (Non-Taxable Bonus)', annual: match, pctOverride: '+' + (earnedGross > 0 ? ((match / earnedGross) * 100).toFixed(1) : '0') + '%', notes: 'Deposited directly to your 401(k) by employer on top of W-2 gross. Not taxed until retirement withdrawal' },
-          { name: '💎 Total Wealth Retained (Net + 401k + HSA + Match)', annual: totalWealthRetained, rowStyle: 'background:rgba(56, 189, 248, 0.12); font-weight:700;', notes: `Net Take-Home ($${Math.round(netTakeHomeAnnual).toLocaleString()}) + 401k ($${Math.round(k401).toLocaleString()}) + HSA ($${Math.round(hsa).toLocaleString()}) + Match ($${Math.round(match).toLocaleString()})` }
+          { name: 'Base Annual Salary', annual: baseSalary, notes: 'Regular base pay ($' + Math.round(baseSalary / 12).toLocaleString() + ' / month)' },
+          { name: 'AIP Annual Incentive Bonus', annual: bonus, notes: `AIP Cash Bonus (Target 10% = $${Math.round(baseSalary * 0.1).toLocaleString()}; modifier applied)` },
+          { name: 'Long Term Cash Award ("Cash Reward")', annual: cashReward, notes: cashReward > 0 ? `Vested portion of active/future cash grants paid via payroll in USD` : `Active grant completed in 2029 ($21,875 in 2027, $12,500 in 2028, $3,125 in 2029)` },
+          { name: 'Equity Award (RSUs Vesting)', annual: rsuVesting, notes: `Always included in W-2 gross taxable earnings (${yrShares.toLocaleString()} shares @ $${stockPrice.toFixed(2)}) per IRS & NJ tax law` },
+          { name: 'Gross Taxable Earnings (W-2)', annual: earnedGross, rowStyle: 'background:rgba(59, 130, 246, 0.12); font-weight:700;', notes: `100.0% W-2 Gross = Base ($${Math.round(baseSalary).toLocaleString()}) + AIP ($${Math.round(bonus).toLocaleString()}) + Cash Award ($${Math.round(cashReward).toLocaleString()}) + RSUs ($${Math.round(rsuVesting).toLocaleString()})` },
+          { name: 'Pre-Tax 401(k) Employee Contribution', annual: k401, isDeduction: true, notes: 'IRS Elective Limit: $24,500. Diverted into your 401(k) shield (Exempt from Federal & NJ income tax)' },
+          { name: 'Pre-Tax HSA & Health Insurance', annual: health + hsa, isDeduction: true, notes: `HSA ($${Math.round(hsa).toLocaleString()}) + Health Insurance ($${Math.round(health).toLocaleString()}). Exempt from Federal & FICA taxes` },
+          { name: 'Federal Income Tax (IRS)', annual: fedTax, isDeduction: true, notes: `Taxable Income: $${Math.round(fedTaxable).toLocaleString()} after $16,100 std deduction & $${Math.round(preTaxDeductions).toLocaleString()} pre-tax shields` },
+          { name: 'Social Security Tax (FICA)', annual: ssTax, isDeduction: true, notes: '6.20% up to $181,800 cap ($11,272 max). Zero tax on income above cap!' },
+          { name: 'Medicare Tax & Surtax (FICA)', annual: medBaseTax + medSurtax, isDeduction: true, notes: `1.45% base Medicare${medSurtax > 0 ? ' + $' + Math.round(medSurtax).toLocaleString() + ' 0.9% additional Medicare surtax (> $200k)' : ' (no wage cap)'}` },
+          { name: 'New Jersey State Tax (NJ-1040)', annual: njTax, isDeduction: true, notes: `NJ Taxable: $${Math.round(njTaxable).toLocaleString()} after $${Math.round(k401 + health).toLocaleString()} 401(k)/health deduction & $1k exemption` },
+          { name: 'Total Taxes + Pre-Tax Deductions', annual: totalTaxes + preTaxDeductions, isDeduction: true, rowStyle: 'background:rgba(239, 68, 68, 0.08); font-weight:700;', notes: `Taxes: $${Math.round(totalTaxes).toLocaleString()} (${((totalTaxes / earnedGross) * 100).toFixed(1)}%) + Pre-Tax 401k/HSA/Health: $${Math.round(preTaxDeductions).toLocaleString()} (${((preTaxDeductions / earnedGross) * 100).toFixed(1)}%)` },
+          { name: 'Net Take-Home (Cash + Net Vested RSUs)', annual: netTakeHomeAnnual, rowStyle: 'background:rgba(16, 185, 129, 0.14); font-weight:700;', notes: `100% Gross − ${((preTaxDeductions / earnedGross) * 100).toFixed(1)}% Pre-Tax − ${((totalTaxes / earnedGross) * 100).toFixed(1)}% Taxes = ${((netTakeHomeAnnual / earnedGross) * 100).toFixed(1)}% Net ($${Math.round(netCashOnly).toLocaleString()} net cash + $${Math.round(netRsuOnly).toLocaleString()} net RSUs)` },
+          { name: 'Employer 401(k) Match (Non-Taxable Bonus)', annual: match, pctOverride: '+' + (earnedGross > 0 ? ((match / earnedGross) * 100).toFixed(1) : '0') + '%', notes: 'Deposited directly to your 401(k) by employer on top of W-2 gross. Not taxed until retirement withdrawal' },
+          { name: 'Total Wealth Retained (Net + 401k + HSA + Match)', annual: totalWealthRetained, rowStyle: 'background:rgba(56, 189, 248, 0.12); font-weight:700;', notes: `Net Take-Home ($${Math.round(netTakeHomeAnnual).toLocaleString()}) + 401k ($${Math.round(k401).toLocaleString()}) + HSA ($${Math.round(hsa).toLocaleString()}) + Match ($${Math.round(match).toLocaleString()})` }
         ];
 
         tbody.innerHTML = rows.map(r => {
@@ -3855,7 +4154,7 @@
       lockedPanel.style.display = locked ? 'block' : 'none';
       content.style.display = locked ? 'none' : 'block';
       if (locked) {
-        status.textContent = '🔒 Locked';
+        status.textContent = 'LOCKED';
         head.innerHTML = '';
         body.innerHTML = '';
         summary.innerHTML = '';
@@ -3866,19 +4165,19 @@
       const years = historyYears();
       const availableSheets = Object.keys(historyState.sheets).filter(key => historyState.sheets[key]?.length);
       if (state.demoMode) {
-        status.textContent = `🧪 ${years.length} sample years`;
+        status.textContent = `${years.length} sample years`;
         message.textContent = 'Synthetic example history · Not loaded from a spreadsheet.';
       } else if (historyState.status === 'loading') {
-        status.textContent = '⏳ Loading';
+        status.textContent = 'Loading...';
         message.textContent = 'Loading income, taxes, investments, and living costs…';
       } else if (historyState.status === 'error') {
-        status.textContent = '⚠️ Unavailable';
+        status.textContent = 'Unavailable';
         message.textContent = historyState.error || 'Could not load financial history from the spreadsheet.';
       } else if (!years.length) {
         status.textContent = 'No annual data';
         message.textContent = 'The requested sheets loaded, but no year columns were found.';
       } else {
-        status.textContent = `🟢 ${years.length} years`;
+        status.textContent = `${years.length} years`;
         const loadedLabels = availableSheets.map(key => HISTORY_SHEETS[key].label);
         const missingLabels = historyState.errors.map(item => HISTORY_SHEETS[item.key].label);
         message.textContent = `Loaded ${loadedLabels.join(', ')}.${missingLabels.length ? ` Unavailable: ${missingLabels.join(', ')}.` : ''}`;
@@ -4078,13 +4377,16 @@
       loadCareerSettings();
       state.isUnlocked = false;
       state.netWorth = 0;
-      recalculate(false);
-      recalculateCareer();
+      if (window.location.search.includes('sample=true') || window.location.hash.includes('sample')) {
+        loadSampleData();
+      } else {
+        recalculate(false);
+        recalculateCareer();
+      }
       loadCurrentPayPalPrice();
       handleResponsiveLayout();
       updateHeaderStatus();
-
-      // Auto-sync whenever tab gains focus (only if unlocked)
+            // Auto-sync whenever tab gains focus (only if unlocked)
       window.addEventListener('focus', () => {
         if (state.isUnlocked && sessionKey) {
           syncLiveFromGoogleSheet(false);
@@ -4196,22 +4498,58 @@
       return quantiles;
     }
 
+    function handleSampleToggle() {
+      if (state.demoMode) {
+        exitSampleData();
+      } else {
+        loadSampleData();
+      }
+    }
+
     function updateHeaderStatus() {
       const dot = document.getElementById('header-live-dot');
       const label = document.getElementById('header-live-label');
-      if (!dot || !label) return;
-      dot.classList.remove('locked', 'demo');
-      label.classList.remove('locked', 'demo');
-      if (state.demoMode) {
-        dot.classList.add('demo');
-        label.classList.add('demo');
-        label.textContent = 'SAMPLE DATA';
-      } else if (state.isUnlocked) {
-        label.textContent = 'LIVE SYNC';
-      } else {
-        dot.classList.add('locked');
-        label.classList.add('locked');
-        label.textContent = 'LOCKED';
+      const keyText = document.getElementById('btn-key-text');
+      const sampleText = document.getElementById('btn-sample-text');
+      const keyBtn = document.getElementById('btn-key-action');
+      const inlineInput = document.getElementById('inline-key-input');
+
+      if (dot && label) {
+        dot.classList.remove('locked', 'demo');
+        label.classList.remove('locked', 'demo');
+        if (state.demoMode) {
+          dot.classList.add('demo');
+          label.classList.add('demo');
+          label.textContent = 'SAMPLE DATA';
+        } else if (state.isUnlocked) {
+          label.textContent = 'LIVE SYNC';
+        } else {
+          dot.classList.add('locked');
+          label.classList.add('locked');
+          label.textContent = 'LOCKED';
+        }
+      }
+
+      if (keyText) {
+        keyText.textContent = state.isUnlocked ? 'LOCK' : 'UNLOCK';
+      }
+      if (keyBtn) {
+        keyBtn.classList.toggle('primary', !state.isUnlocked);
+      }
+      if (sampleText) {
+        sampleText.textContent = state.demoMode ? 'EXIT' : 'SAMPLE';
+      }
+      if (inlineInput) {
+        if (state.isUnlocked && !state.demoMode) {
+          inlineInput.placeholder = 'Connected to Sheet';
+          inlineInput.disabled = true;
+        } else if (state.demoMode) {
+          inlineInput.placeholder = 'Sample Profile Active';
+          inlineInput.disabled = true;
+        } else {
+          inlineInput.placeholder = 'Secret Access Key';
+          inlineInput.disabled = false;
+        }
       }
     }
 
@@ -4298,20 +4636,20 @@
                   if (!yrObj) return [];
                   const lines = [];
                   if (yrObj.isBaseline) {
-                    lines.push(`📍 2027 Starting Baseline: Actual Current Net Worth`);
+                    lines.push(`Baseline (2027): Actual Current Net Worth`);
                   } else if (yrObj.isWorking) {
-                    lines.push(`💼 Working Phase: Saving +$${Math.round(yrObj.cashFlow).toLocaleString()}/yr`);
+                    lines.push(`Working Phase: Saving +$${Math.round(yrObj.cashFlow).toLocaleString()}/yr`);
                   } else {
-                    lines.push(`🏖️ Retired (Withdrawing): -$${Math.round(Math.abs(yrObj.cashFlow)).toLocaleString()}/yr (-$${Math.round(Math.abs(yrObj.realCashFlow)).toLocaleString()} in today's $)`);
+                    lines.push(`Retirement Phase: Withdrawal -$${Math.round(Math.abs(yrObj.cashFlow)).toLocaleString()}/yr (-$${Math.round(Math.abs(yrObj.realCashFlow)).toLocaleString()} in today's $)`);
                   }
                   if (yrObj.houseDeduction > 0) {
-                    lines.push(`🏠 House Down Payment: -$${Math.round(yrObj.houseDeduction).toLocaleString()} deducted at Age ${yrObj.age} (${yrObj.year})`);
+                    lines.push(`House Down Payment: -$${Math.round(yrObj.houseDeduction).toLocaleString()} (Age ${yrObj.age}, ${yrObj.year})`);
                   }
-                  lines.push(`📊 Median (50th %ile) in Today's $: $${Math.round(yrObj.p50Real || 0).toLocaleString()}`);
-                  lines.push(`🛡️ 10th Percentile (P10) in Today's $: $${Math.round(yrObj.p10Real || 0).toLocaleString()} (Survival: ${(yrObj.survivalRate ?? 100).toFixed(1)}%)`);
+                  lines.push(`Median (P50 Real): $${Math.round(yrObj.p50Real || 0).toLocaleString()} in today's $`);
+                  lines.push(`Stress Test (P10 Real): $${Math.round(yrObj.p10Real || 0).toLocaleString()} in today's $ (Survival: ${(yrObj.survivalRate ?? 100).toFixed(1)}%)`);
                   if (!yrObj.isBaseline || yrObj.houseDeduction > 0) {
                     const netSign = yrObj.netChange >= 0 ? '+' : '-';
-                    lines.push(`🔄 Net Mean Portfolio Change: ${netSign}$${Math.round(Math.abs(yrObj.netChange)).toLocaleString()}/yr (${yrObj.netChange >= 0 ? 'Growing' : 'Drawing Down'})`);
+                    lines.push(`Net Annual Portfolio Delta: ${netSign}$${Math.round(Math.abs(yrObj.netChange)).toLocaleString()}/yr (${yrObj.netChange >= 0 ? 'Growing' : 'Drawing Down'})`);
                   }
                   return lines;
                 }
@@ -4535,7 +4873,7 @@
         document.getElementById('kpi-runway').textContent = '--- Years';
         document.getElementById('kpi-monthly-spend').textContent = '$--- / month total budget';
         document.getElementById('kpi-passive').textContent = '$--- / mo';
-        document.getElementById('kpi-surplus').textContent = '🔒 Locked — Enter key to unlock';
+        document.getElementById('kpi-surplus').textContent = 'LOCKED — Enter key to unlock';
         document.getElementById('crossover-label').textContent = 'Locked — Enter key to calculate';
 
         const el2027NW = document.getElementById('val-2027-nw');
@@ -4545,7 +4883,7 @@
         const el2027Passive = document.getElementById('val-2027-passive');
         if (el2027Passive) el2027Passive.textContent = '-$--- / yr';
         const el2027Monthly = document.getElementById('val-2027-monthly');
-        if (el2027Monthly) el2027Monthly.textContent = '🔒 Locked';
+        if (el2027Monthly) el2027Monthly.textContent = 'LOCKED';
         const el2037NW = document.getElementById('val-2037-nw');
         if (el2037NW) el2037NW.textContent = '$---,---';
         const el2037Real = document.getElementById('val-2037-real');
@@ -4553,7 +4891,7 @@
         const el2037Status = document.getElementById('val-2037-status');
         if (el2037Status) el2037Status.textContent = '$---,---';
         const el2037Surplus = document.getElementById('val-2037-surplus');
-        if (el2037Surplus) el2037Surplus.textContent = '🔒 Locked';
+        if (el2037Surplus) el2037Surplus.textContent = 'LOCKED';
 
         const elFormFire = document.getElementById('val-formula-fire');
         if (elFormFire) elFormFire.textContent = '$---,---';
@@ -4562,7 +4900,7 @@
         const elFormCoast = document.getElementById('val-formula-coast');
         if (elFormCoast) elFormCoast.textContent = '$---,---';
         const subFormCoast = document.getElementById('sub-formula-coast');
-        if (subFormCoast) subFormCoast.textContent = '🔒 Locked — Enter key to calculate';
+        if (subFormCoast) subFormCoast.textContent = 'LOCKED — Enter key to calculate';
         const elFormP50 = document.getElementById('val-formula-p50');
         if (elFormP50) elFormP50.textContent = '$---,---';
         const subFormP50 = document.getElementById('sub-formula-p50');
@@ -4614,12 +4952,12 @@
       document.getElementById('kpi-monthly-spend').textContent = '$' + Math.round(monthlySpend).toLocaleString() + ' / month total budget';
       document.getElementById('kpi-passive').textContent = '$' + Math.round(monthlyPassive).toLocaleString() + ' / mo';
       document.getElementById('kpi-surplus').textContent = (monthlySurplus >= 0 ? '+$' : '-$') + Math.round(Math.abs(monthlySurplus)).toLocaleString() + ' / mo Cash Flow ' + (monthlySurplus >= 0 ? 'Surplus' : 'Deficit');
-      document.getElementById('crossover-label').textContent = `🎯 2027 – ${maxYear} (Age ${maxAge}) · Retire at Age ${state.retireAge} (${retireYear})`;
+      document.getElementById('crossover-label').textContent = `2027 – ${maxYear} (Age ${maxAge}) · Retire at Age ${state.retireAge} (${retireYear})`;
 
       const descEl = document.getElementById('chart-horizon-desc');
       if (descEl) {
-        const houseNote = state.houseOutlay > 0 ? ` · 🏠 -$${Math.round(state.houseOutlay).toLocaleString()} House Down Payment at Age ${state.houseAge} (${houseYear})` : '';
-        descEl.textContent = `📈 Modeling 2027 (Age 34) to ${maxYear} (Age ${maxAge}): Saving +$${Math.round(state.annualSavings).toLocaleString()}/yr until Age ${state.retireAge} (${retireYear}), then withdrawing -$${Math.round(totalAnnualSpend).toLocaleString()}/yr (inflation-adjusted) through Age ${maxAge}${houseNote}`;
+        const houseNote = state.houseOutlay > 0 ? ` · House Down Payment -$${Math.round(state.houseOutlay).toLocaleString()} at Age ${state.houseAge}` : '';
+        descEl.textContent = `Modeling 2027 (Age 34) to ${maxYear} (Age ${maxAge}): Saving +$${Math.round(state.annualSavings).toLocaleString()}/yr until Age ${state.retireAge} (${retireYear}), then withdrawing -$${Math.round(totalAnnualSpend).toLocaleString()}/yr (inflation-adjusted) through Age ${maxAge}${houseNote}`;
       }
 
       // Run 500-Path Monte Carlo Quantiles (Median P50 & 10th Percentile P10 with 15% annual volatility)
@@ -4767,7 +5105,7 @@
           el2037Status.textContent = `$0 (Depleted at Age ${depletedAge})`;
         }
         if (el2037Surplus) {
-          el2037Surplus.textContent = `⚠️ Portfolio runs out in ${depletedYear} (Age ${depletedAge})`;
+          el2037Surplus.textContent = `Portfolio depleted in ${depletedYear} (Age ${depletedAge})`;
         }
       } else {
         if (el2037Status) {
@@ -4792,7 +5130,7 @@
       if (subFormCoast) {
         subFormCoast.style.color = isCoastAchieved ? '#34d399' : '#fbbf24';
         subFormCoast.textContent = isCoastAchieved
-          ? `✅ Coast FIRE Achieved! (+$${Math.round(state.netWorth - coastFireTarget).toLocaleString()} above Age ${state.retireAge} coast target)`
+          ? `Coast FIRE Achieved! (+$${Math.round(state.netWorth - coastFireTarget).toLocaleString()} above Age ${state.retireAge} coast target)`
           : `${((state.netWorth / coastFireTarget) * 100).toFixed(1)}% of Coast FIRE target for Age ${state.retireAge}`;
       }
 
@@ -4817,9 +5155,9 @@
       state.displayedYearsData = displayedYears;
 
       const labels = displayedYears.map(y => {
-        if (y.year === retireYear && y.houseDeduction > 0) return `🎯🏠 ${y.year} (Age ${y.age} — RETIRED + HOUSE)`;
-        if (y.year === retireYear) return `🎯 ${y.year} (Age ${y.age} — RETIRED)`;
-        if (y.houseDeduction > 0) return `🏠 ${y.year} (Age ${y.age} — HOUSE)`;
+        if (y.year === retireYear && y.houseDeduction > 0) return `${y.year} (Age ${y.age} — RETIRED + HOUSE)`;
+        if (y.year === retireYear) return `${y.year} (Age ${y.age} — RETIRED)`;
+        if (y.houseDeduction > 0) return `${y.year} (Age ${y.age} — HOUSE)`;
         return `${y.year} (Age ${y.age})`;
       });
       const nominalData = displayedYears.map(y => y.nominal);
@@ -4865,7 +5203,7 @@
     function renderTiersTable() {
       const subtitle = document.getElementById('table-subtitle');
       if (subtitle) {
-        subtitle.textContent = state.demoMode ? '🧪 Sample data' : state.isUnlocked ? '🟢 Official Logarithmic NPER Formula · Live sync (' + new Date().toLocaleTimeString() + ')' : '🔒 Locked';
+        subtitle.textContent = state.demoMode ? 'SAMPLE DATA' : state.isUnlocked ? 'LOGARITHMIC SWR MODEL · ' + new Date().toLocaleTimeString() : 'LOCKED';
       }
 
       const tbody = document.getElementById('tiers-tbody');
@@ -4875,12 +5213,12 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align: center; padding: 36px 16px; color: var(--text-muted); background: rgba(15, 23, 42, 0.4);">
-              <div style="font-size: 26px; margin-bottom: 8px;">🔒</div>
+              <div class="empty-lock-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
               <div style="font-size: 15px; font-weight: 600; color: #f8fafc; margin-bottom: 6px;">Retirement Income Milestones Locked</div>
               <div style="font-size: 12px; color: #94a3b8; max-width: 480px; margin: 0 auto 12px; line-height: 1.5;">
                 Portfolio progress, surplus/gap metrics, and milestone timelines remain hidden until unlocked. Enter your secret access key above to connect your sheet and calculate milestone projections.
               </div>
-              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">🔑 Enter Key to Unlock</button>
+              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;" onclick="openKeyModal()">Unlock With Secret Key</button>
             </td>
           </tr>
         `;
@@ -4986,11 +5324,12 @@
 
       document.getElementById('unlock-banner').style.display = 'none';
       document.getElementById('btn-key-action').textContent = 'Exit Sample Data';
-      document.getElementById('sync-text').textContent = '🧪 Sample data loaded · Not connected to your spreadsheet';
+      document.getElementById('sync-text').textContent = 'SAMPLE PROFILE ACTIVE · NOT CONNECTED TO SPREADSHEET';
       document.getElementById('lbl-current-spend').textContent = '$42.5k';
       loadSampleHistory();
       recalculateCareer(true);
       recalculate(false);
+      updateHeaderStatus();
       updateHeaderStatus();
     }
 
@@ -5002,8 +5341,8 @@
       state.baseSpend = 0;
       clearHistoryData();
       document.getElementById('unlock-banner').style.display = 'flex';
-      document.getElementById('btn-key-action').textContent = '🔑 Enter Key';
-      document.getElementById('sync-text').textContent = '🔒 Locked — Enter Secret Key to unlock your portfolio';
+      document.getElementById('btn-key-action').textContent = 'UNLOCK';
+      document.getElementById('sync-text').textContent = 'LOCKED · ENTER KEY OR CLICK SAMPLE';
       document.getElementById('lbl-current-spend').textContent = '$---';
       if (!loadPersistedSettings()) resetDefaults();
       loadCareerSettings();
@@ -5020,6 +5359,11 @@
         if (confirm('Lock dashboard and wipe session credentials from memory?')) {
           lockDashboard();
         }
+        return;
+      }
+      const inlineVal = (document.getElementById('inline-key-input')?.value || '').trim();
+      if (inlineVal) {
+        unlockWithKey(inlineVal);
       } else {
         openKeyModal();
       }
@@ -5056,9 +5400,9 @@
       const inlineInput = document.getElementById('inline-key-input');
       if (inlineInput) inlineInput.value = '';
       const syncText = document.getElementById('sync-text');
-      if (syncText) syncText.textContent = '🔒 Locked — Enter Secret Key to unlock your portfolio';
+      if (syncText) syncText.textContent = 'LOCKED · ENTER KEY OR CLICK SAMPLE';
       const keyBtn = document.getElementById('btn-key-action');
-      if (keyBtn) keyBtn.textContent = '🔑 Enter Key';
+      if (keyBtn) keyBtn.textContent = 'UNLOCK';
       const currLbl = document.getElementById('lbl-current-spend');
       if (currLbl) currLbl.textContent = '$---';
 
@@ -5075,9 +5419,9 @@
       }
 
       const unlockBannerBtn = document.getElementById('btn-unlock-banner');
-      if (unlockBannerBtn) unlockBannerBtn.textContent = '⏳ Unlocking...';
+      if (unlockBannerBtn) unlockBannerBtn.textContent = 'UNLOCKING...';
       const syncText = document.getElementById('sync-text');
-      if (syncText) syncText.textContent = '⏳ Verifying secret key and fetching portfolio...';
+      if (syncText) syncText.textContent = 'VERIFYING SECRET KEY AND FETCHING DATA...';
 
       try {
         const url = `${SCRIPT_URL}?key=${encodeURIComponent(key)}&action=read&sheet=Dashboard&range=A2:B6`;
@@ -5113,9 +5457,9 @@
           closeKeyModal();
 
           const keyBtn = document.getElementById('btn-key-action');
-          if (keyBtn) keyBtn.textContent = '🔒 Lock Dashboard';
+          if (keyBtn) keyBtn.textContent = 'LOCK';
 
-          if (syncText) syncText.textContent = '🟢 Live Google Sheet Connected (' + new Date().toLocaleTimeString() + ')';
+          if (syncText) syncText.textContent = 'LIVE GOOGLE SHEET CONNECTED (' + new Date().toLocaleTimeString() + ')';
           loadCareerSettings();
           restoreCareerInputsFromState();
           recalculate(false);
@@ -5124,13 +5468,13 @@
         } else {
           const errMsg = (json && json.error) ? json.error : 'Invalid access key or access denied.';
           alert('Access Denied: ' + errMsg);
-          if (syncText) syncText.textContent = '🔒 Access Denied: Incorrect Key';
+          if (syncText) syncText.textContent = 'ACCESS DENIED: INCORRECT KEY';
         }
       } catch (err) {
         alert('Error connecting to Google Sheet: ' + err.message);
-        if (syncText) syncText.textContent = '⚠️ Connection failed: ' + err.message;
+        if (syncText) syncText.textContent = 'CONNECTION FAILED: ' + err.message;
       } finally {
-        if (unlockBannerBtn) unlockBannerBtn.textContent = '🔓 Unlock Dashboard';
+        if (unlockBannerBtn) unlockBannerBtn.textContent = 'UNLOCK';
       }
     }
 
@@ -5146,7 +5490,7 @@
         return;
       }
 
-      if (isManual && btn) btn.textContent = '⏳ Syncing...';
+      if (isManual && btn) btn.textContent = 'SYNCING...';
 
       try {
         const url = `${SCRIPT_URL}?key=${encodeURIComponent(sessionKey)}&action=read&sheet=Dashboard&range=A2:B6`;
@@ -5169,15 +5513,15 @@
             }
           }
 
-          if (textEl) textEl.textContent = '🟢 Auto-Synced live with Sheet (' + new Date().toLocaleTimeString() + ')';
+          if (textEl) textEl.textContent = 'AUTO-SYNCED WITH SHEET (' + new Date().toLocaleTimeString() + ')';
         } else if (json && json.error) {
-          if (textEl) textEl.textContent = '⚠️ Sheet Sync Error: ' + json.error;
+          if (textEl) textEl.textContent = 'SHEET SYNC ERROR: ' + json.error;
         }
         await syncHistoryFromGoogleSheet();
       } catch (e) {
-        if (textEl) textEl.textContent = '⚠️ Sync error (' + new Date().toLocaleTimeString() + ')';
+        if (textEl) textEl.textContent = 'SYNC ERROR (' + new Date().toLocaleTimeString() + ')';
       } finally {
-        if (isManual && btn) btn.textContent = '🔄 Force Refresh';
+        if (isManual && btn) btn.textContent = 'REFRESH';
         recalculate(false);
       }
     }
@@ -5202,7 +5546,7 @@
         localFileLastMod = file.lastModified;
 
         await parseExcelFile(file);
-        document.getElementById('sync-text').textContent = '🟢 Auto-Watching local Excel file: ' + file.name;
+        document.getElementById('sync-text').textContent = 'WATCHING LOCAL EXCEL: ' + file.name;
         setInterval(checkLocalFileUpdate, 2000);
       } catch (err) {
         if (err.name !== 'AbortError') console.error(err);
@@ -5227,7 +5571,7 @@
         if (file.lastModified > localFileLastMod) {
           localFileLastMod = file.lastModified;
           await parseExcelFile(file);
-          document.getElementById('sync-text').textContent = '⚡ Reloaded from Excel save at ' + new Date().toLocaleTimeString();
+          document.getElementById('sync-text').textContent = 'RELOADED FROM EXCEL SAVE (' + new Date().toLocaleTimeString() + ')';
         }
       } catch (e) {
         console.warn('File watch error:', e);
@@ -5284,8 +5628,8 @@
       const banner = document.getElementById('unlock-banner');
       if (banner) banner.style.display = 'none';
       const keyBtn = document.getElementById('btn-key-action');
-      if (keyBtn) keyBtn.textContent = '🔒 Lock Dashboard';
-      document.getElementById('sync-text').textContent = '📁 Loaded from Local Excel: ' + file.name;
+      if (keyBtn) keyBtn.textContent = 'LOCK';
+      document.getElementById('sync-text').textContent = 'LOADED FROM EXCEL: ' + file.name;
       loadCareerSettings();
       restoreCareerInputsFromState();
       recalculate(false);
@@ -5293,5 +5637,6 @@
       updateHeaderStatus();
     }
   </script>
+
 </body>
 </html>
