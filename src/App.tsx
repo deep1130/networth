@@ -122,12 +122,8 @@ export function App() {
 
   const [netWorth, setNetWorth] = useState(initSample ? 90000 : 0)
   const [liveBaseSpend, setLiveBaseSpend] = useState(initSample ? 42500 : 0)
-  const [simSettings, setSimSettings] = useState<SimulationSettings>(() =>
-    initSample ? SAMPLE_SIMULATION_SETTINGS : loadSavedSimulationSettings(),
-  )
-  const [careerSettings, setCareerSettings] = useState<CareerSettings>(() =>
-    initSample ? SAMPLE_CAREER_SETTINGS : loadSavedCareerSettings(),
-  )
+  const [simSettings, setSimSettings] = useState<SimulationSettings>(SAMPLE_SIMULATION_SETTINGS)
+  const [careerSettings, setCareerSettings] = useState<CareerSettings>(SAMPLE_CAREER_SETTINGS)
 
   const [historySheets, setHistorySheets] = useState<SheetDataMap>((): SheetDataMap =>
     initSample
@@ -193,6 +189,27 @@ export function App() {
   const handleSelectPlanYear = useCallback(
     (year: CareerPlanYearKey) => {
       if (!isUnlocked) return
+      if (demoMode) {
+        const samplePresets: Record<string, { baseSalary: number; bonus: number }> = {
+          '2027': { baseSalary: 75000, bonus: 7500 },
+          '2028': { baseSalary: 80000, bonus: 8000 },
+          '2029': { baseSalary: 85000, bonus: 8500 },
+          '2030': { baseSalary: 90000, bonus: 9000 },
+        }
+        if (year !== 'custom' && samplePresets[year]) {
+          const preset = samplePresets[year]
+          updateCareerSettings({
+            selectedYear: year,
+            baseSalary: preset.baseSalary,
+            bonus: preset.bonus,
+            cashReward: 0,
+            rsuVesting: 0,
+          })
+        } else {
+          updateCareerSettings({ selectedYear: 'custom' })
+        }
+        return
+      }
       if (year !== 'custom' && CAREER_YEAR_DATA[year]) {
         const preset = CAREER_YEAR_DATA[year]
         updateCareerSettings({
@@ -206,7 +223,7 @@ export function App() {
         updateCareerSettings({ selectedYear: 'custom' })
       }
     },
-    [isUnlocked, updateCareerSettings],
+    [isUnlocked, demoMode, updateCareerSettings],
   )
 
   const handleResetDefaults = useCallback(() => {
@@ -253,8 +270,8 @@ export function App() {
     setHistoryStatus('locked')
     setHistoryError('')
     setSheetErrors([])
-    setSimSettings(loadSavedSimulationSettings())
-    setCareerSettings(loadSavedCareerSettings())
+    setSimSettings(SAMPLE_SIMULATION_SETTINGS)
+    setCareerSettings(SAMPLE_CAREER_SETTINGS)
     setSyncStatusText('LOCKED · ENTER KEY OR CLICK SAMPLE')
   }, [])
 
@@ -299,11 +316,14 @@ export function App() {
         setDemoMode(false)
         setIsUnlocked(true)
         setNetWorth(nwVal)
+        const savedSim = loadSavedSimulationSettings()
         if (spendVal > 0) {
           setLiveBaseSpend(spendVal)
-          setSimSettings((prev) =>
-            prev.isCurrentSpendPreset ? { ...prev, baseSpend: spendVal } : prev,
+          setSimSettings(
+            savedSim.isCurrentSpendPreset ? { ...savedSim, baseSpend: spendVal } : savedSim,
           )
+        } else {
+          setSimSettings(savedSim)
         }
         setCareerSettings(loadSavedCareerSettings())
         setShowKeyModal(false)
@@ -377,8 +397,8 @@ export function App() {
   )
 
   const careerReport = useMemo(
-    () => computeCareerReport(careerSettings, netWorth, simSettings),
-    [careerSettings, netWorth, simSettings],
+    () => computeCareerReport(careerSettings, netWorth, simSettings, 854, 26, demoMode),
+    [careerSettings, netWorth, simSettings, demoMode],
   )
 
   const horizonLabel = isUnlocked

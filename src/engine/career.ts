@@ -412,6 +412,7 @@ export function computeCareerReport(
   sim: SimulationSettings,
   njUiWeekly = 854,
   njUiWeeks = 26,
+  demoMode = false,
 ): ComputedCareerReport {
   const stockPrice = Math.max(1, career.stockPrice || 57.01)
   const baseInc = career.baseInc ?? 3
@@ -426,47 +427,57 @@ export function computeCareerReport(
     2029: Math.max(0.01, career.price2029 || 57.01),
   }
 
-  const base2027 = Math.round(186773 * (1 + baseInc / 100))
+  const isDemo = demoMode || career.baseSalary === 75000
+  const base2027 = isDemo ? (career.baseSalary || 75000) : Math.round(186773 * (1 + baseInc / 100))
   const base2028 = Math.round(base2027 * (1 + baseInc / 100))
   const base2029 = Math.round(base2028 * (1 + baseInc / 100))
   const base2030 = Math.round(base2029 * (1 + baseInc / 100))
 
   const bonusFactor = (indivMod / 100) * (compPerf / 100)
-  const bonus2027 = Math.round(base2027 * 0.1 * bonusFactor)
-  const bonus2028 = Math.round(base2028 * 0.1 * bonusFactor)
-  const bonus2029 = Math.round(base2029 * 0.1 * bonusFactor)
-  const bonus2030 = Math.round(base2030 * 0.1 * bonusFactor)
+  const bonusPct = isDemo && career.bonus > 0 ? career.bonus / career.baseSalary : 0.1
+  const bonus2027 = isDemo ? (career.bonus || Math.round(base2027 * 0.1)) : Math.round(base2027 * 0.1 * bonusFactor)
+  const bonus2028 = Math.round(base2028 * bonusPct * bonusFactor)
+  const bonus2029 = Math.round(base2029 * bonusPct * bonusFactor)
+  const bonus2030 = Math.round(base2030 * bonusPct * bonusFactor)
 
-  const cashReward2027 = 21875
-  const cashReward2028 = 12500
-  const cashReward2029 = 3125
+  const cashReward2027 = isDemo ? (career.cashReward || 0) : 21875
+  const cashReward2028 = isDemo ? 0 : 12500
+  const cashReward2029 = isDemo ? 0 : 3125
   const cashReward2030 = 0
 
   const futureCash2027 = 0
-  const futureCash2028 = Math.round((future2027 / 2) * (7 / 12))
-  const futureCash2029 =
-    Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12))
-  const futureCash2030 =
-    Math.round((future2027 / 2) * (1 / 12)) +
-    Math.round((future2028 / 2) * (4 / 12)) +
-    Math.round((future2029 / 2) * (7 / 12))
+  const futureCash2028 = isDemo ? 0 : Math.round((future2027 / 2) * (7 / 12))
+  const futureCash2029 = isDemo
+    ? 0
+    : Math.round((future2027 / 2) * (4 / 12)) + Math.round((future2028 / 2) * (7 / 12))
+  const futureCash2030 = isDemo
+    ? 0
+    : Math.round((future2027 / 2) * (1 / 12)) +
+      Math.round((future2028 / 2) * (4 / 12)) +
+      Math.round((future2029 / 2) * (7 / 12))
 
-  const futureShares2027 = getFutureGrantShares(future2027, grantPrices[2027])
-  const futureShares2028 = getFutureGrantShares(future2028, grantPrices[2028])
-  const futureShares2029 = getFutureGrantShares(future2029, grantPrices[2029])
+  const futureShares2027 = isDemo ? 0 : getFutureGrantShares(future2027, grantPrices[2027])
+  const futureShares2028 = isDemo ? 0 : getFutureGrantShares(future2028, grantPrices[2028])
+  const futureShares2029 = isDemo ? 0 : getFutureGrantShares(future2029, grantPrices[2029])
 
-  const eq2027 = Math.round(805 * stockPrice)
-  const eq2028 = Math.round(349 * stockPrice)
-  const eq2029 = Math.round(73 * stockPrice)
+  const eq2027 = isDemo ? (career.rsuVesting || 0) : Math.round(805 * stockPrice)
+  const eq2028 = isDemo ? 0 : Math.round(349 * stockPrice)
+  const eq2029 = isDemo ? 0 : Math.round(73 * stockPrice)
   const eq2030 = 0
 
-  const futShIn28 = Math.round(futureShares2027 * (7 / 12))
-  const futShIn29 =
-    Math.round(futureShares2027 * (4 / 12)) + Math.round(futureShares2028 * (7 / 12))
-  const futShIn30 =
-    Math.round(futureShares2027 * (1 / 12)) +
-    Math.round(futureShares2028 * (4 / 12)) +
-    Math.round(futureShares2029 * (7 / 12))
+  const activeShares2027 = isDemo ? 0 : 805
+  const activeShares2028 = isDemo ? 0 : 349
+  const activeShares2029 = isDemo ? 0 : 73
+
+  const futShIn28 = isDemo ? 0 : Math.round(futureShares2027 * (7 / 12))
+  const futShIn29 = isDemo
+    ? 0
+    : Math.round(futureShares2027 * (4 / 12)) + Math.round(futureShares2028 * (7 / 12))
+  const futShIn30 = isDemo
+    ? 0
+    : Math.round(futureShares2027 * (1 / 12)) +
+      Math.round(futureShares2028 * (4 / 12)) +
+      Math.round(futureShares2029 * (7 / 12))
 
   const futureStock2027 = 0
   const futureStock2028 = Math.round(futShIn28 * stockPrice)
@@ -482,15 +493,19 @@ export function computeCareerReport(
       futureCash: futureCash2027,
       cashReward: cashReward2027 + futureCash2027,
       trueCash: base2027 + bonus2027 + cashReward2027 + futureCash2027,
-      activeShares: 805,
+      activeShares: activeShares2027,
       futureShares: 0,
-      totalShares: 805,
+      totalShares: activeShares2027,
       activeEq: eq2027,
       futureEq: futureStock2027,
       totEq: eq2027 + futureStock2027,
       trueComp: base2027 + bonus2027 + cashReward2027 + futureCash2027 + eq2027 + futureStock2027,
-      cashStatus: `$${(cashReward2027 + futureCash2027).toLocaleString()} vesting in 2027`,
-      cashNext: 'Mar $12.5k cliff + $3,125 quarterly',
+      cashStatus: isDemo
+        ? 'Sample Demonstration Profile'
+        : `$${(cashReward2027 + futureCash2027).toLocaleString()} vesting in 2027`,
+      cashNext: isDemo
+        ? 'Unlock with access key for live compensation'
+        : 'Mar $12.5k cliff + $3,125 quarterly',
     },
     2028: {
       year: 2028,
@@ -500,16 +515,19 @@ export function computeCareerReport(
       futureCash: futureCash2028,
       cashReward: cashReward2028 + futureCash2028,
       trueCash: base2028 + bonus2028 + cashReward2028 + futureCash2028,
-      activeShares: 349,
+      activeShares: activeShares2028,
       futureShares: futShIn28,
-      totalShares: 349 + futShIn28,
+      totalShares: activeShares2028 + futShIn28,
       activeEq: eq2028,
       futureEq: futureStock2028,
       totEq: eq2028 + futureStock2028,
       trueComp: base2028 + bonus2028 + cashReward2028 + futureCash2028 + eq2028 + futureStock2028,
-      cashStatus: `$${(cashReward2028 + futureCash2028).toLocaleString()} vesting in 2028`,
-      cashNext:
-        futureCash2028 > 0
+      cashStatus: isDemo
+        ? 'Sample Demonstration Profile'
+        : `$${(cashReward2028 + futureCash2028).toLocaleString()} vesting in 2028`,
+      cashNext: isDemo
+        ? 'Sample projection'
+        : futureCash2028 > 0
           ? `$12,500 active + $${futureCash2028.toLocaleString()} future grant`
           : '$3,125 quarterly × 4 quarters',
     },
@@ -521,16 +539,19 @@ export function computeCareerReport(
       futureCash: futureCash2029,
       cashReward: cashReward2029 + futureCash2029,
       trueCash: base2029 + bonus2029 + cashReward2029 + futureCash2029,
-      activeShares: 73,
+      activeShares: activeShares2029,
       futureShares: futShIn29,
-      totalShares: 73 + futShIn29,
+      totalShares: activeShares2029 + futShIn29,
       activeEq: eq2029,
       futureEq: futureStock2029,
       totEq: eq2029 + futureStock2029,
       trueComp: base2029 + bonus2029 + cashReward2029 + futureCash2029 + eq2029 + futureStock2029,
-      cashStatus: `$${(cashReward2029 + futureCash2029).toLocaleString()} vesting in 2029`,
-      cashNext:
-        futureCash2029 > 0
+      cashStatus: isDemo
+        ? 'Sample Demonstration Profile'
+        : `$${(cashReward2029 + futureCash2029).toLocaleString()} vesting in 2029`,
+      cashNext: isDemo
+        ? 'Sample projection'
+        : futureCash2029 > 0
           ? `$3,125 active + $${futureCash2029.toLocaleString()} future grants`
           : '$3,125 final payout installment on Mar 1, 2029',
     },
@@ -549,12 +570,14 @@ export function computeCareerReport(
       futureEq: futureStock2030,
       totEq: eq2030 + futureStock2030,
       trueComp: base2030 + bonus2030 + cashReward2030 + futureCash2030 + eq2030 + futureStock2030,
-      cashStatus:
-        cashReward2030 + futureCash2030 > 0
+      cashStatus: isDemo
+        ? 'Sample Demonstration Profile'
+        : cashReward2030 + futureCash2030 > 0
           ? `$${(cashReward2030 + futureCash2030).toLocaleString()} vesting in 2030`
           : 'Active grant completed in 2029 ($0)',
-      cashNext:
-        cashReward2030 + futureCash2030 > 0
+      cashNext: isDemo
+        ? 'Sample projection'
+        : cashReward2030 + futureCash2030 > 0
           ? 'Quarterly vesting from 2027–2029 awards'
           : 'Enter 2027–2029 grants above to model 2030 awards',
     },
@@ -567,13 +590,15 @@ export function computeCareerReport(
     multiYearByYear[2030],
   ]
 
-  const vestingRows = getDynamicVestingSchedule(
-    stockPrice,
-    future2027,
-    future2028,
-    future2029,
-    grantPrices,
-  )
+  const vestingRows = isDemo
+    ? []
+    : getDynamicVestingSchedule(
+        stockPrice,
+        future2027,
+        future2028,
+        future2029,
+        grantPrices,
+      )
   const totalCashVal = vestingRows.reduce((s, r) => s + r.cash, 0)
   const totalShares = vestingRows.reduce((s, r) => s + r.shares, 0)
   const totalStockVal = vestingRows.reduce((s, r) => s + r.stockVal, 0)

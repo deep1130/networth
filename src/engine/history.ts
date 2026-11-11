@@ -35,7 +35,7 @@ export function getHistoryYears(sheets: SheetDataMap): number[] {
     const year = historyYear(row?.[0])
     if (year !== null) years.add(year)
   })
-  return [...years].sort((a, b) => a - b)
+  return [...years].sort((a, b) => b - a)
 }
 
 export function getHistoryMetric(
@@ -114,6 +114,7 @@ export function buildHistoryDetailGrid(
         historyYear(row[0]),
         ...headers.slice(1).map((_, index) => row[index + 1] ?? null),
       ])
+      .sort((a, b) => Number(b[0] || 0) - Number(a[0] || 0))
     return {
       headers: ['Year', ...headers.slice(1).map((value) => String(value ?? ''))],
       rows,
@@ -182,10 +183,7 @@ export function buildHistorySummaryItems(
   sheets: SheetDataMap,
 ): { label: string; value: string }[] {
   const years = getHistoryYears(sheets)
-  const latestYear = years
-    .slice()
-    .reverse()
-    .find((year) =>
+  const latestYear = years.find((year) =>
       ['income', 'taxes', 'investing', 'living'].some((key) => {
         const value = getHistoryMetric(
           sheets,
