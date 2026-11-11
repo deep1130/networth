@@ -75,25 +75,22 @@ export function HistoryView({
       : buildHistoryDetailGrid(sheets, view)
 
   return (
-    <div className="history-stack">
-      <div className="panel">
-        <div className="panel-header">
+    <div className="view-stack">
+      <div className="section-panel">
+        <div className="section-head">
           <div>
-            <div className="panel-title-group">
-              <Database size={16} className="text-accent" />
-              <h2 className="panel-title">Historical Income, Taxes, Investing &amp; Living Ledger</h2>
+            <div className="section-title-wrap">
+              <Database size={15} className="text-accent" />
+              <h2>Historical Income, Taxes, Investing &amp; Living Ledger</h2>
             </div>
-            <p className="panel-subtitle">{messageText}</p>
+            <p className="mono-sub" style={{ marginTop: 4 }}>{messageText}</p>
           </div>
-          <span className="status-tag">{statusTag}</span>
+          <span className="section-meta-pill">{statusTag}</span>
         </div>
 
         {!isUnlocked ? (
-          <div className="locked-empty-state">
-            <div className="empty-lock-circle">
-              <Lock size={20} />
-            </div>
-            <h3>Historical Financial Ledger Locked</h3>
+          <div className="empty-prompt">
+            <Lock size={18} className="text-accent" />
             <p>
               Annual W-2 income, federal/FICA/state taxes, investment contributions, employer match,
               and living expenses remain hidden until unlocked.
@@ -106,23 +103,23 @@ export function HistoryView({
           <>
             {/* Summary KPI Cards */}
             {summaryItems.length > 0 && (
-              <div className="telemetry-grid">
+              <div className="telemetry-bar" style={{ marginBottom: 16 }}>
                 {summaryItems.map((item) => (
-                  <div key={item.label} className="telemetry-card">
-                    <div className="telemetry-label">{item.label.toUpperCase()}</div>
-                    <div className="telemetry-value small accent-blue">{item.value}</div>
+                  <div key={item.label} className="telemetry-cell">
+                    <span className="telemetry-label">{item.label.toUpperCase()}</span>
+                    <div className="telemetry-value" style={{ fontSize: 15 }}>{item.value}</div>
                   </div>
                 ))}
               </div>
             )}
 
             {/* Category Filter Chips */}
-            <div className="chips-row" style={{ marginBottom: 14 }}>
+            <div className="pill-group" style={{ marginBottom: 14 }}>
               {VIEW_TABS.map((t) => (
                 <button
                   key={t.id}
                   type="button"
-                  className={`chip ${view === t.id ? 'active' : ''}`}
+                  className={`pill-choice ${view === t.id ? 'active' : ''}`}
                   onClick={() => setView(t.id)}
                 >
                   {t.label}

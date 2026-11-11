@@ -277,17 +277,10 @@ h1 em {
   background: var(--surface);
   margin-bottom: 20px;
   gap: 2px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.view-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .view-tabs button {
-  flex: 1 0 auto;
+  flex: 1;
   height: 32px;
   padding: 0 10px;
   border: 0;
@@ -399,12 +392,15 @@ h1 em {
 }
 
 .pill-group {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 3px;
   background: var(--surface-raised);
   border: 1px solid var(--line);
   padding: 2px;
   border-radius: 6px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .pill-choice {
@@ -413,8 +409,9 @@ h1 em {
   border-radius: 4px;
   background: transparent;
   color: var(--muted);
-  font: 500 10px var(--mono);
+  font: 500 10.5px var(--mono);
   transition: all 0.14s ease;
+  white-space: nowrap;
 }
 
 .pill-choice:hover {
@@ -710,13 +707,18 @@ tbody tr:last-child td {
 /* ─── Controls Panel ─────────────────────────────────────────────────── */
 .controls-card {
   max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .controls-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .control-item {
@@ -725,6 +727,15 @@ tbody tr:last-child td {
   gap: 6px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line-subtle);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.control-item input[type='range'] {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .control-item-head {
@@ -732,6 +743,8 @@ tbody tr:last-child td {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .control-item-head label {
@@ -745,19 +758,27 @@ tbody tr:last-child td {
 
 .clean-select {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 6px 9px;
   border-radius: 6px;
   border: 1px solid var(--line);
   background: var(--surface-raised);
   color: var(--ink);
   font-size: 12px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .sub-house-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ─── Career Specific Rows ───────────────────────────────────────────── */
@@ -939,6 +960,96 @@ tbody tr:last-child td {
   gap: 8px;
 }
 
+/* ─── Standard Buttons & Action Triggers ──────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--ink-secondary);
+  font: 500 12px var(--mono);
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btn:hover {
+  color: var(--ink);
+  background: var(--control);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a0b0d;
+  border-color: var(--accent-border);
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: var(--accent-text);
+  color: #0a0b0d;
+  border-color: var(--accent-text);
+}
+
+.btn-ghost,
+.pill-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 500 12px var(--mono);
+  transition: all 0.15s ease;
+}
+
+.btn-ghost:hover,
+.pill-btn:hover {
+  background: var(--surface-raised);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.btn-sm {
+  height: 26px;
+  padding: 0 9px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: var(--surface-raised);
+  color: var(--muted);
+  font: 500 11px var(--mono);
+  transition: all 0.14s ease;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  color: var(--ink);
+  background: var(--control);
+}
+
+.chip.active {
+  color: var(--accent-text);
+  background: var(--control);
+  border-color: var(--accent-border);
+  font-weight: 600;
+}
+
 /* ─── Utility & Accents ──────────────────────────────────────────────── */
 .text-accent {
   color: var(--accent-text);
@@ -1008,10 +1119,61 @@ tbody tr:last-child td {
     border-bottom: 1px solid var(--line);
   }
 
+  .section-panel {
+    padding: 14px 12px;
+  }
+
+  .controls-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .controls-grid,
   .strategy-grid,
   .compact-inputs-row {
     grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .control-item {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Main View Tabs - 5 Equal Grid Columns, NO horizontal scroll */
+  .view-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    padding: 3px;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .view-tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    padding: 4px 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font: 500 10px var(--display);
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .view-tabs button svg {
+    margin-right: 0 !important;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
   }
 
   .tab-label-full {
@@ -1019,7 +1181,12 @@ tbody tr:last-child td {
   }
 
   .tab-label-short {
-    display: inline;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
+    line-height: 1;
   }
 
   /* Table to Mobile Cards Switch */

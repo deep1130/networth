@@ -1,5 +1,4 @@
 import {
-  FileSpreadsheet,
   KeyRound,
   Lock,
   RefreshCw,
@@ -7,7 +6,7 @@ import {
   TrendingUp,
   Unlock,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 interface HeaderBarProps {
   isUnlocked: boolean
@@ -22,7 +21,6 @@ interface HeaderBarProps {
   onLockDashboard: () => void
   onToggleSample: () => void
   onManualRefresh: () => void
-  onSelectExcelFile: (file: File) => void
 }
 
 export function HeaderBar({
@@ -38,11 +36,9 @@ export function HeaderBar({
   onLockDashboard,
   onToggleSample,
   onManualRefresh,
-  onSelectExcelFile,
 }: HeaderBarProps) {
   const [inlineKey, setInlineKey] = useState('')
   const [modalKey, setModalKey] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleKeyAction = () => {
     if (inlineKey.trim()) {
@@ -138,17 +134,9 @@ export function HeaderBar({
               type="button"
               className={`icon-tool-btn ${demoMode ? 'active' : ''}`}
               onClick={onToggleSample}
-              title={demoMode ? 'Exit sample profile' : 'Load sample profile'}
+              title={demoMode ? 'Reload sample profile' : 'Load sample profile'}
             >
               <Sparkles size={13} />
-            </button>
-            <button
-              type="button"
-              className="icon-tool-btn"
-              onClick={() => fileInputRef.current?.click()}
-              title="Open Excel workbook"
-            >
-              <FileSpreadsheet size={13} />
             </button>
             <button
               type="button"
@@ -160,19 +148,6 @@ export function HeaderBar({
               <RefreshCw size={13} className={isSyncing ? 'spin' : ''} />
             </button>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                onSelectExcelFile(file)
-                e.target.value = ''
-              }
-            }}
-          />
         </div>
       </section>
 
@@ -200,10 +175,10 @@ export function HeaderBar({
               }}
             />
             <div className="modal-actions">
-              <button type="button" className="pill-btn" onClick={onCloseKeyModal}>
+              <button type="button" className="btn btn-ghost" onClick={onCloseKeyModal}>
                 Cancel
               </button>
-              <button type="button" className="action-btn-cell primary" onClick={handleModalSubmit}>
+              <button type="button" className="btn btn-primary" onClick={handleModalSubmit}>
                 Unlock &amp; Sync
               </button>
             </div>

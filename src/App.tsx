@@ -27,7 +27,7 @@ import {
 import { computeCareerReport, fetchPayPalQuote } from './engine/career'
 import { getHistoryYears } from './engine/history'
 import { computeProjectionSummary } from './engine/projection'
-import { fetchSheetDashboard, fetchSheetHistory, parseExcelFile } from './engine/sync'
+import { fetchSheetDashboard, fetchSheetHistory } from './engine/sync'
 import type {
   CareerPlanYearKey,
   CareerSettings,
@@ -259,16 +259,13 @@ export function App() {
   }, [])
 
   const handleToggleSample = useCallback(() => {
-    if (demoMode) {
-      lockDashboard()
-    } else {
-      if (isUnlocked && !demoMode) {
-        window.alert('Lock the live dashboard before loading sample data.')
+    if (isUnlocked && !demoMode) {
+      if (!window.confirm('Switch from live Google Sheet connection to sample profile?')) {
         return
       }
-      activateSampleProfile()
     }
-  }, [demoMode, isUnlocked, lockDashboard, activateSampleProfile])
+    activateSampleProfile()
+  }, [isUnlocked, demoMode, activateSampleProfile])
 
   const syncHistory = useCallback(async (key: string) => {
     setHistoryStatus('loading')
@@ -353,34 +350,6 @@ export function App() {
     }
   }, [demoMode, isUnlocked, activateSampleProfile, syncHistory])
 
-  const handleSelectExcelFile = useCallback(async (file: File) => {
-    try {
-      const {
-        netWorth: parsedNW,
-        liveBaseSpend: parsedSpend,
-        historySheets: parsedHistory,
-      } = await parseExcelFile(file)
-      sessionKeyRef.current = null
-      setDemoMode(false)
-      setIsUnlocked(true)
-      if (parsedNW > 0) setNetWorth(parsedNW)
-      if (parsedSpend > 0) {
-        setLiveBaseSpend(parsedSpend)
-        setSimSettings((prev) =>
-          prev.isCurrentSpendPreset ? { ...prev, baseSpend: parsedSpend } : prev,
-        )
-      }
-      if (Object.keys(parsedHistory).length > 0) {
-        setHistorySheets(parsedHistory)
-        setHistoryStatus('loaded')
-      }
-      setSyncStatusText(`LOADED FROM EXCEL: ${file.name}`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to parse workbook'
-      window.alert(`Could not read Excel file: ${msg}`)
-    }
-  }, [])
-
   const handleRefreshStockPrice = useCallback(async () => {
     setIsFetchingStock(true)
     try {
@@ -431,7 +400,6 @@ export function App() {
         onLockDashboard={lockDashboard}
         onToggleSample={handleToggleSample}
         onManualRefresh={handleManualRefresh}
-        onSelectExcelFile={handleSelectExcelFile}
       />
 
       <SummaryStrip

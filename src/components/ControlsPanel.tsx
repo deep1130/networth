@@ -64,7 +64,7 @@ export function ControlsPanel({
         </div>
         <button
           type="button"
-          className="pill-choice"
+          className="btn btn-ghost btn-sm"
           onClick={onResetDefaults}
           title="Reset to default assumptions"
         >
