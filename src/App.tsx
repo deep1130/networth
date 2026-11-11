@@ -74,13 +74,16 @@ function loadSavedCareerSettings(): CareerSettings {
   return DEFAULT_CAREER_SETTINGS
 }
 
-function isInitialSampleUrl(): boolean {
-  if (typeof window === 'undefined') return false
-  return (
-    window.location.search.includes('sample=true') ||
-    window.location.hash.includes('sample') ||
-    window.location.hash.includes('demo')
-  )
+function shouldStartSample(): boolean {
+  if (typeof window === 'undefined') return true
+  // Explicit locked override if requested in URL
+  if (
+    window.location.search.includes('locked=true') ||
+    window.location.hash.includes('locked')
+  ) {
+    return false
+  }
+  return true
 }
 
 const TABS: {
@@ -111,7 +114,7 @@ function getInitialTab(): TabId {
 }
 
 export function App() {
-  const initSample = isInitialSampleUrl()
+  const initSample = shouldStartSample()
   const [activeTab, setActiveTab] = useState<TabId>(getInitialTab)
   const [isUnlocked, setIsUnlocked] = useState(initSample)
   const [demoMode, setDemoMode] = useState(initSample)
@@ -148,7 +151,7 @@ export function App() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncStatusText, setSyncStatusText] = useState(
     initSample
-      ? 'SAMPLE PROFILE ACTIVE · NOT CONNECTED TO SPREADSHEET'
+      ? 'SAMPLE PROFILE ACTIVE · ENTER KEY FOR LIVE SHEET'
       : 'LOCKED · ENTER KEY OR CLICK SAMPLE',
   )
   const [isFetchingStock, setIsFetchingStock] = useState(false)
@@ -237,7 +240,7 @@ export function App() {
     setHistoryStatus('loaded')
     setHistoryError('')
     setSheetErrors([])
-    setSyncStatusText('SAMPLE PROFILE ACTIVE · NOT CONNECTED TO SPREADSHEET')
+    setSyncStatusText('SAMPLE PROFILE ACTIVE · ENTER KEY FOR LIVE SHEET')
   }, [])
 
   const lockDashboard = useCallback(() => {

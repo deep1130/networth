@@ -45,23 +45,19 @@ export function HeaderBar({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleKeyAction = () => {
-    if (demoMode) {
-      onToggleSample()
+    if (inlineKey.trim()) {
+      onUnlockWithKey(inlineKey.trim())
+      setInlineKey('')
       return
     }
-    if (isUnlocked) {
+    if (isUnlocked && !demoMode) {
       if (window.confirm('Lock dashboard and wipe session credentials from memory?')) {
         setInlineKey('')
         onLockDashboard()
       }
       return
     }
-    if (inlineKey.trim()) {
-      onUnlockWithKey(inlineKey.trim())
-      setInlineKey('')
-    } else {
-      onOpenKeyModal()
-    }
+    onOpenKeyModal()
   }
 
   const handleModalSubmit = () => {
@@ -115,13 +111,13 @@ export function HeaderBar({
               id="inline-key-input"
               type="password"
               value={inlineKey}
-              disabled={isUnlocked || demoMode}
+              disabled={isUnlocked && !demoMode}
               onChange={(e) => setInlineKey(e.target.value)}
               placeholder={
-                demoMode
-                  ? 'Sample Profile Active'
-                  : isUnlocked
-                    ? 'Connected to Google Sheet'
+                isUnlocked && !demoMode
+                  ? 'Connected to Google Sheet'
+                  : demoMode
+                    ? 'Enter access key for live sheet...'
                     : 'Enter access key...'
               }
               autoComplete="off"
@@ -131,18 +127,18 @@ export function HeaderBar({
             />
             <button
               type="button"
-              className={`action-btn-cell ${!isUnlocked ? 'primary' : ''}`}
+              className={`action-btn-cell ${!isUnlocked || demoMode ? 'primary' : ''}`}
               onClick={handleKeyAction}
-              title={isUnlocked ? 'Lock session' : 'Unlock ledger'}
+              title={isUnlocked && !demoMode ? 'Lock session' : 'Unlock ledger'}
             >
-              {isUnlocked ? <Lock size={12} /> : <Unlock size={12} />}
-              <span>{demoMode ? 'EXIT' : isUnlocked ? 'LOCK' : 'UNLOCK'}</span>
+              {isUnlocked && !demoMode ? <Lock size={12} /> : <Unlock size={12} />}
+              <span>{isUnlocked && !demoMode ? 'LOCK' : 'UNLOCK'}</span>
             </button>
             <button
               type="button"
               className={`icon-tool-btn ${demoMode ? 'active' : ''}`}
               onClick={onToggleSample}
-              title={demoMode ? 'Exit sample mode' : 'Load sample profile'}
+              title={demoMode ? 'Exit sample profile' : 'Load sample profile'}
             >
               <Sparkles size={13} />
             </button>
@@ -158,8 +154,8 @@ export function HeaderBar({
               type="button"
               className="icon-tool-btn"
               onClick={onManualRefresh}
-              disabled={isSyncing}
-              title="Refresh from Google Sheet"
+              disabled={isSyncing || (!isUnlocked && !demoMode)}
+              title="Refresh sheet data"
             >
               <RefreshCw size={13} className={isSyncing ? 'spin' : ''} />
             </button>

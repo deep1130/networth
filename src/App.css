@@ -171,8 +171,9 @@ h1 em {
 }
 
 .league-input-row input {
-  width: 100%;
+  flex: 1 1 0;
   min-width: 0;
+  width: auto;
   padding: 0 10px;
   color: var(--ink);
   border: 0;
@@ -182,7 +183,8 @@ h1 em {
 }
 
 .action-btn-cell {
-  min-width: 76px;
+  flex-shrink: 0;
+  min-width: 72px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -209,6 +211,7 @@ h1 em {
 }
 
 .icon-tool-btn {
+  flex-shrink: 0;
   width: 38px;
   display: inline-grid;
   place-items: center;
@@ -274,12 +277,19 @@ h1 em {
   background: var(--surface);
   margin-bottom: 20px;
   gap: 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.view-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .view-tabs button {
-  flex: 1;
+  flex: 1 0 auto;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 0;
   border-radius: 5px;
   background: transparent;
