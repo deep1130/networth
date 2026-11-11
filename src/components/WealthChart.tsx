@@ -80,7 +80,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
             tension: 0.2,
           },
           {
-            label: 'Official FIRE Target (Spend ÷ SWR)',
+            label: 'Wealth Target Baseline (Spend ÷ SWR)',
             data: [],
             borderColor: '#f59e0b',
             borderWidth: 2,

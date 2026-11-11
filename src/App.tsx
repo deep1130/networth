@@ -383,7 +383,7 @@ export function App() {
 
   const horizonLabel = isUnlocked
     ? `2027 – ${projectionSummary.maxYear} (Age ${projectionSummary.maxAge})`
-    : 'FIRE & COMP ENGINE'
+    : 'WEALTH & COMP ENGINE'
 
   return (
     <div className="app-shell">

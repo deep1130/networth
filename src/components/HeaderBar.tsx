@@ -86,7 +86,7 @@ export function HeaderBar({
       <section className="intro">
         <div>
           <p className="eyebrow">
-            FIRE TRAJECTORY <span>//</span> COMPENSATION ENGINE
+            WEALTH TRAJECTORY <span>//</span> COMPENSATION ENGINE
           </p>
           <h1>
             Wealth &amp; <em>Retirement</em> Ledger

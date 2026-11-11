@@ -119,7 +119,7 @@ export function TrajectoryView({
           </div>
 
           <div className="telemetry-cell">
-            <span className="telemetry-label">FIRE TARGET ({(100 / settings.swr).toFixed(1)}× SWR)</span>
+            <span className="telemetry-label">WEALTH TARGET ({(100 / settings.swr).toFixed(1)}× SWR)</span>
             <div className="telemetry-value text-accent">
               {isUnlocked ? fmtDollar(summary.fireTarget) : '$---,---'}
             </div>

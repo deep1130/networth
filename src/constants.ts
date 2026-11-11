@@ -205,10 +205,10 @@ export const HOUSE_AGE_PRESETS = [35, 36, 37, 38, 40]
 export const INCOME_TIERS = [
   { spend: 65000, label: 'Comfortable / Upgraded Lifestyle' },
   { spend: 75000, label: 'Affluent / Travel & House Upgrade' },
-  { spend: 90000, label: 'Fat FIRE / High Discretionary Spend' },
-  { spend: 100000, label: 'Ultra-Fat FIRE / Complete Abundance' },
-  { spend: 125000, label: 'Luxury Fat FIRE / Dual Home & World Travel' },
-  { spend: 150000, label: 'High Net Worth Lifestyle / Executive Living' },
+  { spend: 90000, label: 'Executive / High Discretionary Spend' },
+  { spend: 100000, label: 'Ultra-Affluent / Complete Abundance' },
+  { spend: 125000, label: 'Luxury Portfolio / Dual Home & World Travel' },
+  { spend: 150000, label: 'High Net Worth / Executive Living' },
   { spend: 200000, label: 'Generational Abundance / Ultimate Freedom' },
 ]
 

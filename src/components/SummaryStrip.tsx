@@ -18,7 +18,7 @@ export function SummaryStrip({ isUnlocked, netWorth, settings, summary }: Summar
       </div>
 
       <div className="summary-item">
-        <span className="summary-label">FIRE FUNDED STATUS</span>
+        <span className="summary-label">TARGET FUNDED STATUS</span>
         <strong className={isUnlocked && summary.fundedStatus >= 100 ? 'text-positive' : 'text-accent'}>
           {isUnlocked ? `${summary.fundedStatus.toFixed(1)}%` : '---%'}
         </strong>

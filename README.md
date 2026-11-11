@@ -1,4 +1,4 @@
-# FIRE & Wealth Dashboard
+# Wealth & Retirement Dashboard
 
 ## Canonical Page
 
