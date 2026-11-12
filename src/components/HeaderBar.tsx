@@ -102,7 +102,13 @@ export function HeaderBar({
             <label htmlFor="inline-key-input">ACCESS KEY / SHEET SYNC</label>
             <span className="sync-note">{syncStatusText}</span>
           </div>
-          <div className="league-input-row">
+          <form
+            className="league-input-row"
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleKeyAction()
+            }}
+          >
             <input
               id="inline-key-input"
               type="password"
@@ -117,14 +123,10 @@ export function HeaderBar({
                     : 'Enter access key...'
               }
               autoComplete="off"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleKeyAction()
-              }}
             />
             <button
-              type="button"
+              type="submit"
               className={`action-btn-cell ${!isUnlocked || demoMode ? 'primary' : ''}`}
-              onClick={handleKeyAction}
               title={isUnlocked && !demoMode ? 'Lock session' : 'Unlock ledger'}
             >
               {isUnlocked && !demoMode ? <Lock size={12} /> : <Unlock size={12} />}
@@ -147,7 +149,7 @@ export function HeaderBar({
             >
               <RefreshCw size={13} className={isSyncing ? 'spin' : ''} />
             </button>
-          </div>
+          </form>
         </div>
       </section>
 
@@ -162,26 +164,32 @@ export function HeaderBar({
               Enter your Google Apps Script secret key. Held strictly in memory for this session
               only.
             </p>
-            <input
-              type="password"
-              className="modal-input"
-              placeholder="Secret access key..."
-              value={modalKey}
-              autoFocus
-              onChange={(e) => setModalKey(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleModalSubmit()
-                if (e.key === 'Escape') onCloseKeyModal()
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleModalSubmit()
               }}
-            />
-            <div className="modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={onCloseKeyModal}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" onClick={handleModalSubmit}>
-                Unlock &amp; Sync
-              </button>
-            </div>
+            >
+              <input
+                type="password"
+                className="modal-input"
+                placeholder="Secret access key..."
+                value={modalKey}
+                autoFocus
+                onChange={(e) => setModalKey(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') onCloseKeyModal()
+                }}
+              />
+              <div className="modal-actions">
+                <button type="button" className="btn btn-ghost" onClick={onCloseKeyModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Unlock &amp; Sync
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

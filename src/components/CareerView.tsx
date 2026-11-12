@@ -88,19 +88,21 @@ export function CareerView({
           </button>
         </div>
 
-        <div className="inline-quote-tag">
-          <span>PYPL:</span>
-          <strong>{isUnlocked ? `$${career.stockPrice.toFixed(2)}` : '$--.--'}</strong>
-          <button
-            type="button"
-            className="icon-mini-btn"
-            onClick={onRefreshStockPrice}
-            disabled={isFetchingStock}
-            title="Refresh PayPal stock quote"
-          >
-            <RefreshCw size={11} className={isFetchingStock ? 'spin' : ''} />
-          </button>
-        </div>
+        {!demoMode && (
+          <div className="inline-quote-tag">
+            <span>PYPL:</span>
+            <strong>{isUnlocked ? `$${career.stockPrice.toFixed(2)}` : '$--.--'}</strong>
+            <button
+              type="button"
+              className="icon-mini-btn"
+              onClick={onRefreshStockPrice}
+              disabled={isFetchingStock}
+              title="Refresh PayPal stock quote"
+            >
+              <RefreshCw size={11} className={isFetchingStock ? 'spin' : ''} />
+            </button>
+          </div>
+        )}
       </div>
 
       {!isUnlocked && (

@@ -227,6 +227,10 @@ export function App() {
   )
 
   const handleResetDefaults = useCallback(() => {
+    if (demoMode || !isUnlocked) {
+      setSimSettings(SAMPLE_SIMULATION_SETTINGS)
+      return
+    }
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {
@@ -236,7 +240,7 @@ export function App() {
       ...DEFAULT_SIMULATION_SETTINGS,
       baseSpend: liveBaseSpend > 0 ? liveBaseSpend : DEFAULT_SIMULATION_SETTINGS.baseSpend,
     })
-  }, [liveBaseSpend])
+  }, [demoMode, isUnlocked, liveBaseSpend])
 
   const activateSampleProfile = useCallback(() => {
     sessionKeyRef.current = null
@@ -386,9 +390,6 @@ export function App() {
     } catch {
       // Ignore
     }
-    fetchPayPalQuote().then((price) => {
-      setCareerSettings((prev) => ({ ...prev, stockPrice: price }))
-    })
   }, [])
 
   const projectionSummary = useMemo(
