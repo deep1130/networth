@@ -5,7 +5,7 @@
   min-height: 100vh;
   margin: 0 auto;
   padding: 0 max(24px, env(safe-area-inset-right)) 32px max(24px, env(safe-area-inset-left));
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ─── Topbar ─────────────────────────────────────────────────────────── */
@@ -811,17 +811,24 @@ tbody tr:last-child td {
 .compact-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+  min-width: 0;
 }
 
 .compact-field label {
   font: 9px var(--mono);
   color: var(--muted);
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .compact-field input {
-  padding: 5px 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 7px 9px;
   border-radius: 5px;
   border: 1px solid var(--line);
   background: var(--surface-raised);
@@ -841,6 +848,7 @@ tbody tr:last-child td {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -1134,10 +1142,12 @@ tbody tr:last-child td {
 
   .telemetry-bar,
   .telemetry-bar.five-cols {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .telemetry-cell {
+    min-width: 0;
+    padding: 10px 10px;
     border-bottom: 1px solid var(--line);
   }
 
@@ -1145,7 +1155,13 @@ tbody tr:last-child td {
     border-right: 0;
   }
 
-  .telemetry-cell:last-child {
+  .telemetry-bar:not(.five-cols) .telemetry-cell:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .telemetry-bar.five-cols .telemetry-cell:last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
     border-bottom: 0;
   }
 
@@ -1159,10 +1175,15 @@ tbody tr:last-child td {
   }
 
   .controls-grid,
-  .strategy-grid,
-  .compact-inputs-row {
+  .strategy-grid {
     grid-template-columns: 1fr;
     gap: 14px;
+    width: 100%;
+  }
+
+  .compact-inputs-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
     width: 100%;
   }
 
@@ -1171,8 +1192,27 @@ tbody tr:last-child td {
     min-width: 0;
   }
 
-  /* Main View Tabs - 5 Equal Grid Columns, NO horizontal scroll */
+  .control-item input[type='range'],
+  .sub-house-row input[type='range'] {
+    width: 100%;
+    min-height: 28px;
+  }
+
+  .pill-choice {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+  .pill-tab {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  /* Main View Tabs - 5 Equal Sticky Grid Columns, NO horizontal scroll */
   .view-tabs {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 2px;
@@ -1180,6 +1220,7 @@ tbody tr:last-child td {
     overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
   }
 
   .view-tabs button {
