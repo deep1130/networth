@@ -36,15 +36,31 @@ import type {
   TabId,
 } from './types'
 
+function sanitizeWithDefaults<T extends object>(defaults: T, parsed: unknown): T {
+  if (!parsed || typeof parsed !== 'object') return defaults
+  const out = { ...defaults } as Record<string, unknown>
+  const src = parsed as Record<string, unknown>
+  for (const key of Object.keys(defaults)) {
+    const defVal = out[key]
+    const rawVal = src[key]
+    if (rawVal === undefined || rawVal === null) continue
+    if (typeof defVal === 'number') {
+      const n = typeof rawVal === 'number' ? rawVal : Number(rawVal)
+      if (Number.isFinite(n)) out[key] = n
+    } else if (typeof defVal === 'boolean') {
+      out[key] = Boolean(rawVal)
+    } else if (typeof defVal === 'string') {
+      out[key] = String(rawVal)
+    }
+  }
+  return out as T
+}
+
 function loadSavedSimulationSettings(): SimulationSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const parsed = JSON.parse(raw)
-      return {
-        ...DEFAULT_SIMULATION_SETTINGS,
-        ...parsed,
-      }
+      return sanitizeWithDefaults(DEFAULT_SIMULATION_SETTINGS, JSON.parse(raw))
     }
   } catch {
     // Ignore storage errors
@@ -58,14 +74,13 @@ function loadSavedCareerSettings(): CareerSettings {
       localStorage.getItem(CAREER_STORAGE_KEY) ||
       localStorage.getItem('fire_dashboard_career_v2')
     if (raw) {
-      const parsed = JSON.parse(raw)
+      const sanitized = sanitizeWithDefaults(DEFAULT_CAREER_SETTINGS, JSON.parse(raw))
+      const yr = sanitized.selectedYear ? String(sanitized.selectedYear) : '2027'
       return {
-        ...DEFAULT_CAREER_SETTINGS,
-        ...parsed,
-        selectedYear:
-          parsed.selectedYear && parsed.selectedYear !== 2026
-            ? (String(parsed.selectedYear) as CareerPlanYearKey)
-            : '2027',
+        ...sanitized,
+        selectedYear: ['2027', '2028', '2029', '2030', 'custom'].includes(yr)
+          ? (yr as CareerPlanYearKey)
+          : '2027',
       }
     }
   } catch {
