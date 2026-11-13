@@ -145,7 +145,7 @@ export function computeNjTax(njTaxable: number): number {
   if (njTaxable > 500000) return 29850 + (njTaxable - 500000) * 0.0897
   if (njTaxable > 75000) return 2777.5 + (njTaxable - 75000) * 0.0637
   if (njTaxable > 40000) return 843.75 + (njTaxable - 40000) * 0.05525
-  if (njTaxable > 35000) return 668.75 + (njTaxable - 35000) * 0.035
+  if (njTaxable > 35000) return 542.5 + (njTaxable - 35000) * 0.035
   if (njTaxable > 20000) return 280 + (njTaxable - 20000) * 0.0175
   return njTaxable * 0.014
 }
@@ -623,17 +623,22 @@ export function computeCareerReport(
   // Future award breakdown
   const totalFutureAward = future2027 + future2028 + future2029
   const vest2028Cash = Math.round((future2027 / 2) * (7 / 12))
-  const vest2028Stock = Math.round(futureShares2027 * (7 / 12)) * stockPrice
+  const vest2028Stock = Math.round(Math.round(futureShares2027 * (7 / 12)) * stockPrice)
   const vest2029From27 =
-    Math.round((future2027 / 2) * (4 / 12)) + Math.round(futureShares2027 * (4 / 12)) * stockPrice
+    Math.round((future2027 / 2) * (4 / 12)) +
+    Math.round(Math.round(futureShares2027 * (4 / 12)) * stockPrice)
   const vest2029From28 =
-    Math.round((future2028 / 2) * (7 / 12)) + Math.round(futureShares2028 * (7 / 12)) * stockPrice
+    Math.round((future2028 / 2) * (7 / 12)) +
+    Math.round(Math.round(futureShares2028 * (7 / 12)) * stockPrice)
   const vest2030From27 =
-    Math.round((future2027 / 2) * (1 / 12)) + Math.round(futureShares2027 * (1 / 12)) * stockPrice
+    Math.round((future2027 / 2) * (1 / 12)) +
+    Math.round(Math.round(futureShares2027 * (1 / 12)) * stockPrice)
   const vest2030From28 =
-    Math.round((future2028 / 2) * (4 / 12)) + Math.round(futureShares2028 * (4 / 12)) * stockPrice
+    Math.round((future2028 / 2) * (4 / 12)) +
+    Math.round(Math.round(futureShares2028 * (4 / 12)) * stockPrice)
   const vest2030From29 =
-    Math.round((future2029 / 2) * (7 / 12)) + Math.round(futureShares2029 * (7 / 12)) * stockPrice
+    Math.round((future2029 / 2) * (7 / 12)) +
+    Math.round(Math.round(futureShares2029 * (7 / 12)) * stockPrice)
 
   const simAwardSplit = {
     cashPortion: totalFutureAward / 2,
@@ -665,7 +670,13 @@ export function computeCareerReport(
   const activeYrShares = presetCol
     ? presetCol.totalShares
     : Math.round(activeRsuVesting / stockPrice)
-  const activeMatch = Math.max(0, career.employerMatch)
+  const activeMatch = presetCol
+    ? isDemo
+      ? Math.round(activeBaseSalary * 0.05)
+      : yrKey === 2027 && baseInc === 3 && indivMod === 100 && compPerf === 100
+        ? 8495
+        : Math.round((activeBaseSalary + activeBonus) * 0.04)
+    : Math.max(0, career.employerMatch)
   const activeK401 = Math.max(0, career.k401)
   const activeHealth = Math.max(0, career.healthPreTax)
   const activeHsa = Math.max(0, career.hsaPreTax)

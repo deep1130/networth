@@ -106,7 +106,7 @@ export function HeaderBar({
         <div className="league-control">
           <div className="control-label-row">
             <label htmlFor="inline-key-input">ACCESS KEY / SHEET SYNC</label>
-            <span className="sync-note">{syncStatusText}</span>
+            <span className={`sync-note ${authError ? 'error' : ''}`}>{syncStatusText}</span>
           </div>
           <form
             className="league-input-row"
@@ -160,6 +160,7 @@ export function HeaderBar({
               <RefreshCw size={13} className={isSyncing ? 'spin' : ''} />
             </button>
           </form>
+          {authError && !showKeyModal && <p className="inline-auth-error">{authError}</p>}
         </div>
       </section>
 

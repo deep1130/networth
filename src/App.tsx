@@ -220,6 +220,7 @@ export function App() {
             bonus: preset.bonus,
             cashReward: 0,
             rsuVesting: 0,
+            employerMatch: Math.round(preset.baseSalary * 0.05),
           })
         } else {
           updateCareerSettings({ selectedYear: 'custom' })
@@ -234,6 +235,7 @@ export function App() {
           bonus: preset.bonus,
           cashReward: preset.cashReward,
           rsuVesting: preset.rsuVesting,
+          employerMatch: preset.employerMatch,
         })
       } else {
         updateCareerSettings({ selectedYear: 'custom' })

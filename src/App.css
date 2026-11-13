@@ -172,6 +172,17 @@ h1 em {
   max-width: 220px;
 }
 
+.sync-note.error {
+  color: var(--negative-text);
+}
+
+.inline-auth-error {
+  margin: 6px 0 0;
+  color: var(--negative-text);
+  font: 11px var(--mono);
+  line-height: 1.35;
+}
+
 .league-input-row {
   height: 38px;
   display: flex;

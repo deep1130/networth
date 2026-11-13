@@ -693,6 +693,21 @@ export function CareerView({
                 onChange={(e) => onUpdateCareer({ healthPreTax: Number(e.target.value) })}
               />
             </div>
+            <div className="compact-field">
+              <label>Employer Match ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={250}
+                disabled={!isUnlocked}
+                value={isUnlocked ? report.activeMatch : '0000'}
+                onChange={(e) =>
+                  onUpdateCareer({
+                    selectedYear: 'custom',
+                    employerMatch: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
           </div>
 
           {/* 5 Primary KPIs */}

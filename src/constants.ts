@@ -212,25 +212,6 @@ export const INCOME_TIERS = [
   { spend: 200000, label: 'Generational Abundance / Ultimate Freedom' },
 ]
 
-export const BASE_VESTING_SCHEDULE = [
-  { period: 'Mar 2027', year: 2027, cashVest: 6250, sharesVest: 424 },
-  { period: 'Jun 2027', year: 2027, cashVest: 6250, sharesVest: 127 },
-  { period: 'Sep 2027', year: 2027, cashVest: 6250, sharesVest: 127 },
-  { period: 'Dec 2027', year: 2027, cashVest: 3125, sharesVest: 127 },
-  { period: 'Mar 2028', year: 2028, cashVest: 3125, sharesVest: 128 },
-  { period: 'Jun 2028', year: 2028, cashVest: 3125, sharesVest: 74 },
-  { period: 'Sep 2028', year: 2028, cashVest: 3125, sharesVest: 74 },
-  { period: 'Dec 2028', year: 2028, cashVest: 3125, sharesVest: 73 },
-  { period: 'Mar 2029', year: 2029, cashVest: 3125, sharesVest: 73 },
-  { period: 'Jun 2029', year: 2029, cashVest: 0, sharesVest: 0 },
-  { period: 'Sep 2029', year: 2029, cashVest: 0, sharesVest: 0 },
-  { period: 'Dec 2029', year: 2029, cashVest: 0, sharesVest: 0 },
-  { period: 'Mar 2030', year: 2030, cashVest: 0, sharesVest: 0 },
-  { period: 'Jun 2030', year: 2030, cashVest: 0, sharesVest: 0 },
-  { period: 'Sep 2030', year: 2030, cashVest: 0, sharesVest: 0 },
-  { period: 'Dec 2030', year: 2030, cashVest: 0, sharesVest: 0 },
-]
-
 export const CAREER_YEAR_DATA: Record<
   '2027' | '2028' | '2029' | '2030',
   {
