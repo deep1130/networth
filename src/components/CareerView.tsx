@@ -286,6 +286,76 @@ export function CareerView({
             </span>
           </div>
 
+          {/* Future Grant Awards Simulator (2027–2029) */}
+          <div className="compact-inputs-row" style={{ marginBottom: 14 }}>
+            <div className="compact-field">
+              <label>2027 Future Award ($)</label>
+              <input
+                type="number"
+                step="5000"
+                min="0"
+                disabled={!isUnlocked}
+                value={career.future2027}
+                onChange={(e) => onUpdateCareer({ future2027: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>2027 Grant Price ($)</label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                disabled={!isUnlocked}
+                value={career.price2027}
+                onChange={(e) => onUpdateCareer({ price2027: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>2028 Future Award ($)</label>
+              <input
+                type="number"
+                step="5000"
+                min="0"
+                disabled={!isUnlocked}
+                value={career.future2028}
+                onChange={(e) => onUpdateCareer({ future2028: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>2028 Grant Price ($)</label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                disabled={!isUnlocked}
+                value={career.price2028}
+                onChange={(e) => onUpdateCareer({ price2028: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>2029 Future Award ($)</label>
+              <input
+                type="number"
+                step="5000"
+                min="0"
+                disabled={!isUnlocked}
+                value={career.future2029}
+                onChange={(e) => onUpdateCareer({ future2029: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>2029 Grant Price ($)</label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                disabled={!isUnlocked}
+                value={career.price2029}
+                onChange={(e) => onUpdateCareer({ price2029: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+
           {/* 3 Summary Pills */}
           <div className="telemetry-bar">
             <div className="telemetry-cell">
