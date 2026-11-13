@@ -505,6 +505,10 @@ h1 em {
   margin-top: 14px;
 }
 
+.telemetry-bar.five-cols {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .telemetry-cell {
   padding: 10px 14px;
   display: flex;
@@ -1128,17 +1132,21 @@ tbody tr:last-child td {
     border-bottom: 0;
   }
 
-  .telemetry-bar {
+  .telemetry-bar,
+  .telemetry-bar.five-cols {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .telemetry-cell:nth-child(2) {
+  .telemetry-cell {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .telemetry-cell:nth-child(even) {
     border-right: 0;
   }
 
-  .telemetry-cell:nth-child(1),
-  .telemetry-cell:nth-child(2) {
-    border-bottom: 1px solid var(--line);
+  .telemetry-cell:last-child {
+    border-bottom: 0;
   }
 
   .section-panel {

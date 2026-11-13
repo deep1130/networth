@@ -186,7 +186,7 @@ export function CareerView({
                 <div className="m-card-head">
                   <div>
                     <div className="m-card-title">{col.year} Comp</div>
-                    <div className="m-card-sub">{col.cashStatus}</div>
+                    <div className="m-card-sub">{col.cashStatus} · {col.cashNext}</div>
                   </div>
                   <div className="m-card-primary-val text-positive">
                     {mask(fmtDollar(col.trueComp))}
@@ -202,11 +202,31 @@ export function CareerView({
                     <span className="m-metric-val">{mask(fmtDollar(col.bonus))}</span>
                   </div>
                   <div className="m-metric">
+                    <span className="m-metric-label">Active Cash</span>
+                    <span className="m-metric-val">{mask(fmtDollar(col.activeCash))}</span>
+                  </div>
+                  <div className="m-metric">
+                    <span className="m-metric-label">Future Cash (Est.)</span>
+                    <span className="m-metric-val text-accent">{mask(fmtDollar(col.futureCash))}</span>
+                  </div>
+                  <div className="m-metric">
                     <span className="m-metric-label">Total Cash</span>
                     <span className="m-metric-val text-accent">{mask(fmtDollar(col.trueCash))}</span>
                   </div>
                   <div className="m-metric">
-                    <span className="m-metric-label">Equity (RSUs)</span>
+                    <span className="m-metric-label">Active RSUs</span>
+                    <span className="m-metric-val">
+                      {isUnlocked ? `${fmtDollar(col.activeEq)} (${col.activeShares} sh)` : '$---'}
+                    </span>
+                  </div>
+                  <div className="m-metric">
+                    <span className="m-metric-label">Future RSUs (Est.)</span>
+                    <span className="m-metric-val">
+                      {isUnlocked ? `${fmtDollar(col.futureEq)} (${col.futureShares} sh)` : '$---'}
+                    </span>
+                  </div>
+                  <div className="m-metric">
+                    <span className="m-metric-label">Total Equity (RSUs)</span>
                     <span className="m-metric-val text-accent">
                       {isUnlocked ? `${fmtDollar(col.totEq)} (${col.totalShares} sh)` : '$---,---'}
                     </span>
@@ -242,21 +262,43 @@ export function CareerView({
                   ))}
                 </tr>
                 <tr>
-                  <td><strong>Cash Awards Vesting</strong></td>
+                  <td><strong>Active Cash Awards</strong></td>
                   {report.multiYearList.map((c) => (
-                    <td key={c.year} className="mono text-accent">{mask(fmtDollar(c.cashReward))}</td>
+                    <td key={c.year} className="mono">{mask(fmtDollar(c.activeCash))}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td><strong>Future Cash Awards (Est.)</strong></td>
+                  {report.multiYearList.map((c) => (
+                    <td key={c.year} className="mono text-accent">{mask(fmtDollar(c.futureCash))}</td>
                   ))}
                 </tr>
                 <tr className="row-tint">
-                  <td><strong>Total Cash</strong></td>
+                  <td><strong>Total Cash (Base + AIP + Cash Awards)</strong></td>
                   {report.multiYearList.map((c) => (
                     <td key={c.year} className="mono font-bold">{mask(fmtDollar(c.trueCash))}</td>
                   ))}
                 </tr>
                 <tr>
-                  <td><strong>RSU Equity Vesting</strong></td>
+                  <td><strong>Active RSU Equity</strong></td>
                   {report.multiYearList.map((c) => (
                     <td key={c.year} className="mono">
+                      {isUnlocked ? `${fmtDollar(c.activeEq)} (${c.activeShares} sh)` : '$---,---'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td><strong>Future RSU Equity (Est.)</strong></td>
+                  {report.multiYearList.map((c) => (
+                    <td key={c.year} className="mono text-accent">
+                      {isUnlocked ? `${fmtDollar(c.futureEq)} (${c.futureShares} sh)` : '$---,---'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td><strong>Total RSU Equity Vesting</strong></td>
+                  {report.multiYearList.map((c) => (
+                    <td key={c.year} className="mono font-bold">
                       {isUnlocked ? `${fmtDollar(c.totEq)} (${c.totalShares} sh)` : '$---,---'}
                     </td>
                   ))}
@@ -265,6 +307,15 @@ export function CareerView({
                   <td><strong>Total W-2 Compensation</strong></td>
                   {report.multiYearList.map((c) => (
                     <td key={c.year} className="mono font-bold text-positive">{mask(fmtDollar(c.trueComp))}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td><strong>Status / Next Vest</strong></td>
+                  {report.multiYearList.map((c) => (
+                    <td key={c.year} className="cell-sub">
+                      <div>{c.cashStatus}</div>
+                      <div>{c.cashNext}</div>
+                    </td>
                   ))}
                 </tr>
               </tbody>
@@ -356,21 +407,97 @@ export function CareerView({
             </div>
           </div>
 
-          {/* 3 Summary Pills */}
+          {/* 4 Summary Pills */}
           <div className="telemetry-bar">
             <div className="telemetry-cell">
-              <span className="telemetry-label">TOTAL CASH AWARDS</span>
+              <span className="telemetry-label">TOTAL CASH AWARDS (2027–2030)</span>
               <div className="telemetry-value text-accent">{mask(fmtDollar(report.totalCashVal))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked ? `${report.vestingRows.length} payroll installments` : 'LOCKED'}
+              </span>
             </div>
             <div className="telemetry-cell">
-              <span className="telemetry-label">TOTAL RSU EQUITY</span>
+              <span className="telemetry-label">TOTAL RSU EQUITY (2027–2030)</span>
               <div className="telemetry-value text-accent">
-                {isUnlocked ? `${report.totalShares.toLocaleString()} sh (${fmtDollar(report.totalStockVal)})` : '$---,---'}
+                {isUnlocked ? `${report.totalShares.toLocaleString()} shares` : '---- shares'}
               </div>
+              <span className="telemetry-sub">
+                {isUnlocked ? `${fmtDollar(report.totalStockVal)} @ $${career.stockPrice.toFixed(2)}/sh` : 'LOCKED'}
+              </span>
             </div>
             <div className="telemetry-cell">
               <span className="telemetry-label">COMBINED 4-YR VESTING</span>
               <div className="telemetry-value text-positive">{mask(fmtDollar(report.totalCombined))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `Cash ($${(report.totalCashVal / 1000).toFixed(1)}k) + Stock ($${(report.totalStockVal / 1000).toFixed(1)}k)`
+                  : 'LOCKED'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">MARCH 1, 2027 CLIFF PAYOUT</span>
+              <div className="telemetry-value">{mask(fmtDollar(report.nextDayVal))}</div>
+              <span className="telemetry-sub">Major 1/3 Cliff + AIP Shares</span>
+            </div>
+          </div>
+
+          {/* Annual Vesting Breakdown Strip */}
+          <div className="telemetry-bar" style={{ marginTop: 10 }}>
+            {([2027, 2028, 2029, 2030] as const).map((yr) => {
+              const av = report.annualVestingByYear[yr]
+              return (
+                <div key={yr} className="telemetry-cell">
+                  <span className="telemetry-label">{yr} COMBINED VESTING</span>
+                  <div className="telemetry-value">{mask(fmtDollar(av.total))}</div>
+                  <span className="telemetry-sub">
+                    {isUnlocked
+                      ? `Cash: ${fmtDollar(av.cash)} · Stock: ${fmtDollar(av.stock)} (${av.shares} sh)`
+                      : 'Cash: $--- · Stock: $---'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* 2027-2029 Future Award Formula Breakdown */}
+          <div className="telemetry-bar" style={{ marginTop: 10, marginBottom: 14 }}>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">FUTURE GRANTS (50% CASH / 50% STOCK)</span>
+              <div className="telemetry-value text-accent">
+                {mask(fmtDollar(report.simAwardSplit.cashPortion + report.simAwardSplit.stockPortion))}
+              </div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `${fmtDollar(report.simAwardSplit.cashPortion)} Cash · ${report.simAwardSplit.totalShares.toLocaleString()} RSUs`
+                  : '---'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">2028 EST. FUTURE VEST</span>
+              <div className="telemetry-value">{mask(fmtDollar(report.simAwardSplit.vest2028Total))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `Cash: ${fmtDollar(report.simAwardSplit.vest2028Cash)} · Stock: ${fmtDollar(report.simAwardSplit.vest2028Stock)}`
+                  : '---'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">2029 EST. FUTURE VEST</span>
+              <div className="telemetry-value">{mask(fmtDollar(report.simAwardSplit.vest2029Total))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `From '27: ${fmtDollar(report.simAwardSplit.vest2029From27)} · '28: ${fmtDollar(report.simAwardSplit.vest2029From28)}`
+                  : '---'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">2030 EST. FUTURE VEST</span>
+              <div className="telemetry-value">{mask(fmtDollar(report.simAwardSplit.vest2030Total))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `'27: ${fmtDollar(report.simAwardSplit.vest2030From27)} · '28: ${fmtDollar(report.simAwardSplit.vest2030From28)} · '29: ${fmtDollar(report.simAwardSplit.vest2030From29)}`
+                  : '---'}
+              </span>
             </div>
           </div>
 
@@ -451,34 +578,160 @@ export function CareerView({
             </div>
             {/* Year Selector Pills */}
             <div className="pill-group">
-              {(['2027', '2028', '2029', '2030', 'custom'] as const).map((yr) => (
-                <button
-                  key={yr}
-                  type="button"
-                  className={`pill-choice ${career.selectedYear === yr ? 'active' : ''}`}
-                  onClick={() => onSelectPlanYear(yr)}
-                >
-                  {yr === 'custom' ? 'Custom' : yr}
-                </button>
-              ))}
+              {(['2027', '2028', '2029', '2030', 'custom'] as const).map((yr) => {
+                const col =
+                  yr !== 'custom'
+                    ? report.multiYearByYear[Number(yr) as 2027 | 2028 | 2029 | 2030]
+                    : null
+                return (
+                  <button
+                    key={yr}
+                    type="button"
+                    className={`pill-choice ${career.selectedYear === yr ? 'active' : ''}`}
+                    onClick={() => onSelectPlanYear(yr)}
+                  >
+                    {yr === 'custom'
+                      ? 'Custom'
+                      : isUnlocked && col
+                        ? `${yr} (+$${(col.cashReward / 1000).toFixed(1)}k)`
+                        : yr}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* 3 Primary KPIs */}
-          <div className="telemetry-bar">
+          {/* W-2 Compensation & Pre-Tax Deductions Editor */}
+          <div className="compact-inputs-row">
+            <div className="compact-field">
+              <label>Base Salary ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={1000}
+                disabled={!isUnlocked}
+                value={isUnlocked ? report.activeBaseSalary : '000000'}
+                onChange={(e) =>
+                  onUpdateCareer({
+                    selectedYear: 'custom',
+                    baseSalary: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="compact-field">
+              <label>AIP Bonus ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={500}
+                disabled={!isUnlocked}
+                value={isUnlocked ? report.activeBonus : '00000'}
+                onChange={(e) =>
+                  onUpdateCareer({
+                    selectedYear: 'custom',
+                    bonus: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="compact-field">
+              <label>Cash Grant Vesting ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={500}
+                disabled={!isUnlocked}
+                value={isUnlocked ? report.activeCashReward : '00000'}
+                onChange={(e) =>
+                  onUpdateCareer({
+                    selectedYear: 'custom',
+                    cashReward: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="compact-field">
+              <label>RSU Vesting ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={1000}
+                disabled={!isUnlocked}
+                value={isUnlocked ? report.activeRsuVesting : '00000'}
+                onChange={(e) =>
+                  onUpdateCareer({
+                    selectedYear: 'custom',
+                    rsuVesting: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="compact-field">
+              <label>Pre-Tax 401(k) ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={500}
+                disabled={!isUnlocked}
+                value={isUnlocked ? career.k401 : '00000'}
+                onChange={(e) => onUpdateCareer({ k401: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>Pre-Tax HSA ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={100}
+                disabled={!isUnlocked}
+                value={isUnlocked ? career.hsaPreTax : '0000'}
+                onChange={(e) => onUpdateCareer({ hsaPreTax: Number(e.target.value) })}
+              />
+            </div>
+            <div className="compact-field">
+              <label>Pre-Tax Health ($)</label>
+              <input
+                type={isUnlocked ? 'number' : 'password'}
+                step={100}
+                disabled={!isUnlocked}
+                value={isUnlocked ? career.healthPreTax : '0000'}
+                onChange={(e) => onUpdateCareer({ healthPreTax: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+
+          {/* 5 Primary KPIs */}
+          <div className="telemetry-bar five-cols">
             <div className="telemetry-cell">
               <span className="telemetry-label">W-2 GROSS EARNINGS</span>
               <div className="telemetry-value">{mask(fmtDollar(report.earnedGross))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked ? `Base + AIP + Cash + RSUs` : '---'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">PRE-TAX SHIELDS</span>
+              <div className="telemetry-value text-accent">{mask(fmtDollar(report.preTaxDeductions))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked ? `401k + HSA + Health` : '---'}
+              </span>
             </div>
             <div className="telemetry-cell">
               <span className="telemetry-label">TOTAL TAXES ({report.effectiveTaxRate.toFixed(1)}%)</span>
               <div className="telemetry-value text-negative">{mask(fmtDollar(report.totalTaxes))}</div>
+              <span className="telemetry-sub">Fed + FICA + NJ-1040</span>
             </div>
             <div className="telemetry-cell">
               <span className="telemetry-label">NET TAKE-HOME</span>
               <div className="telemetry-value text-positive">{mask(fmtDollar(report.netTakeHomeAnnual))}</div>
               <span className="telemetry-sub">
-                {isUnlocked ? `${fmtDollar(report.monthlyTakeHome)}/mo` : '---'}
+                {isUnlocked
+                  ? `${fmtDollar(report.monthlyTakeHome)}/mo (${fmtDollar(report.biWeeklyTakeHome)}/pay)`
+                  : '---'}
+              </span>
+            </div>
+            <div className="telemetry-cell">
+              <span className="telemetry-label">TOTAL WEALTH RETAINED</span>
+              <div className="telemetry-value text-positive">{mask(fmtDollar(report.totalWealthRetained))}</div>
+              <span className="telemetry-sub">
+                {isUnlocked
+                  ? `Net + $${Math.round((report.activeK401 + report.activeHsa + report.activeMatch) / 1000)}k (401k/HSA/Match)`
+                  : '---'}
               </span>
             </div>
           </div>
@@ -488,7 +741,7 @@ export function CareerView({
             <div className="bridge-header-row">
               <div className="bridge-title-group">
                 <TrendingUp size={14} className="text-accent" />
-                <span className="font-bold">Freedom Job Replacement Bridge</span>
+                <span className="font-bold">Compensation Replacement Bridge</span>
               </div>
               <div className="pill-group">
                 {(
@@ -525,35 +778,66 @@ export function CareerView({
             </div>
           </div>
 
-          {/* Tax Breakdown Table */}
+          {/* Tax Breakdown Mobile Cards + Desktop Table */}
           {isUnlocked && (
-            <div className="desktop-table-view table-wrap" style={{ marginTop: 14 }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Line Item</th>
-                    <th>Annual</th>
-                    <th>Monthly</th>
-                    <th>% of Gross</th>
-                    <th>Tax Rule</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.taxRows.map((r) => {
-                    const sign = r.isDeduction ? '-' : ''
-                    return (
-                      <tr key={r.name}>
-                        <td><strong>{r.name}</strong></td>
-                        <td className="mono">{sign}{fmtDollar(r.annual)}</td>
-                        <td className="mono">{sign}{fmtDollar(r.monthly)} / mo</td>
-                        <td className="mono">{r.pctStr}</td>
-                        <td className="cell-sub">{r.notes}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="mobile-cards-view" style={{ marginTop: 14 }}>
+                {report.taxRows.map((r) => {
+                  const sign = r.isDeduction ? '-' : ''
+                  return (
+                    <div key={r.name} className="m-card">
+                      <div className="m-card-head">
+                        <div>
+                          <div className="m-card-title">{r.name}</div>
+                          <div className="m-card-sub">{r.notes}</div>
+                        </div>
+                        <div className={`m-card-primary-val ${r.isDeduction ? 'text-negative' : 'text-positive'}`}>
+                          {sign}{fmtDollar(r.annual)}
+                        </div>
+                      </div>
+                      <div className="m-card-metrics-grid">
+                        <div className="m-metric">
+                          <span className="m-metric-label">Monthly</span>
+                          <span className="m-metric-val">{sign}{fmtDollar(r.monthly)} / mo</span>
+                        </div>
+                        <div className="m-metric">
+                          <span className="m-metric-label">% of W-2 Gross</span>
+                          <span className="m-metric-val">{r.pctStr}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="desktop-table-view table-wrap" style={{ marginTop: 14 }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Line Item</th>
+                      <th>Annual</th>
+                      <th>Monthly</th>
+                      <th>% of Gross</th>
+                      <th>Tax Rule</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.taxRows.map((r) => {
+                      const sign = r.isDeduction ? '-' : ''
+                      return (
+                        <tr key={r.name}>
+                          <td><strong>{r.name}</strong></td>
+                          <td className="mono">{sign}{fmtDollar(r.annual)}</td>
+                          <td className="mono">{sign}{fmtDollar(r.monthly)} / mo</td>
+                          <td className="mono">{r.pctStr}</td>
+                          <td className="cell-sub">{r.notes}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}

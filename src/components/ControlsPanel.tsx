@@ -279,6 +279,14 @@ export function ControlsPanel({
                   </button>
                 ))}
               </div>
+              <input
+                type="range"
+                min={34}
+                max={55}
+                step={1}
+                value={settings.houseAge}
+                onChange={(e) => onUpdateSettings({ houseAge: Number(e.target.value) })}
+              />
             </div>
           )}
         </div>

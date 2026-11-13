@@ -38,7 +38,7 @@ export function TrajectoryView({
   onUpdateSettings,
   onOpenKeyModal,
 }: TrajectoryViewProps) {
-  const { yrRetire, yrEnd } = summary
+  const { yr2027, yrRetire, yrEnd, recurringPostRetireNetChg } = summary
   const surv = yrEnd.survivalRate ?? 100
 
   return (
@@ -86,8 +86,20 @@ export function TrajectoryView({
           retireYear={summary.retireYear}
         />
 
-        {/* Unified 4-Cell Telemetry Strip directly below Chart */}
+        {/* Row 1: Core Trajectory Telemetry Strip */}
         <div className="telemetry-bar">
+          <div className="telemetry-cell">
+            <span className="telemetry-label">2027 STARTING NET WORTH</span>
+            <div className="telemetry-value text-accent">
+              {isUnlocked ? fmtDollar(yr2027.nominal) : '$---,---'}
+            </div>
+            <span className="telemetry-sub">
+              {isUnlocked
+                ? `Age ${yr2027.age} · Real: ${fmtDollar(yr2027.real)}`
+                : 'Age 34 · Real: $---'}
+            </span>
+          </div>
+
           <div className="telemetry-cell">
             <span className="telemetry-label">AT RETIREMENT (AGE {yrRetire.age}, {yrRetire.year})</span>
             <div className="telemetry-value">
@@ -99,7 +111,31 @@ export function TrajectoryView({
           </div>
 
           <div className="telemetry-cell">
-            <span className="telemetry-label">AGE {yrEnd.age} HORIZON BALANCE</span>
+            <span className="telemetry-label">POST-AGE {yrRetire.age} WITHDRAWAL</span>
+            <div className="telemetry-value">
+              {isUnlocked ? `-${fmtDollar(summary.totalAnnualSpend)}/yr` : '-$---/yr'}
+            </div>
+            <span
+              className={`telemetry-sub ${
+                !isUnlocked
+                  ? ''
+                  : recurringPostRetireNetChg >= 0
+                    ? 'text-positive'
+                    : 'text-negative'
+              }`}
+            >
+              {isUnlocked
+                ? `${recurringPostRetireNetChg >= 0 ? '+' : '-'}$${Math.round(
+                    Math.abs(recurringPostRetireNetChg),
+                  ).toLocaleString()}/yr net ${
+                    recurringPostRetireNetChg >= 0 ? 'growth' : 'drawdown'
+                  }`
+                : '---'}
+            </span>
+          </div>
+
+          <div className="telemetry-cell">
+            <span className="telemetry-label">AGE {yrEnd.age} BALANCE ({yrEnd.year})</span>
             <div
               className={`telemetry-value ${
                 summary.depletedYear && summary.depletedAge !== null && summary.depletedAge <= summary.maxAge
@@ -117,28 +153,61 @@ export function TrajectoryView({
               {!isUnlocked ? '---' : `Real: ${fmtDollar(yrEnd.real)}`}
             </span>
           </div>
+        </div>
 
+        {/* Row 2: Targets & Monte Carlo Strip */}
+        <div className="telemetry-bar" style={{ marginTop: 10 }}>
           <div className="telemetry-cell">
-            <span className="telemetry-label">WEALTH TARGET ({(100 / settings.swr).toFixed(1)}× SWR)</span>
+            <span className="telemetry-label">WEALTH TARGET ({(100 / settings.swr).toFixed(1)}×)</span>
             <div className="telemetry-value text-accent">
               {isUnlocked ? fmtDollar(summary.fireTarget) : '$---,---'}
             </div>
             <span className="telemetry-sub">
               {isUnlocked
+                ? `25× (4%): $${(summary.fireTarget4Pct / 1000000).toFixed(2)}M · 28.6× (3.5%): $${(summary.fireTarget35Pct / 1000000).toFixed(2)}M`
+                : '25× (4%): $--- · 28.6× (3.5%): $---'}
+            </span>
+          </div>
+
+          <div className="telemetry-cell">
+            <span className="telemetry-label">COAST TARGET (AGE {settings.retireAge})</span>
+            <div className="telemetry-value">
+              {isUnlocked ? fmtDollar(summary.coastFireTarget) : '$---,---'}
+            </div>
+            <span
+              className={`telemetry-sub ${
+                !isUnlocked ? '' : summary.isCoastAchieved ? 'text-positive' : 'text-accent'
+              }`}
+            >
+              {isUnlocked
                 ? summary.isCoastAchieved
-                  ? `Coast Target Achieved! (${fmtDollar(summary.coastFireTarget)})`
-                  : `Coast Target: ${fmtDollar(summary.coastFireTarget)}`
+                  ? `Coast Achieved! (+${fmtDollar(netWorth - summary.coastFireTarget)})`
+                  : `${((netWorth / summary.coastFireTarget) * 100).toFixed(1)}% of Coast target`
                 : '---'}
             </span>
           </div>
 
           <div className="telemetry-cell">
-            <span className="telemetry-label">MONTE CARLO (P50 / P10)</span>
+            <span className="telemetry-label">MEDIAN (P50 MONTE CARLO)</span>
             <div className="telemetry-value text-accent">
-              {isUnlocked ? `${fmtCompact(yrRetire.p50Nominal)} / ${fmtCompact(yrRetire.p10Nominal)}` : '$--- / $---'}
+              {isUnlocked ? `${fmtCompact(yrRetire.p50Nominal)} at Age ${yrRetire.age}` : '$---,---'}
+            </div>
+            <span className="telemetry-sub">
+              {isUnlocked
+                ? `Real P50: ${fmtDollar(yrRetire.p50Real)} · Age ${yrEnd.age}: ${fmtCompact(yrEnd.p50Nominal)}`
+                : '---'}
+            </span>
+          </div>
+
+          <div className="telemetry-cell">
+            <span className="telemetry-label">10TH %ILE (P10 STRESS TEST)</span>
+            <div className="telemetry-value">
+              {isUnlocked ? `${fmtCompact(yrRetire.p10Nominal)} at Age ${yrRetire.age}` : '$---,---'}
             </div>
             <span className={`telemetry-sub ${surv >= 90 ? 'text-positive' : surv >= 75 ? 'text-accent' : 'text-negative'}`}>
-              {isUnlocked ? `${surv.toFixed(1)}% Survival to Age ${yrEnd.age}` : '---'}
+              {isUnlocked
+                ? `Age ${yrEnd.age}: ${fmtCompact(yrEnd.p10Nominal)} · ${surv.toFixed(1)}% Survival`
+                : '---'}
             </span>
           </div>
         </div>
