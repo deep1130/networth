@@ -81,7 +81,7 @@ export function HistoryView({
           <div>
             <div className="section-title-wrap">
               <Database size={15} className="text-accent" />
-              <h2>Historical Income, Taxes, Investing &amp; Living Ledger</h2>
+              <h2>Historical Income, Taxes, Investing &amp; Living</h2>
             </div>
             <p className="mono-sub" style={{ marginTop: 4 }}>{messageText}</p>
           </div>

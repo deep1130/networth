@@ -8,21 +8,34 @@ function safeNum(val: unknown, fallback = 0): number {
   return isNaN(n) ? fallback : n
 }
 
+async function parseJsonResponse(resp: Response): Promise<Record<string, unknown>> {
+  const text = await resp.text()
+  if (!resp.ok) {
+    throw new Error(`Sheets API returned ${resp.status}.`)
+  }
+  try {
+    return JSON.parse(text) as Record<string, unknown>
+  } catch {
+    throw new Error('Invalid response from Google Sheets endpoint.')
+  }
+}
+
 export async function fetchSheetDashboard(
   key: string,
 ): Promise<{ netWorth: number; liveBaseSpend: number }> {
   const url = `${SCRIPT_URL}?key=${encodeURIComponent(key)}&action=read&sheet=Dashboard&range=A2:B6`
   const resp = await fetch(url)
-  const json = await resp.json()
-  if (json && json.data) {
-    const nwVal = safeNum(json.data[1] ? json.data[1][1] : 0, 0)
-    const spendVal = safeNum(json.data[3] ? json.data[3][1] : 0, 0)
+  const json = await parseJsonResponse(resp)
+  if (Array.isArray(json?.data)) {
+    const rows = json.data as unknown[][]
+    const nwVal = safeNum(rows[1] ? rows[1][1] : 0, 0)
+    const spendVal = safeNum(rows[3] ? rows[3][1] : 0, 0)
     if (nwVal <= 0) {
       throw new Error('Invalid portfolio data returned from spreadsheet.')
     }
     return { netWorth: nwVal, liveBaseSpend: spendVal }
   }
-  const errMsg = json && json.error ? String(json.error) : 'Invalid access key or access denied.'
+  const errMsg = json?.error ? String(json.error) : 'Invalid access key or access denied.'
   throw new Error(errMsg)
 }
 

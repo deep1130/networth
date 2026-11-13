@@ -82,7 +82,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
           {
             label: 'Wealth Target Baseline (Spend ÷ SWR)',
             data: [],
-            borderColor: '#f59e0b',
+            borderColor: '#38bdf8',
             borderWidth: 2,
             pointRadius: 0,
           },
@@ -215,7 +215,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
       y.year === retireYear ? 7 : isLong ? 1.5 : 3,
     )
     chart.data.datasets[0].pointBackgroundColor = displayedYears.map((y) =>
-      y.year === retireYear ? '#fbbf24' : '#3b82f6',
+      y.year === retireYear ? '#93c5fd' : '#3b82f6',
     )
 
     chart.data.datasets[1].data = displayedYears.map((y) => y.p50Nominal)
@@ -223,7 +223,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
       y.year === retireYear ? 6 : isLong ? 1 : 2.5,
     )
     chart.data.datasets[1].pointBackgroundColor = displayedYears.map((y) =>
-      y.year === retireYear ? '#fbbf24' : '#c084fc',
+      y.year === retireYear ? '#93c5fd' : '#c084fc',
     )
 
     chart.data.datasets[2].data = displayedYears.map((y) => y.p10Nominal)
@@ -231,7 +231,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
       y.year === retireYear ? 6 : isLong ? 1 : 2,
     )
     chart.data.datasets[2].pointBackgroundColor = displayedYears.map((y) =>
-      y.year === retireYear ? '#fbbf24' : '#fb7185',
+      y.year === retireYear ? '#93c5fd' : '#fb7185',
     )
 
     chart.data.datasets[3].data = displayedYears.map((y) => y.real)
@@ -239,7 +239,7 @@ export function WealthChart({ isUnlocked, displayedYears, retireYear }: WealthCh
       y.year === retireYear ? 7 : isLong ? 1.5 : 3,
     )
     chart.data.datasets[3].pointBackgroundColor = displayedYears.map((y) =>
-      y.year === retireYear ? '#fbbf24' : '#10b981',
+      y.year === retireYear ? '#93c5fd' : '#10b981',
     )
 
     chart.data.datasets[4].data = displayedYears.map((y) => y.target)

@@ -19,10 +19,10 @@
   --line: rgba(255, 255, 255, 0.09);
   --line-subtle: rgba(255, 255, 255, 0.06);
 
-  --accent: #f59e0b;
-  --accent-text: #fbbf24;
-  --accent-soft: rgba(245, 158, 11, 0.12);
-  --accent-border: rgba(245, 158, 11, 0.28);
+  --accent: #60a5fa;
+  --accent-text: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.12);
+  --accent-border: rgba(96, 165, 250, 0.28);
 
   --positive: #22c55e;
   --positive-text: #4ade80;

@@ -110,7 +110,7 @@ export function CareerView({
           <Lock size={18} className="text-accent" />
           <p>Career compensation &amp; vesting figures are locked. Enter your secret key or load sample data.</p>
           <button type="button" className="btn btn-primary" onClick={onOpenKeyModal}>
-            Unlock Ledger
+            Unlock Dashboard
           </button>
         </div>
       )}

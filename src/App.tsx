@@ -144,6 +144,7 @@ export function App() {
   const [sheetErrors, setSheetErrors] = useState<{ key: string; message: string }[]>([])
 
   const [showKeyModal, setShowKeyModal] = useState(false)
+  const [authError, setAuthError] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncStatusText, setSyncStatusText] = useState(
     initSample
@@ -309,9 +310,10 @@ export function App() {
   }, [])
 
   const handleUnlockWithKey = useCallback(
-    async (rawKey: string) => {
+    async (rawKey: string): Promise<boolean> => {
       const key = rawKey.trim()
-      if (!key) return
+      if (!key) return false
+      setAuthError('')
       setIsSyncing(true)
       setSyncStatusText('VERIFYING SECRET KEY AND FETCHING DATA...')
       try {
@@ -333,10 +335,12 @@ export function App() {
         setShowKeyModal(false)
         setSyncStatusText(`LIVE GOOGLE SHEET CONNECTED (${new Date().toLocaleTimeString()})`)
         await syncHistory(key)
+        return true
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Connection failed'
-        window.alert(`Access Denied / Error: ${msg}`)
+        setAuthError(msg)
         setSyncStatusText(`ACCESS DENIED: ${msg}`)
+        return false
       } finally {
         setIsSyncing(false)
       }
@@ -415,8 +419,16 @@ export function App() {
         syncStatusText={syncStatusText}
         horizonLabel={horizonLabel}
         showKeyModal={showKeyModal}
-        onOpenKeyModal={() => setShowKeyModal(true)}
-        onCloseKeyModal={() => setShowKeyModal(false)}
+        authError={authError}
+        onClearAuthError={() => setAuthError('')}
+        onOpenKeyModal={() => {
+          setAuthError('')
+          setShowKeyModal(true)
+        }}
+        onCloseKeyModal={() => {
+          setAuthError('')
+          setShowKeyModal(false)
+        }}
         onUnlockWithKey={handleUnlockWithKey}
         onLockDashboard={lockDashboard}
         onToggleSample={handleToggleSample}

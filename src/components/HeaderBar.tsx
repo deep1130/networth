@@ -15,9 +15,11 @@ interface HeaderBarProps {
   syncStatusText: string
   horizonLabel: string
   showKeyModal: boolean
+  authError: string
+  onClearAuthError: () => void
   onOpenKeyModal: () => void
   onCloseKeyModal: () => void
-  onUnlockWithKey: (key: string) => void
+  onUnlockWithKey: (key: string) => Promise<boolean>
   onLockDashboard: () => void
   onToggleSample: () => void
   onManualRefresh: () => void
@@ -30,6 +32,8 @@ export function HeaderBar({
   syncStatusText,
   horizonLabel,
   showKeyModal,
+  authError,
+  onClearAuthError,
   onOpenKeyModal,
   onCloseKeyModal,
   onUnlockWithKey,
@@ -40,10 +44,11 @@ export function HeaderBar({
   const [inlineKey, setInlineKey] = useState('')
   const [modalKey, setModalKey] = useState('')
 
-  const handleKeyAction = () => {
+  const handleKeyAction = async () => {
+    if (isSyncing) return
     if (inlineKey.trim()) {
-      onUnlockWithKey(inlineKey.trim())
-      setInlineKey('')
+      const ok = await onUnlockWithKey(inlineKey.trim())
+      if (ok) setInlineKey('')
       return
     }
     if (isUnlocked && !demoMode) {
@@ -56,10 +61,11 @@ export function HeaderBar({
     onOpenKeyModal()
   }
 
-  const handleModalSubmit = () => {
+  const handleModalSubmit = async () => {
+    if (isSyncing) return
     if (modalKey.trim()) {
-      onUnlockWithKey(modalKey.trim())
-      setModalKey('')
+      const ok = await onUnlockWithKey(modalKey.trim())
+      if (ok) setModalKey('')
     }
   }
 
@@ -74,7 +80,7 @@ export function HeaderBar({
             <TrendingUp size={16} strokeWidth={2.4} />
           </div>
           <span>
-            WEALTHLEDGER <span className="brand-light">// {horizonLabel}</span>
+            WEALTH ENGINE <span className="brand-light">// {horizonLabel}</span>
           </span>
         </div>
         <div className="topbar-right">
@@ -89,7 +95,7 @@ export function HeaderBar({
             WEALTH TRAJECTORY <span>//</span> COMPENSATION ENGINE
           </p>
           <h1>
-            Wealth &amp; <em>Retirement</em> Ledger
+            Wealth &amp; <em>Retirement</em> Dashboard
           </h1>
           <p className="intro-copy">
             Deterministic &amp; 500-path Monte Carlo compounding, W-2 rewards vesting, and
@@ -113,8 +119,11 @@ export function HeaderBar({
               id="inline-key-input"
               type="password"
               value={inlineKey}
-              disabled={isUnlocked && !demoMode}
-              onChange={(e) => setInlineKey(e.target.value)}
+              disabled={(isUnlocked && !demoMode) || isSyncing}
+              onChange={(e) => {
+                if (authError) onClearAuthError()
+                setInlineKey(e.target.value)
+              }}
               placeholder={
                 isUnlocked && !demoMode
                   ? 'Connected to Google Sheet'
@@ -126,11 +135,12 @@ export function HeaderBar({
             />
             <button
               type="submit"
+              disabled={isSyncing}
               className={`action-btn-cell ${!isUnlocked || demoMode ? 'primary' : ''}`}
-              title={isUnlocked && !demoMode ? 'Lock session' : 'Unlock ledger'}
+              title={isUnlocked && !demoMode ? 'Lock session' : 'Unlock dashboard'}
             >
               {isUnlocked && !demoMode ? <Lock size={12} /> : <Unlock size={12} />}
-              <span>{isUnlocked && !demoMode ? 'LOCK' : 'UNLOCK'}</span>
+              <span>{isSyncing ? '...' : isUnlocked && !demoMode ? 'LOCK' : 'UNLOCK'}</span>
             </button>
             <button
               type="button"
@@ -158,7 +168,7 @@ export function HeaderBar({
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <KeyRound size={17} className="text-accent" />
-              <h3>Unlock Live Financial Ledger</h3>
+              <h3>Unlock Live Dashboard</h3>
             </div>
             <p className="modal-desc">
               Enter your Google Apps Script secret key. Held strictly in memory for this session
@@ -175,18 +185,23 @@ export function HeaderBar({
                 className="modal-input"
                 placeholder="Secret access key..."
                 value={modalKey}
+                disabled={isSyncing}
                 autoFocus
-                onChange={(e) => setModalKey(e.target.value)}
+                onChange={(e) => {
+                  if (authError) onClearAuthError()
+                  setModalKey(e.target.value)
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') onCloseKeyModal()
                 }}
               />
+              {authError && <p className="modal-error">{authError}</p>}
               <div className="modal-actions">
                 <button type="button" className="btn btn-ghost" onClick={onCloseKeyModal}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Unlock &amp; Sync
+                <button type="submit" className="btn btn-primary" disabled={isSyncing}>
+                  {isSyncing ? 'Verifying...' : 'Unlock & Sync'}
                 </button>
               </div>
             </form>
