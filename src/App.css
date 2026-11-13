@@ -1,9 +1,11 @@
 /* ─── Layout Shell (matching fantasy-expected-wins) ───────────────────── */
 .app-shell {
   width: min(1440px, 100%);
+  max-width: 100%;
   min-height: 100vh;
   margin: 0 auto;
   padding: 0 max(24px, env(safe-area-inset-right)) 32px max(24px, env(safe-area-inset-left));
+  overflow-x: hidden;
 }
 
 /* ─── Topbar ─────────────────────────────────────────────────────────── */
@@ -24,6 +26,14 @@
   font: 700 14px var(--display);
   letter-spacing: 0;
   min-width: 0;
+  flex: 1 1 auto;
+}
+
+.brand > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -91,6 +101,11 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
+}
+
+.intro > div {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .eyebrow,
